@@ -1,0 +1,21 @@
+lib/
+├── main.dart
+├── models/
+│   ├── user.dart
+│   └── prospect.dart
+├── services/
+│   ├── auth_service.dart
+│   ├── database_service.dart
+│   ├── sync_service.dart
+│   └── export_service.dart
+├── screens/
+│   ├── login_screen.dart
+│   ├── forgot_password_screen.dart
+│   ├── prospect_form_screen.dart
+│   ├── prospect_list_screen.dart
+│   ├── prospect_detail_screen.dart
+│   └── report_screen.dart
+├── widgets/
+│   └── custom_widgets.dart
+└── utils/
+    └── constants.dart
