@@ -22,3 +22,32 @@ class Prospect(models.Model):
         
     def __str__(self):
         return self.nomComplet
+    
+class RendezVous(models.Model):
+    idRendezVous = models.CharField(max_length=25, primary_key=True)
+    idProspect = models.ForeignKey(Prospect, on_delete=models.CASCADE)
+    dateRendezVous = models.DateTimeField()
+    sujet = models.CharField(max_length=255)
+    description = models.TextField()
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'rendezvous'
+        
+    def __str__(self):
+        return self.sujet
+    
+class SuiviProspect(models.Model):
+    idSuivi = models.CharField(max_length=25, primary_key=True)
+    idProspect = models.ForeignKey(Prospect, on_delete=models.CASCADE)
+    dateSuivi = models.DateTimeField()
+    commentaire = models.TextField()
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'suiviprospect'
+        
+    def __str__(self):
+        return self.commentaire
