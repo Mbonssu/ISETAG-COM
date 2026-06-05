@@ -7,11 +7,16 @@ class CustomTokenSerializer(TokenObtainPairSerializer):
         token = super().get_token(user)
 
         # Claims personnalisés — tout est en champ direct sur Utilisateur
-        token['nom']      = user.nom
-        token['prenom']   = user.prenom
-        token['email']    = user.email
-        token['role']     = user.role       # ← champ direct, pas user.profil.role
-        token['statut']   = user.statut
-        token['is_staff'] = user.is_staff
+        token['idUtilisateur']      = user.idUtilisateur
+        token['nom']                = user.nom
+        token['prenom']             = user.prenom
+        token['email']              = user.email
+        token['role']               = user.role
+        token['statut']             = user.statut
+        token['is_staff']           = user.is_staff
+        token['telephone']          = user.telephone
+        token['actif']              = user.actif
+        token['dateEmbauche']       = user.dateEmbauche
+        # token['photoProfil']        = user.photoProfil 
 
         return token
