@@ -43,6 +43,7 @@ class RendezVous(models.Model):
 class SuiviProspect(models.Model):
     idSuivi = models.CharField(max_length=25, primary_key=True)
     idProspect = models.ForeignKey(Prospect, on_delete=models.CASCADE)
+    libeleSuivi = models.CharField(max_length=255, null = False, blank = False, default = "Nouveau suivi")
     dateSuivi = models.DateTimeField()
     commentaire = models.TextField()
     createdAt = models.DateTimeField(auto_now_add=True)
