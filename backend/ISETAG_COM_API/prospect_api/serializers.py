@@ -1,0 +1,33 @@
+from rest_framework import serializers
+from .models import Prospect, RendezVous, SuiviProspect
+import uuid
+
+class ProspectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Prospect
+        fields = '__all__'
+    
+    # On génère le code ici avant la sauvegarde
+    def create(self, validated_data):
+        validated_data['idProspect'] = f"PROS-{uuid.uuid4().hex[:8].upper()}"
+        return super().create(validated_data)
+
+class RendezVousSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RendezVous
+        fields = '__all__'
+    
+    # On génère le code ici avant la sauvegarde
+    def create(self, validated_data):
+        validated_data['idRendezVous'] = f"RDV-{uuid.uuid4().hex[:8].upper()}"
+        return super().create(validated_data)
+    
+class SuiviProspectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SuiviProspect
+        fields = '__all__'
+    
+    # On génère le code ici avant la sauvegarde
+    def create(self, validated_data):
+        validated_data['idSuivi'] = f"SUIVI-{uuid.uuid4().hex[:8].upper()}"
+        return super().create(validated_data)
