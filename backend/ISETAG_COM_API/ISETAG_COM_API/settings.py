@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'campagne_api',
     'prospect_api',
     'user_api',
+    'specialite_api',
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
@@ -86,7 +87,6 @@ SIMPLE_JWT = {
     # Remplace 'utilisateur_id' par le vrai nom de ta PK
     'USER_ID_FIELD': 'idUtilisateur',   # ← le nom du champ dans le modèle
     'USER_ID_CLAIM': 'user_id',          # ← le nom de la claim dans le token JWT
-    
     
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),   # durée de vie du token d'accès
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),       # durée de vie du refresh token

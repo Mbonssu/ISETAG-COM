@@ -18,7 +18,7 @@ class UtilisateurSerializer(serializers.ModelSerializer):
         model = Utilisateur
         fields = '__all__'
     
-    # ⬇️ On génère le code ici avant la sauvegarde
+    # On génère le code ici avant la sauvegarde
     def create(self, validated_data):
         validated_data['idUtilisateur'] = f"APP-{uuid.uuid4().hex[:8].upper()}"
         return super().create(validated_data)

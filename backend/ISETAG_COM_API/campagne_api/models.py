@@ -12,10 +12,10 @@ class CampagneProspection(models.Model):
     type = models.CharField(max_length=50)
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         db_table = 'campagneprospect'
-        
+
     def __str__(self):
         return self.libele
 
@@ -31,10 +31,10 @@ class Zone(models.Model):
     lieuArrivee = models.CharField(max_length=100)
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         db_table = 'zone'
-        
+
     def __str__(self):
         return self.quartier
 
@@ -55,7 +55,7 @@ class Sortie(models.Model):
         
     def __str__(self):
         return self.statut
-    
+
 class participation(models.Model):
     idParticipation = models.CharField(max_length=25, primary_key=True)
     idSortie = models.ForeignKey(Sortie, on_delete=models.CASCADE)
@@ -73,3 +73,33 @@ class participation(models.Model):
         
     def __str__(self):
         return f"{self.statut} {self.idUtilisateur.nomComplet}"
+    
+class source(models.Model):
+    idSource = models.CharField(max_length=25, primary_key=True)
+    libele = models.CharField(max_length=200)
+    description = models.TextField()
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'source'
+
+    def __str__(self):
+        return self.libele
+
+class ficheSortie(models.Model):
+    idFiche = models.CharField(max_length=25, primary_key=True)
+    idParticipation = models.ForeignKey(participation, on_delete=models.CASCADE)
+    idProspect = models.ForeignKey(Prospect, on_delete=models.CASCADE)
+    idSource = models.ForeignKey(source, on_delete=models.CASCADE)
+    dateCollecte = models.DateTimeField()
+    commentaire = models.TextField()
+    scoreInteret = models.IntegerField()
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'fichesortie'
+
+    def __str__(self):
+        return self.commentaire

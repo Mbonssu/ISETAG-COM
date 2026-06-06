@@ -14,6 +14,8 @@ class Prospect(models.Model):
     niveauEtude = models.CharField(max_length=100)
     domaineEtude = models.CharField(max_length=100)
     typeProspect = models.CharField(max_length=50)
+    nomParent = models.CharField(max_length=200, null = True, blank = True)
+    numeroParent = models.CharField(max_length=20, null = True, blank = True)
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
     
