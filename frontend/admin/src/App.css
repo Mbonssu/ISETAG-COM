@@ -1,0 +1,106 @@
+.app {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main.sidebar-expanded {
+  margin-left: 240px;
+}
+
+.main.sidebar-collapsed {
+  margin-left: 72px;
+}
+
+.content {
+  padding: 24px 28px;
+  flex: 1;
+}
+
+.mid-row {
+  display: grid;
+  grid-template-columns: 1fr 280px 260px;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.bot-row {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 16px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(26, 92, 42, 0.15);
+  border-radius: 3px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .mid-row {
+    grid-template-columns: 1fr;
+  }
+  .bot-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .main.sidebar-expanded {
+    margin-left: 0;
+  }
+  .main.sidebar-collapsed {
+    margin-left: 0;
+  }
+  .content {
+    padding: 16px;
+  }
+}
+/* Supprimer tous les outlines */
+*:focus,
+*:focus-visible,
+*:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+button:focus,
+button:focus-visible,
+.nav-item:focus,
+.nav-item:focus-visible,
+.kpi-card:focus,
+.card:focus,
+.topbar-icon:focus,
+.menu-btn:focus,
+.date-pill:focus,
+.lang-pill:focus,
+.voir-tout-btn:focus,
+.see-all:focus,
+.logout-btn:focus,
+.admin-card:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Style pour l'accessibilité au clavier (optionnel mais recommandé) */
+button:focus-visible,
+.nav-item:focus-visible,
+a:focus-visible {
+  outline: 2px solid #f5c842 !important;
+  outline-offset: 2px !important;
+}

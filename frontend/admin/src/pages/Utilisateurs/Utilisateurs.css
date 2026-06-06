@@ -1,0 +1,66 @@
+/* Utilisateurs stats */
+.utilisateurs-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* User cell */
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: white;
+  font-size: 14px;
+}
+
+/* Role badge with icon */
+.role-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+}
+
+.badge-warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+}
+
+.badge-info {
+  background: rgba(59, 130, 246, 0.15);
+  color: #2563eb;
+}
+
+.badge-secondary {
+  background: rgba(107, 114, 128, 0.15);
+  color: #6b7280;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .utilisateurs-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .utilisateurs-stats {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,90 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #d4edda;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Floating background blobs */
+body::before, body::after, .blob3, .blob4 {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(70px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+body::before {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #a8d5b5 0%, #4caf5060 60%, transparent 100%);
+  top: -120px;
+  left: 80px;
+  animation: blobMove1 12s ease-in-out infinite alternate;
+}
+
+body::after {
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, #f5e87a80 0%, #f5c84260 60%, transparent 100%);
+  bottom: -100px;
+  right: 120px;
+  animation: blobMove2 14s ease-in-out infinite alternate;
+}
+
+.blob3 {
+  position: fixed;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, #81c78450 0%, transparent 70%);
+  top: 50%;
+  left: 55%;
+  animation: blobMove3 10s ease-in-out infinite alternate;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.blob4 {
+  position: fixed;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, #ffe08260 0%, transparent 70%);
+  top: 20%;
+  right: 5%;
+  animation: blobMove1 16s ease-in-out infinite alternate-reverse;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes blobMove1 {
+  from { transform: translate(0,0) scale(1); }
+  to { transform: translate(40px, 60px) scale(1.1); }
+}
+
+@keyframes blobMove2 {
+  from { transform: translate(0,0) scale(1); }
+  to { transform: translate(-50px, -40px) scale(1.15); }
+}
+
+@keyframes blobMove3 {
+  from { transform: translate(0,0) scale(1); }
+  to { transform: translate(30px, -50px) scale(0.9); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(26, 92, 42, 0.15);
+  border-radius: 3px;
+}
