@@ -1,3 +1,5 @@
+import uuid
+
 from .models import CampagneProspection, Sortie, Zone, source, Participation, ficheSortie
 from prospect_api.models import Prospect
 from user_api.models import Utilisateur
@@ -11,12 +13,22 @@ class CampagneProspectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampagneProspection
         fields = '__all__'
+    
+    # On génère le code ici avant la sauvegarde
+    def create(self, validated_data):
+        validated_data['idCampagne'] = f"CAMP-{uuid.uuid4().hex[:8].upper()}"
+        return super().create(validated_data)
 
 #Serializer des donnees de la classe Zone (pour GET, POST, PUT, DELETE)
 class ZoneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Zone
         fields = '__all__'
+    
+    # On génère le code ici avant la sauvegarde
+    def create(self, validated_data):
+        validated_data['idZone'] = f"ZONE-{uuid.uuid4().hex[:8].upper()}"
+        return super().create(validated_data)
 
 #Serializer des donnees de la classe Sortie (pour GET, POST, PUT, DELETE)
 class SortieSerializer(serializers.ModelSerializer):
@@ -37,12 +49,22 @@ class SortieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sortie
         fields = '__all__'
+    
+    # On génère le code ici avant la sauvegarde
+    def create(self, validated_data):
+        validated_data['idSortie'] = f"SRT-{uuid.uuid4().hex[:8].upper()}"
+        return super().create(validated_data)
 
 #Serializer des donnees de la classe Source (pour GET, POST, PUT, DELETE)
 class SourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = source
         fields = '__all__'
+    
+    # On génère le code ici avant la sauvegarde
+    def create(self, validated_data):
+        validated_data['idSource'] = f"SRC-{uuid.uuid4().hex[:8].upper()}"
+        return super().create(validated_data)
         
 #Serializer des donnees de la classe Participation (pour GET, POST, PUT, DELETE)
 class ParticipationSerializer(serializers.ModelSerializer):
@@ -62,6 +84,11 @@ class ParticipationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Participation
         fields = '__all__'
+    
+    # On génère le code ici avant la sauvegarde
+    def create(self, validated_data):
+        validated_data['idParticipation'] = f"PTC-{uuid.uuid4().hex[:8].upper()}"
+        return super().create(validated_data)
 
 #Serializer des donnees de la classe ficheSortie (pour GET, POST, PUT, DELETE)
 class ficheSortieSerializer(serializers.ModelSerializer):
@@ -87,3 +114,8 @@ class ficheSortieSerializer(serializers.ModelSerializer):
     class Meta:
         model = ficheSortie
         fields = '__all__'
+    
+    # On génère le code ici avant la sauvegarde
+    def create(self, validated_data):
+        validated_data['idFiche'] = f"FICHE-{uuid.uuid4().hex[:8].upper()}"
+        return super().create(validated_data)

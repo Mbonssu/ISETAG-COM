@@ -13,6 +13,10 @@ class ProspectSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 class RendezVousSerializer(serializers.ModelSerializer):
+    idProspect = serializers.PrimaryKeyRelatedField(queryset=Prospect.objects.all())
+    
+    prospect_details = serializers.SerializerMethodField(read_only=True)
+    
     class Meta:
         model = RendezVous
         fields = '__all__'
@@ -23,6 +27,8 @@ class RendezVousSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
     
 class SuiviProspectSerializer(serializers.ModelSerializer):
+    idProspect = serializers.PrimaryKeyRelatedField(queryset=Prospect.objects.all())
+    prospect_details = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = SuiviProspect
         fields = '__all__'

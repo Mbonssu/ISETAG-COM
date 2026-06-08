@@ -8,5 +8,9 @@ from prospect_api.views import ProspectView
 
 urlpatterns = urlpatterns = [
     path('ISETAG_COM.prospects/', ProspectView.as_view(), name='prospects'),
-    path('ISETAG_COM.prospects/<int:prospect_id>/', ProspectView.as_view(), name='prospect-detail')
+    path('ISETAG_COM.prospects/<str:pk>/', ProspectView.as_view(), name='prospect-detail'),
+    path('ISETAG_COM.rendezvous/', ProspectView.as_view(), name='prospect-rendezvous'),
+    path('ISETAG_COM.rendezvous/<str:pk>/', ProspectView.as_view(), name='prospect-rendezvous-detail'),
+    path('ISETAG_COM.suivis/', ProspectView.as_view(), name='prospect-suivis'),
+    path('ISETAG_COM.suivis/<str:pk>/', ProspectView.as_view(), name='prospect-suivis-detail'),
 ] 

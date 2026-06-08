@@ -5,15 +5,15 @@ from .views import CampagneView, ZoneView, SortieView, SourceView, Participation
 from django.conf.urls.static import static
 
 urlpatterns = urlpatterns = [
-    path('campagnes/', CampagneView.as_view(), name='campagnes'),
-    path('campagnes/<str:pk>/', CampagneView.as_view(), name='campagne-detail'),
-    path('zones/', ZoneView.as_view(), name='zones'),
-    path('zones/<str:pk>/', ZoneView.as_view(), name='zone-detail'),
-    path('sorties/', SortieView.as_view(), name='sorties'),
-    path('sorties/<str:pk>/', SortieView.as_view(), name='sortie-detail'),
-    path('sources/', SourceView.as_view(), name='sources'),
-    path('participations/', ParticipationView.as_view(), name='participations'),
-    path('participations/<str:pk>/', ParticipationView.as_view(), name='participation-detail'),
-    path('fiches-sortie/', ficheSortieView.as_view(), name='fiches-sortie'),
-    path('fiches-sortie/<str:pk>/', ficheSortieView.as_view(), name='fiche-sortie-detail'),
+    path('ISETAG_COM.campagnes/', CampagneView.as_view(), name='campagnes'),
+    path('ISETAG_COM.campagnes/<str:pk>/', CampagneView.as_view(), name='campagne-detail'),
+    path('ISETAG_COM.zones/', ZoneView.as_view(), name='zones'),
+    path('ISETAG_COM.zones/<str:pk>/', ZoneView.as_view(), name='zone-detail'),
+    path('ISETAG_COM.sorties/', SortieView.as_view(), name='sorties'),
+    path('ISETAG_COM.sorties/<str:pk>/', SortieView.as_view(), name='sortie-detail'),
+    path('ISETAG_COM.sources/', SourceView.as_view(), name='sources'),
+    path('ISETAG_COM.participations/', ParticipationView.as_view(), name='participations'),
+    path('ISETAG_COM.participations/<str:pk>/', ParticipationView.as_view(), name='participation-detail'),
+    path('ISETAG_COM.fiches-sortie/', ficheSortieView.as_view(), name='fiches-sortie'),
+    path('ISETAG_COM.fiches-sortie/<str:pk>/', ficheSortieView.as_view(), name='fiche-sortie-detail'),
 ] 
