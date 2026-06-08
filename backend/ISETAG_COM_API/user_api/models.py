@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
+from campagne_api.models import Sortie, Participation
 
 class Utilisateur(AbstractUser):
     idUtilisateur = models.CharField(max_length=50, primary_key=True)
@@ -13,6 +14,7 @@ class Utilisateur(AbstractUser):
     actif = models.BooleanField(default=True)
     dateEmbauche = models.DateField(null=True, blank=True)
     photoProfil = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+    sortie = models.ManyToManyField('campagne_api.Sortie', through='campagne_api.Participation', related_name='participations', blank=True)
     createdAt = models.DateTimeField(default=timezone.now)
     
     class Meta :

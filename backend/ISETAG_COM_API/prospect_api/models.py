@@ -1,4 +1,6 @@
 from django.db import models
+from user_api.models import Utilisateur
+# from campagne_api.models import Campagne
 
 class Prospect(models.Model):
     idProspect = models.CharField(max_length=25, primary_key=True)
@@ -27,7 +29,7 @@ class Prospect(models.Model):
     
 class RendezVous(models.Model):
     idRendezVous = models.CharField(max_length=25, primary_key=True)
-    idProspect = models.ForeignKey(Prospect, on_delete=models.CASCADE)
+    idProspect = models.ForeignKey('Prospect', on_delete=models.CASCADE)
     dateRendezVous = models.DateTimeField()
     sujet = models.CharField(max_length=255)
     description = models.TextField()
@@ -42,7 +44,7 @@ class RendezVous(models.Model):
     
 class SuiviProspect(models.Model):
     idSuivi = models.CharField(max_length=25, primary_key=True)
-    idProspect = models.ForeignKey(Prospect, on_delete=models.CASCADE)
+    idProspect = models.ForeignKey('Prospect', on_delete=models.CASCADE)
     libeleSuivi = models.CharField(max_length=255, null = False, blank = False, default = "Nouveau suivi")
     dateSuivi = models.DateTimeField()
     commentaire = models.TextField()

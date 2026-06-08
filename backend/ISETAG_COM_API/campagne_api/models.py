@@ -1,6 +1,6 @@
 from django.db import models
-from prospect_api.models import *
-from user_api.models import *
+# from prospect_api.models import *
+# from user_api.models import *
 
 class CampagneProspection(models.Model):
     idCampagne = models.CharField(max_length=25, primary_key=True)
@@ -40,8 +40,8 @@ class Zone(models.Model):
 
 class Sortie(models.Model):
     idSortie = models.CharField(max_length=25, primary_key=True)
-    idZone = models.ForeignKey(Zone, on_delete=models.CASCADE)
-    idCampagne = models.ForeignKey(CampagneProspection, on_delete=models.CASCADE)
+    idZone = models.ForeignKey('campagne_api.Zone', on_delete=models.CASCADE)
+    idCampagne = models.ForeignKey('campagne_api.CampagneProspection', on_delete=models.CASCADE)
     dateSortie = models.DateTimeField()
     statut = models.CharField(max_length=50)
     typeSortie = models.CharField(max_length=50)
@@ -55,24 +55,6 @@ class Sortie(models.Model):
         
     def __str__(self):
         return self.statut
-
-class participation(models.Model):
-    idParticipation = models.CharField(max_length=25, primary_key=True)
-    idSortie = models.ForeignKey(Sortie, on_delete=models.CASCADE)
-    idUtilisateur = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
-    dateAssignation = models.CharField(max_length=50)
-    heureArrivee = models.CharField(max_length=50)
-    heureDepart = models.TimeField()
-    statut = models.CharField(max_length=50)
-    observation = models.TextField()
-    createdAt = models.DateTimeField(auto_now_add=True)
-    updatedAt = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        db_table = 'participation'
-        
-    def __str__(self):
-        return f"{self.statut} {self.idUtilisateur.nomComplet}"
     
 class source(models.Model):
     idSource = models.CharField(max_length=25, primary_key=True)
@@ -89,9 +71,9 @@ class source(models.Model):
 
 class ficheSortie(models.Model):
     idFiche = models.CharField(max_length=25, primary_key=True)
-    idParticipation = models.ForeignKey(participation, on_delete=models.CASCADE)
-    idProspect = models.ForeignKey(Prospect, on_delete=models.CASCADE)
-    idSource = models.ForeignKey(source, on_delete=models.CASCADE)
+    idParticipation = models.ForeignKey('campagne_api.Participation', on_delete=models.CASCADE)
+    idProspect = models.ForeignKey('prospect_api.Prospect', on_delete=models.CASCADE)
+    idSource = models.ForeignKey('campagne_api.source', on_delete=models.CASCADE)
     dateCollecte = models.DateTimeField()
     commentaire = models.TextField()
     scoreInteret = models.IntegerField()
@@ -103,3 +85,21 @@ class ficheSortie(models.Model):
 
     def __str__(self):
         return self.commentaire
+
+class Participation(models.Model):
+    idParticipation = models.CharField(max_length=25, primary_key=True)
+    idUtilisateur = models.ForeignKey('user_api.Utilisateur', on_delete=models.CASCADE)
+    idSortie = models.ForeignKey('campagne_api.Sortie', on_delete=models.CASCADE)
+    dateAssignation = models.DateField()
+    heureArrivee = models.TimeField()
+    heureDepart = models.TimeField()
+    statut = models.CharField(max_length=50)
+    observation = models.TextField()
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'participation'
+
+    def __str__(self):
+        return f"Participation de {self.idUtilisateur.nomComplet} {self.statut}"
