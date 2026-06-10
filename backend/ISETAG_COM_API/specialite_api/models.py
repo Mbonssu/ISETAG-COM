@@ -1,7 +1,7 @@
 from django.db import models
 
 from django.db import models
-from prospect_api.models import *
+from prospect_api.models import Prospect
 
 class Specialite(models.Model):
     idSpecialite = models.CharField(max_length=25, primary_key=True)

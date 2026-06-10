@@ -18,6 +18,7 @@ class Prospect(models.Model):
     typeProspect = models.CharField(max_length=50)
     nomParent = models.CharField(max_length=200, null = True, blank = True)
     numeroParent = models.CharField(max_length=20, null = True, blank = True)
+    specialiteInteret = models.ManyToManyField('specialite_api.Specialite', through='specialite_api.interetSpecialite')
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
     
