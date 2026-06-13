@@ -1,392 +1,952 @@
-import 'dart:ui';
+// ignore_for_file: avoid_print, deprecated_member_use
+
 import 'package:flutter/material.dart';
-import '../utils/themes/glass_theme.dart';
+import 'package:isetagcom/models/initializer.dart';
+import 'package:isetagcom/models/stats.dart';
+import '../models/fiche.dart';
+import '../models/localStorage/local_storage.dart';
+import '../models/source.dart';
+import '../utils/themes/app_colors.dart';
+// import 'add_prospect_screen.dart';
 import 'prospect_detail_screen.dart';
-import '../models/prospect.dart';
+import '../models/prospectData.dart';
+import '../routes/app_router.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _tab = 0;
+  int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _initSourceAndFiche();
+    print("Source and fiche initialized !!!!!!");
+  }
+
+  void _initSourceAndFiche() {
+    final now = DateTime.now();
+
+    final src = Source(
+      idSource: DateTime.now().millisecondsSinceEpoch.toString(),
+      libelleSource: 'Sur le terrain',
+      createdAt: now,
+    );
+
+    final fiche = Fiche(
+      idFiche: 'fiche_${DateTime.now().millisecondsSinceEpoch}',
+      idSrc: src.idSource,
+      dateCollecte: now,
+      createdAt: now,
+      isCurrent: true,
+    );
+    
+    print("Source data: ${src.toLocalJson()}");
+    print("Fiche data: ${fiche.toLocalJson()}");
+    
+    final init = Initializer(src: src, fiche: fiche);
+    init.setSourceAndFiche();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+
     return Scaffold(
-      body: PageBackground(
-        child: SafeArea(
-          bottom: false,
-          child: Column(children: [
-            _buildHeader(),
-            Expanded(child: _buildBody()),
-          ]),
+      backgroundColor: AppColors.backgroundGrey,
+      body: _buildNeumorphicBackground(
+        child: Column(
+          children: [
+            _buildNeumorphicHeader(isSmallScreen),
+            Expanded(child: _buildBody(isSmallScreen)),
+          ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
-      floatingActionButton: _buildFab(),
+      bottomNavigationBar: _buildNeumorphicBottomNav(screenWidth),
+      floatingActionButton: _buildNeumorphicFab(isSmallScreen),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
   }
 
-  // ── Header vert glass ──────────────────────────────────────────────────────
-  Widget _buildHeader() {
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
-          decoration: const BoxDecoration(
-            color: G.headerBg,
-            border: Border(bottom: BorderSide(color: G.headerBorder)),
+  Widget _buildNeumorphicBackground({required Widget child}) {
+    return Container(
+      color: AppColors.backgroundGrey,
+      child: child,
+    );
+  }
+
+  Widget _buildNeumorphicHeader(bool isSmallScreen) {
+    final double headerMargin = isSmallScreen ? 12.0 : 16.0;
+    final double headerPadding = isSmallScreen ? 16.0 : 20.0;
+    final double avatarSize = isSmallScreen ? 44.0 : 52.0;
+    final double fontSizeTitle = isSmallScreen ? 22.0 : 26.0;
+    final double fontSizeSubtitle = isSmallScreen ? 13.0 : 15.0;
+
+    return Container(
+      margin: EdgeInsets.all(headerMargin),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.white.withOpacity(0.7),
+            blurRadius: 15,
+            offset: const Offset(-5, -5),
           ),
-          child: Column(children: [
-            // Greeting + avatar + cloche
-            Row(children: [
-              const Expanded(
-                  child: Column(
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 15,
+            offset: const Offset(6, 6),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.primaryGreen,
+                AppColors.secondaryGreen,
+              ],
+            ),
+          ),
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: EdgeInsets.all(headerPadding),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Bonjour,',
-                      style: TextStyle(fontSize: 12, color: Colors.white70)),
-                  SizedBox(height: 1),
-                  Text('Jean M.',
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white)),
-                ],
-              )),
-              // Avatar
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white54, width: 1.5),
-                  color: Colors.white24,
-                ),
-                child: const Icon(Icons.person, color: Colors.white, size: 22),
-              ),
-              const SizedBox(width: 10),
-              // Cloche avec badge
-              Stack(clipBehavior: Clip.none, children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: G.white18,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white30),
-                      ),
-                      child: const Icon(Icons.notifications_none_outlined,
-                          color: Colors.white, size: 22),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: -4,
-                  right: -4,
-                  child: Container(
-                    width: 18,
-                    height: 18,
-                    decoration: const BoxDecoration(
-                        color: Color(0xFFE65100), shape: BoxShape.circle),
-                    child: const Center(
-                        child: Text('3',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800))),
-                  ),
-                ),
-              ]),
-            ]),
-            const SizedBox(height: 12),
-            // Search bar
-            ClipRRect(
-              borderRadius: BorderRadius.circular(11),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                child: Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(11),
-                    border: Border.all(color: Colors.white38),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(children: [
-                    const Icon(Icons.search, color: Colors.white60, size: 18),
-                    const SizedBox(width: 8),
-                    const Expanded(
-                        child: Text('Rechercher un prospect...',
-                            style: TextStyle(
-                                color: Colors.white60, fontSize: 12))),
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: G.white15,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.white24),
-                      ),
-                      child: const Icon(Icons.tune_outlined,
-                          color: Colors.white, size: 16),
-                    ),
-                  ]),
-                ),
-              ),
-            ),
-          ]),
-        ),
-      ),
-    );
-  }
-
-  // ── Corps scrollable ───────────────────────────────────────────────────────
-  Widget _buildBody() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(14, 16, 14, 8),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Aperçu aujourd\'hui',
-            style: TextStyle(
-                fontSize: 14, fontWeight: FontWeight.w700, color: G.textDark)),
-        const SizedBox(height: 10),
-        _buildStatsGrid(),
-        const SizedBox(height: 18),
-        const Row(children: [
-          Expanded(
-              child: Text('Prospections récentes',
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: G.textDark))),
-          Text('Voir tout',
-              style: TextStyle(
-                  fontSize: 12, color: G.green, fontWeight: FontWeight.w700)),
-        ]),
-        const SizedBox(height: 10),
-        ...kProspects.map((p) => _buildProspectCard(p)),
-        const SizedBox(height: 80),
-      ]),
-    );
-  }
-
-  // ── Grille statistiques ────────────────────────────────────────────────────
-  Widget _buildStatsGrid() {
-    final stats = [
-      (Icons.people_outline, '12', 'Prospects ajoutés', G.green),
-      (Icons.assignment_outlined, '05', 'À relancer', const Color(0xFFB8860B)),
-      (Icons.directions_walk_outlined, '08', 'Visites effectuées', G.green),
-      (Icons.person_add_outlined, '02', 'Nouveaux établis.', G.green),
-    ];
-    return GridView.count(
-      crossAxisCount: 2,
-      mainAxisSpacing: 10,
-      crossAxisSpacing: 10,
-      childAspectRatio: 1.75,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      children: stats
-          .map((s) => GlassBox(
-                borderRadius: 13,
-                bgColor: G.glassStat,
-                borderColor: G.glassBorder,
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 11, vertical: 10),
-                  child: Row(children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: s.$4.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: s.$4.withValues(alpha: 0.22)),
-                      ),
-                      child: Icon(s.$1, color: s.$4, size: 19),
-                    ),
-                    const SizedBox(width: 9),
-                    Expanded(
+                  Row(
+                    children: [
+                      Expanded(
                         child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(s.$2,
-                            style: const TextStyle(
-                                fontSize: 20,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Bonjour,',
+                              style: TextStyle(
+                                fontSize: fontSizeSubtitle,
+                                color: AppColors.textWhite70,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Jean Morreaux.',
+                              style: TextStyle(
+                                fontSize: fontSizeTitle,
                                 fontWeight: FontWeight.w800,
-                                color: G.textDark)),
-                        Text(s.$3,
-                            style: const TextStyle(
-                                fontSize: 10, color: G.textMedium, height: 1.3),
-                            maxLines: 2),
-                      ],
-                    )),
-                  ]),
-                ),
-              ))
-          .toList(),
-    );
-  }
-
-  // ── Carte prospect ─────────────────────────────────────────────────────────
-  Widget _buildProspectCard(ProspectData p) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 9),
-      child: GlassBox(
-        borderRadius: 13,
-        bgColor: G.glassCard,
-        borderColor: G.glassBorder,
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => ProspectDetailScreen(prospect: p))),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Row(children: [
-            // Avatar initiales
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(p.color).withValues(alpha: 0.80),
-                    Color(p.color).withValues(alpha: 0.55),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(12),
-                border:
-                    Border.all(color: Color(p.color).withValues(alpha: 0.40)),
-              ),
-              child: Center(
-                  child: Text(p.initials,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13))),
-            ),
-            const SizedBox(width: 11),
-            Expanded(
-                child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(p.name,
-                    style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: G.textDark)),
-                const SizedBox(height: 1),
-                Text(p.institution,
-                    style: const TextStyle(fontSize: 11, color: G.textMedium)),
-                const SizedBox(height: 1),
-                Text(p.interest,
-                    style: const TextStyle(fontSize: 10, color: G.textLight)),
-              ],
-            )),
-            StatusBadge(status: p.status.name),
-            const SizedBox(width: 6),
-            const Icon(Icons.more_vert, color: G.textLight, size: 18),
-          ]),
-        ),
-      ),
-    );
-  }
-
-  // ── Bottom nav glass ───────────────────────────────────────────────────────
-  Widget _buildBottomNav() {
-    final items = [
-      (Icons.home_outlined, Icons.home, 'Accueil', null),
-      (Icons.people_outline, Icons.people, 'Prospects', null),
-      (Icons.access_time_outlined, Icons.access_time, 'Relances', 2),
-      (Icons.person_outline, Icons.person, 'Profil', null),
-    ];
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-        child: Container(
-          decoration: const BoxDecoration(
-            color: Color.fromRGBO(255, 255, 255, 0.651),
-            border: Border(top: BorderSide(color: G.navBorder, width: 1)),
-          ),
-          child: Row(
-            children: items.asMap().entries.map((e) {
-              final i = e.key;
-              final item = e.value;
-              final active = _tab == i;
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _tab = i),
-                  child: Container(
-                    color: Colors.transparent,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Column(mainAxisSize: MainAxisSize.min, children: [
-                      Stack(clipBehavior: Clip.none, children: [
-                        Icon(active ? item.$2 : item.$1,
-                            color: active ? G.green : G.textLight, size: 22),
-                        if (item.$4 != null)
-                          Positioned(
-                            top: -5,
-                            right: -8,
-                            child: Container(
-                              width: 16,
-                              height: 16,
-                              decoration: const BoxDecoration(
-                                  color: Color(0xFFE65100),
-                                  shape: BoxShape.circle),
-                              child: Center(
-                                  child: Text('${item.$4}',
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.w800))),
+                                color: AppColors.textOnPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        width: avatarSize,
+                        height: avatarSize,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.25),
+                              blurRadius: 6,
+                              offset: const Offset(-2, -2),
+                            ),
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 6,
+                              offset: const Offset(3, 3),
+                            ),
+                          ],
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.white.withOpacity(0.25),
+                              Colors.white.withOpacity(0.1),
+                            ],
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.person,
+                          color: AppColors.textOnPrimary,
+                          size: avatarSize * 0.5,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            width: avatarSize,
+                            height: avatarSize,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.25),
+                                  blurRadius: 6,
+                                  offset: const Offset(-2, -2),
+                                ),
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 6,
+                                  offset: const Offset(3, 3),
+                                ),
+                              ],
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white.withOpacity(0.25),
+                                  Colors.white.withOpacity(0.1),
+                                ],
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.notifications_none_outlined,
+                              color: AppColors.textOnPrimary,
+                              size: avatarSize * 0.5,
                             ),
                           ),
-                      ]),
-                      const SizedBox(height: 3),
-                      Text(item.$3,
-                          style: TextStyle(
-                              fontSize: 10,
-                              color: active ? G.green : G.textLight,
-                              fontWeight:
-                                  active ? FontWeight.w700 : FontWeight.w400)),
-                    ]),
+                          Positioned(
+                            top: -4,
+                            right: -4,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: AppColors.badgeOrange,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.badgeOrange.withOpacity(0.4),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  '3',
+                                  style: TextStyle(
+                                    color: AppColors.textOnPrimary,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ),
-              );
-            }).toList(),
+                  const SizedBox(height: 20),
+                  Container(
+                    height: isSmallScreen ? 48 : 54,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(27),
+                      color: AppColors.backgroundGrey,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.white.withOpacity(0.6),
+                          blurRadius: 8,
+                          offset: const Offset(-3, -3),
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.06),
+                          blurRadius: 8,
+                          offset: const Offset(4, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 16),
+                        Icon(
+                          Icons.search,
+                          color: AppColors.textTertiary,
+                          size: isSmallScreen ? 20 : 22,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Rechercher un prospect...',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: isSmallScreen ? 13 : 14,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: isSmallScreen ? 36 : 40,
+                          height: isSmallScreen ? 36 : 40,
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.5),
+                                blurRadius: 4,
+                                offset: const Offset(-2, -2),
+                              ),
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 4,
+                                offset: const Offset(2, 2),
+                              ),
+                            ],
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.white.withOpacity(0.3),
+                                Colors.white.withOpacity(0.15),
+                              ],
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.tune_outlined,
+                            color: AppColors.primaryGreen,
+                            size: isSmallScreen ? 18 : 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
-  // ── FAB ────────────────────────────────────────────────────────────────────
-  Widget _buildFab() {
+  Widget _buildNeumorphicBottomNav(double screenWidth) {
+    final items = [
+      {
+        'icon': Icons.home_outlined,
+        'activeIcon': Icons.home,
+        'label': 'Accueil',
+        'badge': null,
+        'route': AppRoutes.home
+      },
+      {
+        'icon': Icons.people_outline,
+        'activeIcon': Icons.people,
+        'label': 'Prospects',
+        'badge': null,
+        'route': AppRoutes.fiches
+      },
+      {
+        'icon': Icons.access_time_outlined,
+        'activeIcon': Icons.access_time,
+        'label': 'Relances',
+        'badge': 2,
+        'route': null
+      },
+      {
+        'icon': Icons.person_outline,
+        'activeIcon': Icons.person,
+        'label': 'Profil',
+        'badge': null,
+        'route': null
+      },
+    ];
+
+    final double navMargin = screenWidth < 600 ? 16.0 : 20.0;
+    final double navHeight = screenWidth < 600 ? 60 : 65;
+    final double iconSize = screenWidth < 600 ? 20 : 22;
+    const double borderRadius = 20;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: GlassBox(
-        borderRadius: 28,
-        width: 52,
-        height: 52,
-        bgColor: G.btnPrimaryBg,
-        borderColor: G.btnPrimaryBorder,
-        shadows: [
+      margin: EdgeInsets.symmetric(horizontal: navMargin, vertical: 12),
+      height: navHeight,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        color: AppColors.backgroundGrey,
+        boxShadow: [
           BoxShadow(
-              color: G.green.withValues(alpha: 0.45),
-              blurRadius: 16,
-              offset: const Offset(0, 4)),
+            color: Colors.white.withOpacity(0.7),
+            blurRadius: 8,
+            offset: const Offset(-3, -3),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 10,
+            offset: const Offset(5, 5),
+          ),
         ],
-        onTap: () {},
-        child: const Icon(Icons.add, color: Colors.white, size: 26),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: items.asMap().entries.map((entry) {
+          int index = entry.key;
+          var item = entry.value;
+          bool isActive = _selectedIndex == index;
+
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (index == 0) {
+                  setState(() => _selectedIndex = index);
+                } else if (item['route'] != null) {
+                  Navigator.pushNamed(context, item['route'] as String);
+                }
+              },
+              child: Container(
+                margin: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: isActive ? AppColors.primaryGreen : Colors.transparent,
+                  boxShadow: isActive
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primaryGreen.withOpacity(0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(
+                          isActive
+                              ? (item['activeIcon'] as IconData)
+                              : (item['icon'] as IconData),
+                          color: isActive
+                              ? AppColors.textOnPrimary
+                              : AppColors.textTertiary,
+                          size: iconSize,
+                        ),
+                        if (item['badge'] != null && !isActive)
+                          Positioned(
+                            top: -6,
+                            right: -10,
+                            child: Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: const BoxDecoration(
+                                color: AppColors.badgeOrange,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                '${item['badge']}',
+                                style: const TextStyle(
+                                  color: AppColors.textOnPrimary,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      item['label'] as String,
+                      style: TextStyle(
+                        fontSize: screenWidth < 600 ? 10 : 11,
+                        color: isActive
+                            ? AppColors.textOnPrimary
+                            : AppColors.textTertiary,
+                        fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildBody(bool isSmallScreen) {
+    final double bodyPadding = isSmallScreen ? 12.0 : 16.0;
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: bodyPadding, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Aperçu aujourd\'hui',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildNeumorphicStatsGrid(),
+          const SizedBox(height: 24),
+          const Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Prospections récentes',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              Text(
+                'Voir tout',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.primaryGreen,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          StreamBuilder<List<ProspectDetails>>(
+            stream: LocalStorage.watchProspectsWithSpecs(),
+            builder: (ctx, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              
+              if (snapshot.hasError) {
+                print('Erreur: ${snapshot.error}');
+                return const Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 60,
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        "Une erreur s'est produite. Veuillez redémarrer l'application",
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                );
+              }
+              
+              final prospectsList = snapshot.data ?? [];
+              
+              // Mettre à jour les statistiques
+              Stats["all_prosp"] = prospectsList.length;
+              
+              print("Prospects récupérés: ${Stats["all_prosp"]}");
+              
+              if (prospectsList.isEmpty) {
+                return const Column(
+                  children: [
+                    SizedBox(height: 40),
+                    Icon(
+                      Icons.person_off_outlined,
+                      size: 62,
+                      color: Colors.redAccent,
+                    ),
+                    SizedBox(height: 8),
+                    Center(
+                      child: Text(
+                        'Aucun prospect trouvé !',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              return ListView.builder(
+                shrinkWrap: true,
+                itemCount: prospectsList.length,
+                physics: const NeverScrollableScrollPhysics(),
+                itemBuilder: (_, index) {
+                  final prospectDetail = prospectsList[index];
+                  return _buildNeumorphicProspectCard(prospectDetail, isSmallScreen);
+                },
+              );
+            },
+          ),
+          const SizedBox(height: 100),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNeumorphicStatsGrid() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+    final double cardPadding = isSmallScreen ? 12.0 : 14.0;
+    final double iconSize = isSmallScreen ? 20 : 22;
+    final double valueFontSize = isSmallScreen ? 20 : 22;
+
+    final allProspects = Stats["all_prosp"] ?? 0;
+    final formattedValue = allProspects >= 10 ? "$allProspects" : "0$allProspects";
+
+    final stats = [
+      {
+        'icon': Icons.people_outline,
+        'value': formattedValue,
+        'label': 'Prospects ajoutés',
+        'color': AppColors.statGreen
+      },
+      {
+        'icon': Icons.access_time_outlined,
+        'value': '05',
+        'label': 'À relancer',
+        'color': AppColors.statOrange
+      },
+      {
+        'icon': Icons.check_circle_outline,
+        'value': '08',
+        'label': 'Visites effectuées',
+        'color': AppColors.statBlue
+      },
+      {
+        'icon': Icons.person_add_outlined,
+        'value': '02',
+        'label': 'Nouveaux établis',
+        'color': AppColors.statYellow
+      },
+    ];
+
+    return GridView.count(
+      crossAxisCount: 2,
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 1.6,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      children: stats.map((s) {
+        return Container(
+          padding: EdgeInsets.all(cardPadding),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: AppColors.backgroundGrey,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withOpacity(0.6),
+                blurRadius: 6,
+                offset: const Offset(-3, -3),
+              ),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 8,
+                offset: const Offset(4, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: iconSize + 14,
+                height: iconSize + 14,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white.withOpacity(0.5),
+                      blurRadius: 4,
+                      offset: const Offset(-2, -2),
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 4,
+                      offset: const Offset(2, 2),
+                    ),
+                  ],
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withOpacity(0.4),
+                      Colors.white.withOpacity(0.15),
+                    ],
+                  ),
+                ),
+                child: Icon(s['icon'] as IconData,
+                    color: s['color'] as Color, size: iconSize),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      s['value'] as String,
+                      style: TextStyle(
+                        fontSize: valueFontSize,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      s['label'] as String,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildNeumorphicProspectCard(ProspectDetails prospectDetail, bool isSmallScreen) {
+    final double cardPadding = isSmallScreen ? 12.0 : 14.0;
+    final double avatarSize = isSmallScreen ? 46 : 52;
+    final double fontSize = isSmallScreen ? 14 : 15;
+
+    // Vérification de sécurité pour les spécialités
+    final hasSpecialities = prospectDetail.specialities.isNotEmpty;
+    final firstSpeciality = hasSpecialities 
+        ? prospectDetail.specialities[0].libelleSpecialite 
+        : 'Aucune spécialité';
+    final hasMultipleSpecialities = prospectDetail.specialities.length > 1;
+    
+    final interestText = hasMultipleSpecialities
+        ? 'Intéressé par $firstSpeciality etc..'
+        : 'Intéressé par $firstSpeciality';
+    
+    // Vérification du nom pour l'avatar
+    final firstLetter = prospectDetail.prosp.nomComplet.isNotEmpty 
+        ? prospectDetail.prosp.nomComplet[0] 
+        : '?';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: AppColors.backgroundGrey,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.white.withOpacity(0.7),
+              blurRadius: 8,
+              offset: const Offset(-3, -3),
+            ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 8,
+              offset: const Offset(5, 5),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ProspectDetailScreen(prospect: prospectDetail),
+              ),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(cardPadding),
+              child: Row(
+                children: [
+                  Container(
+                    width: avatarSize,
+                    height: avatarSize,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.white.withOpacity(0.5),
+                          blurRadius: 5,
+                          offset: const Offset(-2, -2),
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 5,
+                          offset: const Offset(3, 3),
+                        ),
+                      ],
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(prospectDetail.color).withOpacity(0.85),
+                          Color(prospectDetail.color).withOpacity(0.55),
+                        ],
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        firstLetter,
+                        style: TextStyle(
+                          color: AppColors.textOnPrimary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: fontSize - 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          prospectDetail.prosp.nomComplet,
+                          style: TextStyle(
+                            fontSize: fontSize,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          prospectDetail.etablissement,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          interestText,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textTertiary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _buildNeumorphicBadge(prospectDetail.prosp.prospectStatus.name),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.chevron_right,
+                      color: AppColors.textTertiary, size: 18),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNeumorphicBadge(String status) {
+    Color badgeColor;
+    String label;
+
+    switch (status.toLowerCase()) {
+      case 'relancer':
+        badgeColor = AppColors.statusPending;
+        label = 'À relancer';
+        break;
+      case 'nouveau':
+        badgeColor = AppColors.statusNew;
+        label = 'Nouveau';
+        break;
+      case 'contacte':
+        badgeColor = AppColors.statusContacted;
+        label = 'Contacté';
+        break;
+      default:
+        badgeColor = Colors.grey;
+        label = status;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        color: badgeColor.withOpacity(0.1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.white.withOpacity(0.4),
+            blurRadius: 3,
+            offset: const Offset(-1, -1),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 3,
+            offset: const Offset(2, 2),
+          ),
+        ],
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: badgeColor,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNeumorphicFab(bool isSmallScreen) {
+    final double fabSize = isSmallScreen ? 54 : 58;
+    final double iconSize = isSmallScreen ? 26 : 30;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: GestureDetector(
+        onTap: () => Navigator.pushNamed(context, AppRoutes.addProspect),
+        child: Container(
+          width: fabSize,
+          height: fabSize,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.primaryGreen,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withOpacity(0.6),
+                blurRadius: 8,
+                offset: const Offset(-3, -3),
+              ),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 10,
+                offset: const Offset(5, 5),
+              ),
+              BoxShadow(
+                color: AppColors.primaryGreen.withOpacity(0.4),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.primaryGreen,
+                AppColors.secondaryGreen,
+              ],
+            ),
+          ),
+          child: Icon(Icons.add, color: AppColors.textOnPrimary, size: iconSize),
+        ),
       ),
     );
   }
