@@ -17,8 +17,7 @@ class User {
   });
 
   /// Factory constructor pour créer un utilisateur depuis JSON
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
+  factory User.fromJson(Map<String, dynamic> json) => User(
       id: json['id'],
       email: json['email'],
       fullName: json['fullName'],
@@ -26,7 +25,7 @@ class User {
       createdAt: DateTime.parse(json['createdAt']),
       isActive: json['isActive'] ?? true,
     );
-  }
+  
 
   /// Convertir l'utilisateur en JSON
   Map<String, dynamic> toJson() => {
