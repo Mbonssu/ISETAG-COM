@@ -1,39 +1,63 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, ArrowLeft, AlertCircle, Calendar, Users, Target, Mail, Smartphone, Phone } from 'lucide-react';
+import { Save, ArrowLeft, AlertCircle, Calendar, Target, Users, Mail, Smartphone, Phone } from 'lucide-react';
 import { ToastContainer } from '../../components/common/Toast';
+import { useFormValidation, validators } from '../../hooks/useFormValidation';
 import '../Prospects/Prospects.css';
 
 const CampagneForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = !!id;
-  const [toasts, setToasts] = useState([]);
-  const [errors, setErrors] = useState({});
+  const [toasts, setToasts] = React.useState([]);
 
   const addToast = (message, type = 'success') => {
     const toastId = Date.now();
     setToasts(prev => [...prev, { id: toastId, message, type }]);
+    setTimeout(() => removeToast(toastId), 3000);
   };
 
   const removeToast = (id) => {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-  const [formData, setFormData] = useState({
-    name: '',
-    type: 'Email',
-    status: 'Planifiée',
-    dateDebut: '',
-    dateFin: '',
-    agent: '',
-    objectif: '',
-    description: ''
-  });
-
   const types = ['Email', 'SMS', 'Appel'];
   const statuses = ['Planifiée', 'En cours', 'Terminée'];
   const agents = ['Jean M.', 'David P.', 'Sophie A.', 'Marie L.'];
+
+  const validationRules = {
+    name: [validators.required('Le nom de la campagne est requis')],
+    dateDebut: [validators.required('La date de début est requise')],
+    dateFin: [validators.required('La date de fin est requise')],
+    agent: [validators.required('Veuillez sélectionner un agent')]
+  };
+
+  const { values, errors, touched, handleChange, handleBlur, validateForm, setFieldValue } = useFormValidation(
+    { name: '', type: 'Email', status: 'Planifiée', dateDebut: '', dateFin: '', agent: '', objectif: '', description: '' },
+    validationRules
+  );
+
+  // Validation personnalisée pour les dates
+  const validateDates = () => {
+    if (values.dateDebut && values.dateFin && new Date(values.dateDebut) > new Date(values.dateFin)) {
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validateForm() && validateDates()) {
+      addToast(isEdit ? 'Campagne modifiée avec succès' : 'Campagne créée avec succès', 'success');
+      setTimeout(() => navigate('/campagnes'), 1500);
+    } else {
+      if (!validateDates()) {
+        addToast('La date de fin doit être postérieure à la date de début', 'error');
+      } else {
+        addToast('Veuillez corriger les erreurs dans le formulaire', 'error');
+      }
+    }
+  };
 
   const getTypeIcon = (type) => {
     switch(type) {
@@ -44,39 +68,6 @@ const CampagneForm = () => {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = 'Le nom de la campagne est requis';
-    if (!formData.dateDebut) newErrors.dateDebut = 'La date de début est requise';
-    if (!formData.dateFin) newErrors.dateFin = 'La date de fin est requise';
-    if (formData.dateDebut && formData.dateFin && new Date(formData.dateDebut) > new Date(formData.dateFin)) {
-      newErrors.dateFin = 'La date de fin doit être postérieure à la date de début';
-    }
-    if (!formData.agent) newErrors.agent = 'Veuillez sélectionner un agent responsable';
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (errors[e.target.name]) {
-      setErrors({ ...errors, [e.target.name]: '' });
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      addToast(isEdit ? 'Campagne modifiée avec succès' : 'Campagne créée avec succès', 'success');
-      setTimeout(() => {
-        navigate('/campagnes');
-      }, 1500);
-    } else {
-      addToast('Veuillez corriger les erreurs dans le formulaire', 'error');
-    }
-  };
-
   return (
     <div className="page-container">
       <ToastContainer toasts={toasts} removeToast={removeToast} />
@@ -84,14 +75,9 @@ const CampagneForm = () => {
       <div className="page-header-actions">
         <div>
           <h1 className="page-title-h1">{isEdit ? 'Modifier la campagne' : 'Nouvelle campagne'}</h1>
-          <p className="page-description">
-            {isEdit ? 'Modifiez les informations de la campagne.' : 'Créez une nouvelle campagne marketing.'}
-          </p>
+          <p className="page-description">{isEdit ? 'Modifiez les informations de la campagne.' : 'Créez une nouvelle campagne marketing.'}</p>
         </div>
-        <button className="btn-outline" onClick={() => navigate('/campagnes')}>
-          <ArrowLeft size={18} />
-          Retour à la liste
-        </button>
+        <button className="btn-outline" onClick={() => navigate('/campagnes')}><ArrowLeft size={18} /> Retour</button>
       </div>
 
       <form onSubmit={handleSubmit} className="form-container">
@@ -100,23 +86,16 @@ const CampagneForm = () => {
             <label>Nom de la campagne <span className="required">*</span></label>
             <div className="input-icon">
               <Target size={18} />
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Ex: Campagne Mai 2025"
-                className={errors.name ? 'error' : ''}
-              />
+              <input type="text" name="name" value={values.name} onChange={handleChange} onBlur={handleBlur} className={errors.name && touched.name ? 'error' : ''} />
             </div>
-            {errors.name && <span className="error-message"><AlertCircle size={12} /> {errors.name}</span>}
+            {errors.name && touched.name && <span className="error-message"><AlertCircle size={12} /> {errors.name}</span>}
           </div>
 
           <div className="form-group">
-            <label>Type de campagne <span className="required">*</span></label>
+            <label>Type de campagne</label>
             <div className="input-icon">
-              {getTypeIcon(formData.type)}
-              <select name="type" value={formData.type} onChange={handleChange}>
+              {getTypeIcon(values.type)}
+              <select name="type" value={values.type} onChange={handleChange}>
                 {types.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
@@ -126,7 +105,7 @@ const CampagneForm = () => {
             <label>Statut</label>
             <div className="input-icon">
               <Calendar size={18} />
-              <select name="status" value={formData.status} onChange={handleChange}>
+              <select name="status" value={values.status} onChange={handleChange}>
                 {statuses.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
@@ -136,78 +115,49 @@ const CampagneForm = () => {
             <label>Date de début <span className="required">*</span></label>
             <div className="input-icon">
               <Calendar size={18} />
-              <input
-                type="date"
-                name="dateDebut"
-                value={formData.dateDebut}
-                onChange={handleChange}
-                className={errors.dateDebut ? 'error' : ''}
-              />
+              <input type="date" name="dateDebut" value={values.dateDebut} onChange={handleChange} onBlur={handleBlur} className={errors.dateDebut && touched.dateDebut ? 'error' : ''} />
             </div>
-            {errors.dateDebut && <span className="error-message"><AlertCircle size={12} /> {errors.dateDebut}</span>}
+            {errors.dateDebut && touched.dateDebut && <span className="error-message"><AlertCircle size={12} /> {errors.dateDebut}</span>}
           </div>
 
           <div className="form-group">
             <label>Date de fin <span className="required">*</span></label>
             <div className="input-icon">
               <Calendar size={18} />
-              <input
-                type="date"
-                name="dateFin"
-                value={formData.dateFin}
-                onChange={handleChange}
-                className={errors.dateFin ? 'error' : ''}
-              />
+              <input type="date" name="dateFin" value={values.dateFin} onChange={handleChange} onBlur={handleBlur} className={errors.dateFin && touched.dateFin ? 'error' : ''} />
             </div>
-            {errors.dateFin && <span className="error-message"><AlertCircle size={12} /> {errors.dateFin}</span>}
+            {errors.dateFin && touched.dateFin && <span className="error-message"><AlertCircle size={12} /> {errors.dateFin}</span>}
           </div>
 
           <div className="form-group">
             <label>Agent responsable <span className="required">*</span></label>
             <div className="input-icon">
               <Users size={18} />
-              <select name="agent" value={formData.agent} onChange={handleChange} className={errors.agent ? 'error' : ''}>
+              <select name="agent" value={values.agent} onChange={handleChange} onBlur={handleBlur}>
                 <option value="">Sélectionner un agent</option>
                 {agents.map(a => <option key={a} value={a}>{a}</option>)}
               </select>
             </div>
-            {errors.agent && <span className="error-message"><AlertCircle size={12} /> {errors.agent}</span>}
+            {errors.agent && touched.agent && <span className="error-message"><AlertCircle size={12} /> {errors.agent}</span>}
           </div>
 
           <div className="form-group">
             <label>Objectif (nombre de prospects)</label>
             <div className="input-icon">
               <Target size={18} />
-              <input
-                type="number"
-                name="objectif"
-                value={formData.objectif}
-                onChange={handleChange}
-                placeholder="Ex: 500"
-              />
+              <input type="number" name="objectif" value={values.objectif} onChange={handleChange} placeholder="Ex: 500" />
             </div>
           </div>
 
           <div className="form-group full-width">
             <label>Description</label>
-            <textarea
-              name="description"
-              rows="4"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Description de la campagne, objectifs, cibles..."
-            />
+            <textarea name="description" rows="4" value={values.description} onChange={handleChange} placeholder="Description de la campagne..." />
           </div>
         </div>
 
         <div className="form-actions">
-          <button type="button" className="btn-outline" onClick={() => navigate('/campagnes')}>
-            Annuler
-          </button>
-          <button type="submit" className="btn-primary">
-            <Save size={18} />
-            {isEdit ? 'Mettre à jour' : 'Créer la campagne'}
-          </button>
+          <button type="button" className="btn-outline" onClick={() => navigate('/campagnes')}>Annuler</button>
+          <button type="submit" className="btn-primary"><Save size={18} />{isEdit ? 'Mettre à jour' : 'Créer'}</button>
         </div>
       </form>
     </div>

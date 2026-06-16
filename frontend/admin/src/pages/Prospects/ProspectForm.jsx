@@ -1,17 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, ArrowLeft, AlertCircle, User, Mail, Phone, MapPin, GraduationCap, Building, Users } from 'lucide-react';
 import { ToastContainer } from '../../components/common/Toast';
-import { useTranslation } from '../../hooks/useTranslation';
+import { useFormValidation, validators } from '../../hooks/useFormValidation';
 import '../Prospects/Prospects.css';
 
 const ProspectForm = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const { id } = useParams();
   const isEdit = !!id;
-  const [toasts, setToasts] = useState([]);
-  const [errors, setErrors] = useState({});
+  const [toasts, setToasts] = React.useState([]);
 
   const addToast = (message, type = 'success') => {
     const toastId = Date.now();
@@ -23,55 +21,40 @@ const ProspectForm = () => {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-  const [formData, setFormData] = useState({
-    nomComplet: '',
-    telephone: '',
-    email: '',
-    niveauEtude: 'Terminale',
-    concerne: '',
-    adresse: '',
-    sexe: 'M',
-    typeProspect: 'Etudiant',
-    commentaire: ''
-  });
-
   const niveauxEtude = ['Terminale', 'Bac+1', 'Bac+2', 'Bac+3', 'Master', 'Doctorat'];
   const typesProspect = ['Etudiant', 'Parent', 'Professionnel', 'Autre'];
-  const sexes = [
-    { value: 'M', label: t('masculin') },
-    { value: 'F', label: t('feminin') }
-  ];
+  const sexes = [{ value: 'M', label: 'Masculin' }, { value: 'F', label: 'Féminin' }];
   const etablissements = ['Lycée de Biyem-Assi', 'Lycée Technique d\'Efouan', 'Université de Douala', 'Institut Supérieur', 'Collège de la Salle'];
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.nomComplet.trim()) newErrors.nomComplet = 'Le nom complet est requis';
-    if (!formData.telephone.trim()) newErrors.telephone = 'Le téléphone est requis';
-    else if (!/^[0-9]{9,10}$/.test(formData.telephone.replace(/\s/g, ''))) newErrors.telephone = 'Téléphone invalide (9-10 chiffres)';
-    if (!formData.email.trim()) newErrors.email = 'L\'email est requis';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email invalide';
-    if (!formData.niveauEtude) newErrors.niveauEtude = 'Le niveau d\'étude est requis';
-    if (!formData.concerne) newErrors.concerne = 'L\'établissement est requis';
-    if (!formData.adresse.trim()) newErrors.adresse = 'L\'adresse est requise';
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const validationRules = {
+    nomComplet: [validators.required('Le nom complet est requis')],
+    telephone: [validators.required('Le téléphone est requis'), validators.phone()],
+    email: [validators.required('L\'email est requis'), validators.email()],
+    niveauEtude: [validators.required('Le niveau d\'étude est requis')],
+    concerne: [validators.required('L\'établissement est requis')],
+    adresse: [validators.required('L\'adresse est requise')]
   };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (errors[e.target.name]) {
-      setErrors({ ...errors, [e.target.name]: '' });
-    }
-  };
+  const { values, errors, touched, handleChange, handleBlur, validateForm } = useFormValidation(
+    {
+      nomComplet: '',
+      telephone: '',
+      email: '',
+      niveauEtude: 'Terminale',
+      concerne: '',
+      adresse: '',
+      sexe: 'M',
+      typeProspect: 'Etudiant',
+      commentaire: ''
+    },
+    validationRules
+  );
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
       addToast(isEdit ? 'Prospect modifié avec succès' : 'Prospect créé avec succès', 'success');
-      setTimeout(() => {
-        navigate('/prospects');
-      }, 1500);
+      setTimeout(() => navigate('/prospects'), 1500);
     } else {
       addToast('Veuillez corriger les erreurs dans le formulaire', 'error');
     }
@@ -90,7 +73,7 @@ const ProspectForm = () => {
         </div>
         <button className="btn-outline" onClick={() => navigate('/prospects')}>
           <ArrowLeft size={18} />
-          Retour à la liste
+          Retour
         </button>
       </div>
 
@@ -103,13 +86,14 @@ const ProspectForm = () => {
               <input
                 type="text"
                 name="nomComplet"
-                value={formData.nomComplet}
+                value={values.nomComplet}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Ex: Jean Dupont"
-                className={errors.nomComplet ? 'error' : ''}
+                className={errors.nomComplet && touched.nomComplet ? 'error' : ''}
               />
             </div>
-            {errors.nomComplet && <span className="error-message"><AlertCircle size={12} /> {errors.nomComplet}</span>}
+            {errors.nomComplet && touched.nomComplet && <span className="error-message"><AlertCircle size={12} /> {errors.nomComplet}</span>}
           </div>
 
           <div className="form-group">
@@ -119,13 +103,14 @@ const ProspectForm = () => {
               <input
                 type="tel"
                 name="telephone"
-                value={formData.telephone}
+                value={values.telephone}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="6XXXXXXXX"
-                className={errors.telephone ? 'error' : ''}
+                className={errors.telephone && touched.telephone ? 'error' : ''}
               />
             </div>
-            {errors.telephone && <span className="error-message"><AlertCircle size={12} /> {errors.telephone}</span>}
+            {errors.telephone && touched.telephone && <span className="error-message"><AlertCircle size={12} /> {errors.telephone}</span>}
           </div>
 
           <div className="form-group">
@@ -135,31 +120,32 @@ const ProspectForm = () => {
               <input
                 type="email"
                 name="email"
-                value={formData.email}
+                value={values.email}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="exemple@email.com"
-                className={errors.email ? 'error' : ''}
+                className={errors.email && touched.email ? 'error' : ''}
               />
             </div>
-            {errors.email && <span className="error-message"><AlertCircle size={12} /> {errors.email}</span>}
+            {errors.email && touched.email && <span className="error-message"><AlertCircle size={12} /> {errors.email}</span>}
           </div>
 
           <div className="form-group">
             <label>Niveau d'étude <span className="required">*</span></label>
             <div className="input-icon">
               <GraduationCap size={18} />
-              <select name="niveauEtude" value={formData.niveauEtude} onChange={handleChange} className={errors.niveauEtude ? 'error' : ''}>
+              <select name="niveauEtude" value={values.niveauEtude} onChange={handleChange} onBlur={handleBlur}>
                 {niveauxEtude.map(n => <option key={n} value={n}>{n}</option>)}
               </select>
             </div>
-            {errors.niveauEtude && <span className="error-message"><AlertCircle size={12} /> {errors.niveauEtude}</span>}
+            {errors.niveauEtude && touched.niveauEtude && <span className="error-message"><AlertCircle size={12} /> {errors.niveauEtude}</span>}
           </div>
 
           <div className="form-group">
             <label>Sexe</label>
             <div className="input-icon">
               <Users size={18} />
-              <select name="sexe" value={formData.sexe} onChange={handleChange}>
+              <select name="sexe" value={values.sexe} onChange={handleChange}>
                 {sexes.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
               </select>
             </div>
@@ -169,7 +155,7 @@ const ProspectForm = () => {
             <label>Type de prospect</label>
             <div className="input-icon">
               <Users size={18} />
-              <select name="typeProspect" value={formData.typeProspect} onChange={handleChange}>
+              <select name="typeProspect" value={values.typeProspect} onChange={handleChange}>
                 {typesProspect.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
@@ -179,12 +165,12 @@ const ProspectForm = () => {
             <label>Établissement concerné <span className="required">*</span></label>
             <div className="input-icon">
               <Building size={18} />
-              <select name="concerne" value={formData.concerne} onChange={handleChange} className={errors.concerne ? 'error' : ''}>
+              <select name="concerne" value={values.concerne} onChange={handleChange} onBlur={handleBlur}>
                 <option value="">Sélectionner un établissement</option>
                 {etablissements.map(e => <option key={e} value={e}>{e}</option>)}
               </select>
             </div>
-            {errors.concerne && <span className="error-message"><AlertCircle size={12} /> {errors.concerne}</span>}
+            {errors.concerne && touched.concerne && <span className="error-message"><AlertCircle size={12} /> {errors.concerne}</span>}
           </div>
 
           <div className="form-group full-width">
@@ -194,13 +180,14 @@ const ProspectForm = () => {
               <input
                 type="text"
                 name="adresse"
-                value={formData.adresse}
+                value={values.adresse}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Adresse complète"
-                className={errors.adresse ? 'error' : ''}
+                className={errors.adresse && touched.adresse ? 'error' : ''}
               />
             </div>
-            {errors.adresse && <span className="error-message"><AlertCircle size={12} /> {errors.adresse}</span>}
+            {errors.adresse && touched.adresse && <span className="error-message"><AlertCircle size={12} /> {errors.adresse}</span>}
           </div>
 
           <div className="form-group full-width">
@@ -208,21 +195,16 @@ const ProspectForm = () => {
             <textarea
               name="commentaire"
               rows="4"
-              value={formData.commentaire}
+              value={values.commentaire}
               onChange={handleChange}
-              placeholder="Informations complémentaires sur le prospect..."
+              placeholder="Informations complémentaires..."
             />
           </div>
         </div>
 
         <div className="form-actions">
-          <button type="button" className="btn-outline" onClick={() => navigate('/prospects')}>
-            Annuler
-          </button>
-          <button type="submit" className="btn-primary">
-            <Save size={18} />
-            {isEdit ? 'Mettre à jour' : 'Créer le prospect'}
-          </button>
+          <button type="button" className="btn-outline" onClick={() => navigate('/prospects')}>Annuler</button>
+          <button type="submit" className="btn-primary"><Save size={18} />{isEdit ? 'Mettre à jour' : 'Créer'}</button>
         </div>
       </form>
     </div>

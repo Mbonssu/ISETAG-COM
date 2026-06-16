@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit, Trash2, Eye, Filter, Download, ChevronLeft, ChevronRight, AlertCircle, FileText, Calendar, User, Star, TrendingUp } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, Filter, Download, AlertCircle, FileText, Calendar, User, Star, TrendingUp } from 'lucide-react';
 import Modal from '../../components/common/Modal';
 import { ToastContainer } from '../../components/common/Toast';
-import { useTranslation } from '../../hooks/useTranslation';
+import Pagination from '../../components/Pagination/Pagination';
+import { usePagination } from '../../hooks/usePagination';
 import '../Prospects/Prospects.css';
 
 const FichesList = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, ficheId: null, ficheName: '' });
   const [toasts, setToasts] = useState([]);
-  const itemsPerPage = 5;
 
   const addToast = (message, type = 'success') => {
     const id = Date.now();
@@ -26,9 +24,14 @@ const FichesList = () => {
   };
 
   const fiches = [
-    { id: 1, prospect: 'Marie L.', source: 'Lycée', dateCollecte: '25 Mai 2025', scoreInteret: 85, commentaire: 'Très intéressée par la formation', campagne: 'Campagne Mai 2025', agent: 'Jean M.', createdAt: '25 Mai 2025' },
-    { id: 2, prospect: 'David P.', source: 'Terrain', dateCollecte: '24 Mai 2025', scoreInteret: 70, commentaire: 'À suivre de près', campagne: 'Campagne Lycées', agent: 'David P.', createdAt: '24 Mai 2025' },
-    { id: 3, prospect: 'Anne S.', source: 'Passage institut', dateCollecte: '23 Mai 2025', scoreInteret: 95, commentaire: 'Prospect très chaud', campagne: 'Campagne Réseaux Sociaux', agent: 'Sophie A.', createdAt: '23 Mai 2025' },
+    { id: 1, prospect: 'Marie L.', source: 'Lycée', dateCollecte: '25 Mai 2025', scoreInteret: 85, commentaire: 'Très intéressée par la formation', campagne: 'Campagne Mai 2025', agent: 'Jean M.' },
+    { id: 2, prospect: 'David P.', source: 'Terrain', dateCollecte: '24 Mai 2025', scoreInteret: 70, commentaire: 'À suivre de près', campagne: 'Campagne Lycées', agent: 'David P.' },
+    { id: 3, prospect: 'Anne S.', source: 'Passage institut', dateCollecte: '23 Mai 2025', scoreInteret: 95, commentaire: 'Prospect très chaud', campagne: 'Campagne Réseaux Sociaux', agent: 'Sophie A.' },
+    { id: 4, prospect: 'Junior B.', source: 'Lycée', dateCollecte: '22 Mai 2025', scoreInteret: 60, commentaire: 'Intérêt moyen', campagne: 'Campagne Mai 2025', agent: 'Jean M.' },
+    { id: 5, prospect: 'Luc M.', source: 'Terrain', dateCollecte: '21 Mai 2025', scoreInteret: 80, commentaire: 'Bon potentiel', campagne: 'Campagne Filières', agent: 'David P.' },
+    { id: 6, prospect: 'Sophie L.', source: 'Réseaux sociaux', dateCollecte: '20 Mai 2025', scoreInteret: 90, commentaire: 'Très motivée', campagne: 'Campagne Réseaux Sociaux', agent: 'Sophie A.' },
+    { id: 7, prospect: 'Claire N.', source: 'Lycée', dateCollecte: '19 Mai 2025', scoreInteret: 65, commentaire: 'À relancer', campagne: 'Campagne Lycées', agent: 'Jean M.' },
+    { id: 8, prospect: 'Michel D.', source: 'Terrain', dateCollecte: '18 Mai 2025', scoreInteret: 75, commentaire: 'Intéressé', campagne: 'Campagne Mai 2025', agent: 'David P.' },
   ];
 
   const getScoreColor = (score) => {
@@ -51,8 +54,7 @@ const FichesList = () => {
     return matchesSearch;
   });
 
-  const totalPages = Math.ceil(filteredFiches.length / itemsPerPage);
-  const paginatedFiches = filteredFiches.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const { currentPage, totalPages, paginatedItems, goToPage, itemsPerPage } = usePagination(filteredFiches, 10);
 
   const handleDelete = () => {
     addToast(`Fiche supprimée avec succès`, 'success');
@@ -62,9 +64,9 @@ const FichesList = () => {
   const renderNoResults = () => (
     <div className="no-results">
       <AlertCircle size={48} />
-      <h3>{t('aucunResultat')}</h3>
+      <h3>Aucun résultat trouvé</h3>
       <p>Aucune fiche ne correspond à votre recherche "{searchTerm}"</p>
-      <button className="btn-outline" onClick={() => setSearchTerm('')}>{t('effacerFiltres')}</button>
+      <button className="btn-outline" onClick={() => setSearchTerm('')}>Effacer les filtres</button>
     </div>
   );
 
@@ -72,7 +74,7 @@ const FichesList = () => {
     <div className="page-container">
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       
-      <Modal isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, ficheId: null, ficheName: '' })} onConfirm={handleDelete} title={t('confirmer')} message="Êtes-vous sûr de vouloir supprimer cette fiche ?" confirmText={t('supprimer')} type="warning" />
+      <Modal isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, ficheId: null, ficheName: '' })} onConfirm={handleDelete} title="Confirmer la suppression" message="Êtes-vous sûr de vouloir supprimer cette fiche ?" confirmText="Supprimer" type="warning" />
 
       <div className="page-header-actions">
         <div>
@@ -80,8 +82,7 @@ const FichesList = () => {
           <p className="page-description">Consultez les fiches de collecte d'informations des prospects.</p>
         </div>
         <button className="btn-primary" onClick={() => navigate('/fiches/new')}>
-          <Plus size={18} />
-          Nouvelle fiche
+          <Plus size={18} /> Nouvelle fiche
         </button>
       </div>
 
@@ -93,49 +94,51 @@ const FichesList = () => {
       </div>
 
       {filteredFiches.length === 0 ? renderNoResults() : (
-        <div className="table-container">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Prospect</th><th>Source</th><th>Date collecte</th><th>Score d'intérêt</th><th>Commentaire</th><th>Campagne</th><th>Agent</th><th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedFiches.map((fiche) => (
-                <tr key={fiche.id}>
-                  <td><User size={14} /> {fiche.prospect}</td>
-                  <td>{fiche.source}</td>
-                  <td><Calendar size={14} /> {fiche.dateCollecte}</td>
-                  <td>
-                    <div className="score-cell">
-                      <div className="score-value" style={{ color: getScoreColor(fiche.scoreInteret) }}>
-                        <Star size={14} /> {fiche.scoreInteret}%
-                      </div>
-                      <small>{getScoreLabel(fiche.scoreInteret)}</small>
-                    </div>
-                  </td>
-                  <td><div className="commentaire-cell"><small>{fiche.commentaire}</small></div></td>
-                  <td>{fiche.campagne}</td>
-                  <td>{fiche.agent}</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="action-btn view" onClick={() => navigate(`/fiches/${fiche.id}`)}><Eye size={16} /></button>
-                      <button className="action-btn edit" onClick={() => navigate(`/fiches/edit/${fiche.id}`)}><Edit size={16} /></button>
-                      <button className="action-btn delete" onClick={() => setDeleteModal({ isOpen: true, ficheId: fiche.id, ficheName: fiche.prospect })}><Trash2 size={16} /></button>
-                    </div>
-                  </td>
+        <>
+          <div className="table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Prospect</th><th>Source</th><th>Date collecte</th><th>Score d'intérêt</th><th>Commentaire</th><th>Campagne</th><th>Agent</th><th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {totalPages > 1 && (
-            <div className="pagination">
-              <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}><ChevronLeft size={16} /> Précédent</button>
-              <span className="pagination-info">Page {currentPage} sur {totalPages}</span>
-              <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Suivant <ChevronRight size={16} /></button>
-            </div>
-          )}
-        </div>
+              </thead>
+              <tbody>
+                {paginatedItems.map((fiche) => (
+                  <tr key={fiche.id}>
+                    <td><User size={14} /> {fiche.prospect}</td>
+                    <td>{fiche.source}</td>
+                    <td><Calendar size={14} /> {fiche.dateCollecte}</td>
+                    <td>
+                      <div className="score-cell">
+                        <div className="score-value" style={{ color: getScoreColor(fiche.scoreInteret) }}>
+                          <Star size={14} /> {fiche.scoreInteret}%
+                        </div>
+                        <small>{getScoreLabel(fiche.scoreInteret)}</small>
+                      </div>
+                    </td>
+                    <td><div className="commentaire-cell"><small>{fiche.commentaire}</small></div></td>
+                    <td>{fiche.campagne}</td>
+                    <td>{fiche.agent}</td>
+                    <td>
+                      <div className="action-buttons">
+                        <button className="action-btn view" onClick={() => navigate(`/fiches/${fiche.id}`)}><Eye size={16} /></button>
+                        <button className="action-btn edit" onClick={() => navigate(`/fiches/edit/${fiche.id}`)}><Edit size={16} /></button>
+                        <button className="action-btn delete" onClick={() => setDeleteModal({ isOpen: true, ficheId: fiche.id, ficheName: fiche.prospect })}><Trash2 size={16} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Pagination 
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+            itemsPerPage={itemsPerPage}
+            totalItems={filteredFiches.length}
+          />
+        </>
       )}
     </div>
   );

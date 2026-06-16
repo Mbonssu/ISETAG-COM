@@ -88,3 +88,178 @@ body::after {
   background: rgba(26, 92, 42, 0.15);
   border-radius: 3px;
 }
+/* ========== MODE SOMBRE ========== */
+body.dark-mode {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+}
+
+body.dark-mode .glass-card,
+body.dark-mode .card,
+body.dark-mode .kpi-card,
+body.dark-mode .stat-mini-card,
+body.dark-mode .table-container,
+body.dark-mode .form-container,
+body.dark-mode .detail-card,
+body.dark-mode .rapport-card {
+  background: rgba(15, 25, 45, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .topbar {
+  background: rgba(15, 25, 45, 0.8);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .sidebar {
+  background: linear-gradient(165deg, rgba(10, 30, 20, 0.95) 0%, rgba(5, 20, 10, 0.98) 100%);
+}
+
+body.dark-mode .page-title-h1,
+body.dark-mode .card-title,
+body.dark-mode .detail-card h3,
+body.dark-mode .parametre-section h2 {
+  color: #ffffff;
+}
+
+body.dark-mode .page-description,
+body.dark-mode .section-desc,
+body.dark-mode .setting-desc,
+body.dark-mode .pagination-info {
+  color: #9ca3af;
+}
+
+body.dark-mode .data-table th {
+  background: rgba(30, 41, 59, 0.8);
+  color: #e5e7eb;
+}
+
+body.dark-mode .data-table td {
+  color: #d1d5db;
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .data-table tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .input-icon input,
+body.dark-mode .input-icon select,
+body.dark-mode .input-icon textarea {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+body.dark-mode .input-icon input:focus,
+body.dark-mode .input-icon select:focus,
+body.dark-mode .input-icon textarea:focus {
+  border-color: #f5c842;
+}
+
+body.dark-mode .btn-outline {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
+}
+
+body.dark-mode .btn-outline:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: #f5c842;
+  color: #f5c842;
+}
+
+body.dark-mode .parametre-tab {
+  color: #9ca3af;
+}
+
+body.dark-mode .parametre-tab.active {
+  background: rgba(245, 200, 66, 0.15);
+  color: #f5c842;
+}
+
+body.dark-mode .setting-item,
+body.dark-mode .setting-toggle {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .setting-label {
+  color: #e5e7eb;
+}
+
+body.dark-mode .danger-zone {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+body.dark-mode .danger-zone h4 {
+  color: #f87171;
+}
+
+body.dark-mode .badge {
+  background: rgba(30, 41, 59, 0.8);
+}
+
+body.dark-mode .badge-success {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+body.dark-mode .badge-warning {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+
+body.dark-mode .badge-info {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+body.dark-mode .badge-danger {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+body.dark-mode .progress-bar {
+  background: rgba(30, 41, 59, 0.6);
+}
+
+body.dark-mode .progress-bar span {
+  color: #e5e7eb;
+}
+
+body.dark-mode .no-results {
+  background: rgba(30, 41, 59, 0.6);
+}
+
+body.dark-mode .no-results h3 {
+  color: #e5e7eb;
+}
+
+body.dark-mode .no-results p {
+  color: #9ca3af;
+}
+
+body.dark-mode .pagination-nav,
+body.dark-mode .pagination-number {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
+}
+
+body.dark-mode .pagination-nav:hover:not(:disabled),
+body.dark-mode .pagination-number:hover:not(.active) {
+  background: #1a5c2a;
+  border-color: #1a5c2a;
+}
+
+body.dark-mode .pagination-number.active {
+  background: #1a5c2a;
+  border-color: #1a5c2a;
+}
+
+body.dark-mode .pagination-size-select {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
+}

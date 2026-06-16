@@ -1,5 +1,4 @@
 import React from 'react';
-import { useTranslation } from '../hooks/useTranslation';
 import KPICards from '../components/KPICards/KPICards';
 import EvolutionChart from '../components/EvolutionChart/EvolutionChart';
 import SourceDonut from '../components/SourceDonut/SourceDonut';
@@ -8,7 +7,6 @@ import ProspectsTable from '../components/ProspectsTable/ProspectsTable';
 import FiliereBars from '../components/FiliereBars/FiliereBars';
 
 const Dashboard = () => {
-  const { t } = useTranslation();
 
   return (
     <>

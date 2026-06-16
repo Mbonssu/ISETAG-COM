@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit, Trash2, Filter, ChevronLeft, ChevronRight, User, Building, Calendar, Clock, CheckCircle, XCircle, MapPin, AlertCircle } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Filter, ChevronLeft, ChevronRight, Building, Calendar, Clock, CheckCircle, XCircle, MapPin, AlertCircle } from 'lucide-react';
 import Modal from '../../components/common/Modal';
 import { ToastContainer } from '../../components/common/Toast';
 import ExportButton from '../../components/ExportButton/ExportButton';

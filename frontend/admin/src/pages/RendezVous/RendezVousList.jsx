@@ -114,9 +114,10 @@ const RendezVousList = () => {
               {paginatedRendezVous.map((rdv) => (
                 <tr key={rdv.id}>
                   <td><User size={14} /> {rdv.prospect}</td>
-                  <td><Calendar size={14} /> {rdv.dateRv}<br/><Clock size={14} /> {rdv.heureRv}</td>
+                  <td><Calendar size={14} /> {rdv.dateRv}<br /><Clock size={14} /> {rdv.heureRv}</td>
                   <td><MapPin size={14} /> {rdv.lieuRv}</td>
                   <td>{getStatusBadge(rdv.statutRv)}</td>
+                  <td>{rdv.agent}</td>
                   <td><div className="commentaire-cell"><small>{rdv.commentaire}</small></div></td>
                   <td>
                     <div className="action-buttons">

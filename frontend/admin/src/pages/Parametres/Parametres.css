@@ -345,3 +345,59 @@ input:checked + .toggle-slider:before {
     flex-direction: column;
   }
 }
+/* Version badge */
+.version-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, #1a5c2a, #2d7a3a);
+  color: white;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Password change section */
+.password-change-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.password-change-section h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 16px;
+}
+
+.password-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle:hover {
+  color: #1a5c2a;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .password-fields {
+    gap: 12px;
+  }
+}
