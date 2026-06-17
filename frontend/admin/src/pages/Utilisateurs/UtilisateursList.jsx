@@ -33,19 +33,32 @@ const UtilisateursList = () => {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-  // Récupérer les utilisateurs depuis l'API
+  // Récupérer les utilisateurs depuis l'API.
+  // Important : le backend (UtilisateurView.get) renvoie un TABLEAU JSON
+  // directement, pas un objet enveloppé { data: { items: [...] } }.
+  // Il ne supporte aucun filtre côté serveur (search/role/statut) pour
+  // l'instant, donc on récupère tout et on filtre côté client.
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const params = {
-        search: searchTerm || undefined,
-        role: filterRole !== 'all' ? filterRole : undefined,
-        statut: filterStatus !== 'all' ? filterStatus : undefined,
-      };
-      const response = await userService.getAll(params);
-      const items = response.data?.items || [];
-      setUsers(items.map(item => User.fromDjango(item)));
-      setTotal(response.data?.total || 0);
+      const data = await userService.getAll();
+      const allUsers = Array.isArray(data) ? data.map(item => UserModel.fromDjango(item)) : [];
+
+      const filtered = allUsers.filter((u) => {
+        const matchesSearch =
+          !searchTerm ||
+          u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          u.email.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesRole = filterRole === 'all' || u.role === filterRole;
+        const matchesStatus =
+          filterStatus === 'all' ||
+          (filterStatus === 'actif' && u.isActive) ||
+          (filterStatus === 'inactif' && !u.isActive);
+        return matchesSearch && matchesRole && matchesStatus;
+      });
+
+      setUsers(filtered);
+      setTotal(filtered.length);
     } catch (error) {
       addToast('Erreur lors du chargement des utilisateurs', 'error');
       console.error(error);
@@ -80,14 +93,24 @@ const UtilisateursList = () => {
   };
 
   const handleDelete = async () => {
+    // On capture l'id et le nom localement AVANT de fermer la modale,
+    // pour ne jamais dépendre de deleteModal après ce point (qui sera
+    // remis à null juste en dessous). Ça évite qu'un second appel,
+    // déclenché par un double-clic ou un re-render, parte avec userId=null.
+    const { userId, userName } = deleteModal;
+    if (!userId) return;
+
+    // Fermer la modale immédiatement empêche aussi un second clic sur
+    // "Confirmer" pendant que la requête réseau est encore en cours.
+    setDeleteModal({ isOpen: false, userId: null, userName: '' });
+
     try {
-      await userService.delete(deleteModal.userId);
-      addToast(`Utilisateur "${deleteModal.userName}" supprimé avec succès`, 'success');
+      await userService.delete(userId);
+      addToast(`Utilisateur "${userName}" supprimé avec succès`, 'success');
       fetchUsers();
     } catch (error) {
       addToast('Erreur lors de la suppression', 'error');
     }
-    setDeleteModal({ isOpen: false, userId: null, userName: '' });
   };
 
   const renderNoResults = () => (
@@ -191,7 +214,7 @@ const UtilisateursList = () => {
                         </div>
                         <div>
                           <strong>{user.fullName}</strong>
-                          <small>{user.email}</small>
+                          {/* <small>{user.email}</small> */}
                         </div>
                       </div>
                     </td>
