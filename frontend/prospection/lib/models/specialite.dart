@@ -15,19 +15,23 @@ class Specialite {
   @Index()
   final String libelleSpecialite;
   final String? description;
+  @Index()
   final DateTime? createdAt;
+  @Index()
+  DateTime? updatedAt;
 
   @Backlink(to: 'specialite')
   final interets = IsarLinks<InteretFiliere>();
 
   @enumerated
-  SyncState syncState = SyncState.pending;
+  SyncState syncState;
 
   Specialite({
     required this.idSpecialite,
     required this.libelleSpecialite,
     this.description,
     this.createdAt,
+    required this.syncState,
   });
 
   factory Specialite.fromJson(Map<String, dynamic> json) => Specialite(
@@ -35,6 +39,7 @@ class Specialite {
         libelleSpecialite: json['libelleSpecialite'] ?? '',
         description: json['description'],
         createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+        syncState: json["sync"],
       );
 
   Map<String, dynamic> toLocalJson() {
@@ -43,6 +48,7 @@ class Specialite {
       'libelleSpecialite': libelleSpecialite,
       'description': description,
       'createdAt': createdAt?.toIso8601String(),
+      'syncState': syncState
       // 'interets': interets.values.map((i) => i.toJson()).toList(),
     };
   }

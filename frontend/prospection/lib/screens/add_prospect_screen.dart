@@ -12,6 +12,8 @@ import '../models/specialite.dart';
 import '../services/export_service.dart';
 import '../services/loading_service.dart';
 import '../services/translation_service.dart';
+import '../utils/status.dart';
+import '../utils/sync_queue.dart';
 import '../utils/themes/glass_theme.dart';
 
 class AddProspectScreen extends StatefulWidget {
@@ -272,6 +274,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
                                     'ets_${DateTime.now().millisecondsSinceEpoch}',
                                 nomEtablissement: newValue,
                                 createdAt: DateTime.now(),
+                                syncState: SyncState.pending,
                               );
 
                               String resultKey = await LocalStorage.instance
@@ -329,6 +332,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
                                         'ets_${DateTime.now().millisecondsSinceEpoch}',
                                     nomEtablissement: _selectedEtablissement,
                                     createdAt: DateTime.now(),
+                                    syncState: SyncState.pending
                                   );
                                   await LocalStorage.instance
                                       .saveEtablissement(newEts);
@@ -341,6 +345,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
                                   idEts: etsId,
                                   libelleClasse: newValue,
                                   createdAt: DateTime.now(),
+                                  syncState: SyncState.pending
                                 );
 
                                 String resultKey = await LocalStorage.instance
@@ -879,6 +884,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
   //     ),
   //   );
   // }
+
   void _showAddNewSpecialiteDialog() {
     TextEditingController newSpecialiteCtrl = TextEditingController();
     showDialog(
@@ -902,12 +908,12 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
             onPressed: () async {
               if (newSpecialiteCtrl.text.isNotEmpty) {
                 final newSpecialite = Specialite(
-                  idSpecialite:
-                      'specialite_${DateTime.now().millisecondsSinceEpoch}',
-                  libelleSpecialite: newSpecialiteCtrl.text,
-                  description: null,
-                  createdAt: DateTime.now(),
-                );
+                    idSpecialite:
+                        'specialite_${DateTime.now().millisecondsSinceEpoch}',
+                    libelleSpecialite: newSpecialiteCtrl.text,
+                    description: null,
+                    createdAt: DateTime.now(),
+                    syncState: SyncState.pending);
 
                 String resultKey =
                     await LocalStorage.instance.saveSpecialite(newSpecialite);
@@ -934,7 +940,8 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32), foregroundColor: Colors.white),
+                backgroundColor: const Color(0xFF2E7D32),
+                foregroundColor: Colors.white),
             child: Text('add'.tr),
           ),
         ],
@@ -1562,6 +1569,185 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     );
   }
 
+  // Future<void> _saveProspect() async {
+  //   LoadingService().show(context, message: 'saving_prospect'.tr);
+
+  //   if (!_formKey.currentState!.validate()) {
+  //     LoadingService().hide();
+  //     return;
+  //   }
+
+  //   if (_interetsList.isEmpty) {
+  //     _showSnackBar('add_specialty_warning'.tr, Colors.orange, 5);
+  //     LoadingService().hide();
+  //     return;
+  //   }
+
+  //   Source? src = await LocalStorage.instance.getLastRecSource();
+  //   Fiche? f = await LocalStorage.instance.getLastRecFiche();
+
+  //   print(
+  //       "Last Src: ${src?.toLocalJson()}, and Last fiche: ${f?.toLocalJson()}");
+
+  //   if (src == null || f == null) {
+  //     _showSnackBar('missing_source_or_fiche'.tr, Colors.red, 5);
+  //     LoadingService().hide();
+  //     return;
+  //   }
+
+  //   final now = DateTime.now();
+
+  //   // Check if establishment already exists
+  //   Etablissement? existingEts = await LocalStorage.instance
+  //       .getEtablissementByNom(_selectedEtablissement);
+  //   Etablissement ets;
+
+  //   if (existingEts != null) {
+  //     ets = existingEts;
+  //     print('Using existing establishment: ${ets.nomEtablissement}');
+  //   } else {
+  //     ets = Etablissement(
+  //       idEtablissement: DateTime.now().millisecondsSinceEpoch.toString(),
+  //       nomEtablissement: _selectedEtablissement,
+  //       createdAt: now,
+  //     );
+  //     String resultKey = await LocalStorage.instance.saveEtablissement(ets);
+  //     _showSnackBar(
+  //         resultKey.tr,
+  //         resultKey.contains('success')
+  //             ? const Color(0xFF2E7D32)
+  //             : Colors.orange,
+  //         3);
+  //     if (!resultKey.contains('success')) {
+  //       LoadingService().hide();
+  //       return;
+  //     }
+  //   }
+
+  //   // Check if class already exists for this establishment
+  //   Classe? existingClasse = await LocalStorage.instance
+  //       .getClasseByLibelleAndEts(_selectedClasse, ets.idEtablissement);
+  //   Classe clse;
+
+  //   if (existingClasse != null) {
+  //     clse = existingClasse;
+  //     print('Using existing class: ${clse.libelleClasse}');
+  //   } else {
+  //     clse = Classe(
+  //       idClasse: DateTime.now().millisecondsSinceEpoch.toString(),
+  //       idEts: ets.idEtablissement,
+  //       libelleClasse: _selectedClasse,
+  //       createdAt: now,
+  //     );
+  //     String resultKey = await LocalStorage.instance.saveClasse(clse);
+  //     if (!resultKey.contains('success')) {
+  //       _showSnackBar(resultKey.tr, Colors.orange, 3);
+  //       LoadingService().hide();
+  //       return;
+  //     }
+  //   }
+
+  //   // Check if prospect already exists
+  //   final prospect = Prospect(
+  //     idProspect: 'prospect_${DateTime.now().millisecondsSinceEpoch}',
+  //     idfiche: f.idFiche,
+  //     idClass: clse.idClasse,
+  //     nomComplet: _nomCompletCtrl.text,
+  //     telephone: _telephoneCtrl.text,
+  //     email: _emailCtrl.text.isEmpty ? null : _emailCtrl.text,
+  //     niveauEtude: _selectedNiveauEtude,
+  //     adresse: _adresseCtrl.text.isEmpty ? null : _adresseCtrl.text,
+  //     sexe: _selectedSexe,
+  //     typeProspect: _selectedTypeProspect,
+  //     commentaireGen: _commentaireCtrl.text,
+  //     date_relance: _date_relance,
+  //     createdAt: now,
+  //   );
+
+  //   print("Prospect data form \n: ${prospect.toLocalJson()}");
+  //   String prospectResult = await LocalStorage.instance.saveProspect(prospect);
+
+  //   if (!prospectResult.contains('success')) {
+  //     _showSnackBar(prospectResult.tr, Colors.orange, 5);
+  //     LoadingService().hide();
+  //     return;
+  //   }
+
+  //   int savedInterets = 0;
+  //   for (var item in _interetsList) {
+  //     // Check if specialite already exists
+  //     Specialite? specialite =
+  //         await LocalStorage.instance.getSpecialiteByNom(item['specialite']);
+  //     String specialiteResult;
+
+  //     if (specialite == null) {
+  //       specialite = Specialite(
+  //         idSpecialite:
+  //             'specialite_${DateTime.now().millisecondsSinceEpoch}_$savedInterets',
+  //         libelleSpecialite: item['specialite'],
+  //         description: null,
+  //         createdAt: now,
+  //       );
+  //       specialiteResult =
+  //           await LocalStorage.instance.saveSpecialite(specialite);
+  //       if (!specialiteResult.contains('success')) {
+  //         _showSnackBar(specialiteResult.tr, Colors.orange, 3);
+  //         continue;
+  //       }
+  //     }
+
+  //     // Check if interest already exists
+  //     InteretFiliere? existingInteret = await LocalStorage.instance
+  //         .getInteretByProspectAndSpecialite(
+  //             prospect.idProspect, specialite.idSpecialite);
+
+  //     if (existingInteret != null) {
+  //       print('Interest already exists for this prospect and specialite');
+  //       continue;
+  //     }
+
+  //     final interet = InteretFiliere(
+  //       idInteret:
+  //           'interet_${DateTime.now().millisecondsSinceEpoch}_${item['ordrePreference']}',
+  //       idProspect: prospect.idProspect,
+  //       idSpecialite: specialite.idSpecialite,
+  //       ordrePreference: item['ordrePreference'] ?? 0,
+  //       niveauInteret: item['niveauInteret'] ?? 0,
+  //       commentaire: item['commentaire'] ?? '',
+  //       createdAt: now,
+  //     );
+
+  //     interet.prospect.value = prospect;
+  //     interet.specialite.value = specialite;
+
+  //     await LocalStorage.instance.saveInteret(interet);
+  //     savedInterets++;
+  //   }
+
+  //   _showSnackBar('prospect_saved'.tr.replaceFirst('{count}', '$savedInterets'),
+  //       const Color(0xFF2E7D32), 3);
+
+  //   _resetForm();
+  //   LoadingService().hide();
+
+  //   // 9.1 Add all data to queue with correct priority
+  //   try {
+  //     await SyncQueue().addCompleteProspect(
+  //       prospect: prospect,
+  //       fiche: f,
+  //       classe: clse,
+  //       etablissement: ets,
+  //       source: src,
+  //       specialites: savedSpecialites,
+  //       interets: savedInterets,
+  //     );
+  //     print('✅ All items added to sync queue');
+  //   } catch (e) {
+  //     print('⚠️ Error adding to queue: $e');
+  //     // Data is already saved locally, will be picked up on next sync
+  //   }
+  // }
+
   Future<void> _saveProspect() async {
     LoadingService().show(context, message: 'saving_prospect'.tr);
 
@@ -1590,6 +1776,10 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
 
     final now = DateTime.now();
 
+    //  List to store saved specialites for queue
+    final List<Specialite> savedSpecialites = [];
+    final List<InteretFiliere> savedInterets = [];
+
     // Check if establishment already exists
     Etablissement? existingEts = await LocalStorage.instance
         .getEtablissementByNom(_selectedEtablissement);
@@ -1600,10 +1790,10 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
       print('Using existing establishment: ${ets.nomEtablissement}');
     } else {
       ets = Etablissement(
-        idEtablissement: DateTime.now().millisecondsSinceEpoch.toString(),
-        nomEtablissement: _selectedEtablissement,
-        createdAt: now,
-      );
+          idEtablissement: DateTime.now().millisecondsSinceEpoch.toString(),
+          nomEtablissement: _selectedEtablissement,
+          createdAt: now,
+          syncState: SyncState.pending);
       String resultKey = await LocalStorage.instance.saveEtablissement(ets);
       _showSnackBar(
           resultKey.tr,
@@ -1627,11 +1817,11 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
       print('Using existing class: ${clse.libelleClasse}');
     } else {
       clse = Classe(
-        idClasse: DateTime.now().millisecondsSinceEpoch.toString(),
-        idEts: ets.idEtablissement,
-        libelleClasse: _selectedClasse,
-        createdAt: now,
-      );
+          idClasse: DateTime.now().millisecondsSinceEpoch.toString(),
+          idEts: ets.idEtablissement,
+          libelleClasse: _selectedClasse,
+          createdAt: now,
+          syncState: SyncState.pending);
       String resultKey = await LocalStorage.instance.saveClasse(clse);
       if (!resultKey.contains('success')) {
         _showSnackBar(resultKey.tr, Colors.orange, 3);
@@ -1642,20 +1832,20 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
 
     // Check if prospect already exists
     final prospect = Prospect(
-      idProspect: 'prospect_${DateTime.now().millisecondsSinceEpoch}',
-      idfiche: f.idFiche,
-      idClass: clse.idClasse,
-      nomComplet: _nomCompletCtrl.text,
-      telephone: _telephoneCtrl.text,
-      email: _emailCtrl.text.isEmpty ? null : _emailCtrl.text,
-      niveauEtude: _selectedNiveauEtude,
-      adresse: _adresseCtrl.text.isEmpty ? null : _adresseCtrl.text,
-      sexe: _selectedSexe,
-      typeProspect: _selectedTypeProspect,
-      commentaireGen: _commentaireCtrl.text,
-      date_relance: _date_relance,
-      createdAt: now,
-    );
+        idProspect: 'prospect_${DateTime.now().millisecondsSinceEpoch}',
+        idfiche: f.idFiche,
+        idClass: clse.idClasse,
+        nomComplet: _nomCompletCtrl.text,
+        telephone: _telephoneCtrl.text,
+        email: _emailCtrl.text.isEmpty ? null : _emailCtrl.text,
+        niveauEtude: _selectedNiveauEtude,
+        adresse: _adresseCtrl.text.isEmpty ? null : _adresseCtrl.text,
+        sexe: _selectedSexe,
+        typeProspect: _selectedTypeProspect,
+        commentaireGen: _commentaireCtrl.text,
+        date_relance: _date_relance,
+        createdAt: now,
+        syncState: SyncState.pending);
 
     print("Prospect data form \n: ${prospect.toLocalJson()}");
     String prospectResult = await LocalStorage.instance.saveProspect(prospect);
@@ -1666,7 +1856,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
       return;
     }
 
-    int savedInterets = 0;
+    int savedInteretsCount = 0;
     for (var item in _interetsList) {
       // Check if specialite already exists
       Specialite? specialite =
@@ -1676,10 +1866,11 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
       if (specialite == null) {
         specialite = Specialite(
           idSpecialite:
-              'specialite_${DateTime.now().millisecondsSinceEpoch}_$savedInterets',
+              'specialite_${DateTime.now().millisecondsSinceEpoch}_$savedInteretsCount',
           libelleSpecialite: item['specialite'],
           description: null,
           createdAt: now,
+          syncState: SyncState.pending,
         );
         specialiteResult =
             await LocalStorage.instance.saveSpecialite(specialite);
@@ -1688,6 +1879,9 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
           continue;
         }
       }
+
+      //  Add to saved list for queue
+      savedSpecialites.add(specialite);
 
       // Check if interest already exists
       InteretFiliere? existingInteret = await LocalStorage.instance
@@ -1708,20 +1902,43 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
         niveauInteret: item['niveauInteret'] ?? 0,
         commentaire: item['commentaire'] ?? '',
         createdAt: now,
+        syncState: SyncState.pending,
       );
 
       interet.prospect.value = prospect;
       interet.specialite.value = specialite;
 
       await LocalStorage.instance.saveInteret(interet);
-      savedInterets++;
+      savedInterets.add(interet);
+      savedInteretsCount++;
     }
 
-    _showSnackBar('prospect_saved'.tr.replaceFirst('{count}', '$savedInterets'),
-        const Color(0xFF2E7D32), 3);
+    _showSnackBar(
+        'prospect_saved'.tr.replaceFirst('{count}', '$savedInteretsCount'),
+        const Color(0xFF2E7D32),
+        3);
 
     _resetForm();
     LoadingService().hide();
+
+    // Add all data to queue with correct priority
+    try {
+      // await SyncQueue().addCompleteProspect(
+      //   prospect: prospect,
+      //   fiche: f,
+      //   classe: clse,
+      //   etablissement: ets,
+      //   source: src,
+      //   specialites: savedSpecialites,
+      //   interets: savedInterets,
+      // );
+
+       await SyncQueue().syncNow();
+      print('✅ All items added to sync queue');
+    } catch (e) {
+      print('⚠️ Error adding to queue: $e');
+      // Data is already saved locally, will be picked up on next sync
+    }
   }
 
   void _resetForm() {

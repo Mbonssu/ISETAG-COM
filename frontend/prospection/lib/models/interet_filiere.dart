@@ -31,7 +31,10 @@ class InteretFiliere {
   final String? commentaire;
 
   @Index()
-  final DateTime createdAt;
+  DateTime createdAt;
+
+  @Index()
+  DateTime? updatedAt;
 
   /// Relation vers Prospect
   final prospect = IsarLink<Prospect>();
@@ -40,7 +43,8 @@ class InteretFiliere {
   final specialite = IsarLink<Specialite>();
 
   @enumerated
-  SyncState syncState = SyncState.pending;
+  SyncState syncState;
+  // SyncState syncState = SyncState.pending;
 
   InteretFiliere({
     required this.idInteret,
@@ -50,6 +54,7 @@ class InteretFiliere {
     required this.niveauInteret,
     this.commentaire,
     required this.createdAt,
+    required this.syncState,
   });
 
   factory InteretFiliere.fromJson(Map<String, dynamic> json) => InteretFiliere(
@@ -60,6 +65,7 @@ class InteretFiliere {
         createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
         idProspect: json['idProspect'] ?? '',
         idSpecialite: json['idSpecialite'] ?? '',
+        syncState: json['state'],
       );
 
   /// Local UI
@@ -89,6 +95,7 @@ class InteretFiliere {
       'niveauInteret': niveauInteret,
       'commentaire': commentaire,
       'createdAt': createdAt.toIso8601String(),
+      'syncState': syncState
     };
   }
 }

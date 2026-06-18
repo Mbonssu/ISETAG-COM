@@ -1,11 +1,14 @@
 // lib/services/api_service.dart
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:isetagcom/config/app_config.dart';
+// import 'package:isetagcom/routes/app_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static final AppConfig url = AppConfig();
+  final AppConfig conf = AppConfig();
 
   final http.Client _client = http.Client();
 
@@ -29,8 +32,10 @@ class ApiService {
   Future<Map<String, dynamic>> createProspect(Map<String, dynamic> data) async {
     try {
       final headers = await _getHeaders();
+      final url = Uri.parse(AppConfig.prospect);
+      print("URL: $url");
       final response = await _client.post(
-        Uri.parse('$url/api/prospects'),
+        url,
         headers: headers,
         body: jsonEncode(data),
       );
@@ -41,12 +46,14 @@ class ApiService {
     }
   }
 
-  // Create Fiche
+  // Create Fiche (Also unuseful cause the agent don't create any fiche)
   Future<Map<String, dynamic>> createFiche(Map<String, dynamic> data) async {
     try {
       final headers = await _getHeaders();
+      final url = Uri.parse('');
+      print("URL: $url");
       final response = await _client.post(
-        Uri.parse('$url/api/fiches'),
+        url,
         headers: headers,
         body: jsonEncode(data),
       );
@@ -61,8 +68,10 @@ class ApiService {
   Future<Map<String, dynamic>> createInteret(Map<String, dynamic> data) async {
     try {
       final headers = await _getHeaders();
+      final url = Uri.parse(AppConfig.interest);
+      print("URL: $url");
       final response = await _client.post(
-        Uri.parse('$url/api/interets'),
+        url,
         headers: headers,
         body: jsonEncode(data),
       );
@@ -78,8 +87,10 @@ class ApiService {
       Map<String, dynamic> data) async {
     try {
       final headers = await _getHeaders();
+      final url = Uri.parse(AppConfig.addSpeciality);
+      print("URL: $url");
       final response = await _client.post(
-        Uri.parse('$url/api/specialites'),
+        url,
         headers: headers,
         body: jsonEncode(data),
       );
@@ -94,8 +105,10 @@ class ApiService {
   Future<Map<String, dynamic>> createClasse(Map<String, dynamic> data) async {
     try {
       final headers = await _getHeaders();
+      final url = Uri.parse(AppConfig.classes);
+      print("URL: $url");
       final response = await _client.post(
-        Uri.parse('$url/api/classes'),
+        url,
         headers: headers,
         body: jsonEncode(data),
       );
@@ -126,8 +139,10 @@ class ApiService {
       Map<String, dynamic> data) async {
     try {
       final headers = await _getHeaders();
+      final url = Uri.parse(AppConfig.ets);
+      print("URL: $url");
       final response = await _client.post(
-        Uri.parse('$url/api/etablissements'),
+        url,
         headers: headers,
         body: jsonEncode(data),
       );
@@ -137,12 +152,14 @@ class ApiService {
     }
   }
 
-  // Create Source
+  // Create Source (This method is unuseful cause agent don't create any source)
   Future<Map<String, dynamic>> createSource(Map<String, dynamic> data) async {
     try {
       final headers = await _getHeaders();
+      final url = Uri.parse('');
+      print("URL: $url");
       final response = await _client.post(
-        Uri.parse('$url/api/sources'),
+        url,
         headers: headers,
         body: jsonEncode(data),
       );
@@ -152,11 +169,14 @@ class ApiService {
     }
   }
 
-  // Add to ApiService class
+  // To check whether the API is recheable
   Future<Map<String, dynamic>> healthCheck() async {
+    
+    final url = Uri.parse(AppConfig.prospect);
+    print("The checkHealth Url: $url");
     try {
       final response = await _client.get(
-        Uri.parse('$url/api/health'),
+        url,
         headers: {'Content-Type': 'application/json'},
       );
       return _handleResponse(response);

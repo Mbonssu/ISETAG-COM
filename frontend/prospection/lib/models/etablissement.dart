@@ -13,7 +13,7 @@ class Etablissement {
   @Index(unique: true)
   String idEtablissement;
 
-  // @Index()
+  @Index()
   String nomEtablissement;
   String? typeEtablissement;
   String? adresse;
@@ -22,14 +22,17 @@ class Etablissement {
   // @Index()
   String? ville;
   String? region;
+  @Index()
   DateTime? createdAt;
+  @Index()
+  DateTime? updatedAt;
 
   /// Relationship
   @Backlink(to: 'ets')
   final classes = IsarLinks<Classe>();
 
   @enumerated
-  SyncState syncState = SyncState.pending;
+  SyncState syncState;
 
   Etablissement({
     required this.idEtablissement,
@@ -40,6 +43,7 @@ class Etablissement {
     this.ville,
     this.region,
     this.createdAt,
+    required this.syncState
   });
 
   factory Etablissement.fromJson(Map<String, dynamic> json) => Etablissement(
@@ -53,6 +57,7 @@ class Etablissement {
         createdAt: json['createdAt'] != null
             ? DateTime.tryParse(json['createdAt'])
             : null,
+            syncState: json["sync"]
       );
 
   /// Local/UI display
@@ -84,6 +89,7 @@ class Etablissement {
 
       // Send only IDs
       'classes': classes.map((e) => e.idClasse).toList(),
+      "syncState": syncState.name
     };
   }
 }

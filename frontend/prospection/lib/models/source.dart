@@ -13,29 +13,33 @@ class Source {
   @Index(unique: true)
   String idSource;
 
+  @Index()
   String libelleSource;
 
+  @Index()
   DateTime createdAt;
+  @Index()
+  DateTime? updatedAt;
 
   /// One Source -> Many Fiches
   @Backlink(to: 'source')
   final fiches = IsarLinks<Fiche>();
   @enumerated
-  SyncState syncState = SyncState.pending;
+  SyncState syncState;
 
-  Source({
-    required this.idSource,
-    required this.libelleSource,
-    required this.createdAt,
-  });
+  Source(
+      {required this.idSource,
+      required this.libelleSource,
+      required this.createdAt,
+      required this.syncState});
 
   factory Source.fromJson(Map<String, dynamic> json) => Source(
-        idSource: json['idSource'],
-        libelleSource: json['libelleSource'] ?? '',
-        createdAt: json['createdAt'] != null
-            ? DateTime.parse(json['createdAt'])
-            : DateTime.now(),
-      );
+      idSource: json['idSource'],
+      libelleSource: json['libelleSource'] ?? '',
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : DateTime.now(),
+      syncState: json["sync"]);
 
   /// For UI
   Map<String, dynamic> toLocalJson() {
@@ -53,7 +57,7 @@ class Source {
       'idSource': idSource,
       'libelleSource': libelleSource,
       'createdAt': createdAt.toIso8601String(),
-
+      'syncState': syncState.name,
       // Only send IDs
       'fiches': fiches.map((f) => f.idFiche).toList(),
     };

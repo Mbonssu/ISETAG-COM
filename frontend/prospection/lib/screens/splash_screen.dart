@@ -9,6 +9,7 @@ import '../models/initializer.dart';
 import '../models/localStorage/local_storage.dart';
 import '../routes/app_router.dart';
 import '../services/translation_service.dart';
+import '../utils/status.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -51,23 +52,21 @@ class _SplashScreenState extends State<SplashScreen>
     await LocalStorage.instance.init();
     await TranslationService.init();
     await setSource_fiche();
-    
   }
 
   Future<void> setSource_fiche() async {
-
     Source s = Source(
-      idSource: 'source_${DateTime.now().millisecondsSinceEpoch}',
-      libelleSource: 'Sur le terrain',
-      createdAt: DateTime.now(),
-    );
+        idSource: 'source_${DateTime.now().millisecondsSinceEpoch}',
+        libelleSource: 'Sur le terrain',
+        createdAt: DateTime.now(),
+        syncState: SyncState.pending);
     Fiche f = Fiche(
-      idFiche: 'fiche_${DateTime.now().millisecondsSinceEpoch}',
-      idSrc: s.idSource, 
-      dateCollecte: DateTime.now(),
-      createdAt: DateTime.now(),
-      isCurrent: true,
-    );
+        idFiche: 'fiche_${DateTime.now().millisecondsSinceEpoch}',
+        idSrc: s.idSource,
+        dateCollecte: DateTime.now(),
+        createdAt: DateTime.now(),
+        isCurrent: true,
+        syncState: SyncState.pending);
 
     Initializer init = Initializer(src: s, fiche: f);
     init.setSourceAndFiche();
@@ -141,8 +140,7 @@ class _SplashScreenState extends State<SplashScreen>
                           child: Container(
                             decoration: const BoxDecoration(
                               image: DecorationImage(
-                                image: AssetImage(
-                                    'assets/images/app_icon.png'),
+                                image: AssetImage('assets/images/app_icon.png'),
                                 fit: BoxFit.cover,
                               ),
                             ),

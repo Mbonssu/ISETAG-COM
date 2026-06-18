@@ -15,15 +15,17 @@ class Fiche {
   @Index()
   String idSrc;
 
-  // @Index()
+  @Index()
   DateTime dateCollecte;
   String? commentaire;
   int? scoreInteret;
 
-  // @Index()
+  @Index()
   DateTime createdAt;
   bool isCurrent;
 
+  @Index()
+  DateTime? updatedAt;
   // Relation 1 Source -> N fiches
   // @Backlink(to: '')
   final source = IsarLink<Source>();
@@ -33,29 +35,29 @@ class Fiche {
   final prospects = IsarLinks<Prospect>();
 
   @enumerated
-  SyncState syncState = SyncState.pending;
+  SyncState syncState;
 
-  Fiche({
-    required this.idFiche,
-    required this.idSrc,
-    required this.dateCollecte,
-    this.commentaire,
-    this.scoreInteret,
-    required this.createdAt,
-    required this.isCurrent,
-  });
+  Fiche(
+      {required this.idFiche,
+      required this.idSrc,
+      required this.dateCollecte,
+      this.commentaire,
+      this.scoreInteret,
+      required this.createdAt,
+      required this.isCurrent,
+      required this.syncState});
 
   factory Fiche.fromJson(Map<String, dynamic> json) {
     final fiche = Fiche(
-      idFiche: json['idFiche'] ?? '',
-      idSrc: json['idSource'] ?? '',
-      dateCollecte:
-          DateTime.tryParse(json['dateCollecte'] ?? '') ?? DateTime.now(),
-      commentaire: json['commentaire'],
-      scoreInteret: json['scoreInteret'] ?? 0,
-      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
-      isCurrent: json['isCurrent'] ?? false,
-    );
+        idFiche: json['idFiche'] ?? '',
+        idSrc: json['idSource'] ?? '',
+        dateCollecte:
+            DateTime.tryParse(json['dateCollecte'] ?? '') ?? DateTime.now(),
+        commentaire: json['commentaire'],
+        scoreInteret: json['scoreInteret'] ?? 0,
+        createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+        isCurrent: json['isCurrent'] ?? false,
+        syncState: json["sync"]);
 
     fiche.source.value = Source.fromJson(json['source'] ?? {});
 

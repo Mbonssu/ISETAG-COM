@@ -67,14 +67,21 @@ class User {
   @Index(unique: true)
   String idUtilisateur;
 
+  @Index()
   String nom;
+  @Index()
   String prenom;
+  @Index()
   String telephone;
+  @Index()
   String? email;
   String motDePasse;
   String role; // 'admin', 'agent', 'user'
   bool actif;
-  String? createdAt;
+  @Index()
+  DateTime? createdAt;
+  @Index()
+  DateTime? updatedAt;
 
   User({
     required this.idUtilisateur,

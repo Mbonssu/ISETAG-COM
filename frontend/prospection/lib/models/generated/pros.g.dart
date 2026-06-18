@@ -98,6 +98,11 @@ const ProspectSchema = CollectionSchema(
       id: 15,
       name: r'typeProspect',
       type: IsarType.string,
+    ),
+    r'updatedAt': PropertySchema(
+      id: 16,
+      name: r'updatedAt',
+      type: IsarType.dateTime,
     )
   },
   estimateSize: _prospectEstimateSize,
@@ -142,6 +147,97 @@ const ProspectSchema = CollectionSchema(
           name: r'idfiche',
           type: IndexType.hash,
           caseSensitive: true,
+        )
+      ],
+    ),
+    r'nomComplet': IndexSchema(
+      id: -6861648200184404006,
+      name: r'nomComplet',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'nomComplet',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'telephone': IndexSchema(
+      id: -1855686779803305948,
+      name: r'telephone',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'telephone',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'email': IndexSchema(
+      id: -26095440403582047,
+      name: r'email',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'email',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'niveauEtude': IndexSchema(
+      id: -6566891074163173459,
+      name: r'niveauEtude',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'niveauEtude',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'createdAt': IndexSchema(
+      id: -3433535483987302584,
+      name: r'createdAt',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'createdAt',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    ),
+    r'updatedAt': IndexSchema(
+      id: -6238191080293565125,
+      name: r'updatedAt',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'updatedAt',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    ),
+    r'date_relance': IndexSchema(
+      id: -2579506270967426107,
+      name: r'date_relance',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'date_relance',
+          type: IndexType.value,
+          caseSensitive: false,
         )
       ],
     )
@@ -237,6 +333,7 @@ void _prospectSerialize(
   writer.writeByte(offsets[13], object.syncState.index);
   writer.writeString(offsets[14], object.telephone);
   writer.writeString(offsets[15], object.typeProspect);
+  writer.writeDateTime(offsets[16], object.updatedAt);
 }
 
 Prospect _prospectDeserialize(
@@ -268,6 +365,7 @@ Prospect _prospectDeserialize(
     typeProspect: reader.readString(offsets[15]),
   );
   object.isarId = id;
+  object.updatedAt = reader.readDateTimeOrNull(offsets[16]);
   return object;
 }
 
@@ -313,6 +411,8 @@ P _prospectDeserializeProp<P>(
       return (reader.readString(offset)) as P;
     case 15:
       return (reader.readString(offset)) as P;
+    case 16:
+      return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -416,6 +516,30 @@ extension ProspectQueryWhereSort on QueryBuilder<Prospect, Prospect, QWhere> {
   QueryBuilder<Prospect, Prospect, QAfterWhere> anyIsarId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhere> anyCreatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'createdAt'),
+      );
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhere> anyUpdatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'updatedAt'),
+      );
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhere> anyDate_relance() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'date_relance'),
+      );
     });
   }
 }
@@ -620,6 +744,516 @@ extension ProspectQueryWhere on QueryBuilder<Prospect, Prospect, QWhereClause> {
               includeUpper: false,
             ));
       }
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> nomCompletEqualTo(
+      String nomComplet) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'nomComplet',
+        value: [nomComplet],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> nomCompletNotEqualTo(
+      String nomComplet) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'nomComplet',
+              lower: [],
+              upper: [nomComplet],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'nomComplet',
+              lower: [nomComplet],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'nomComplet',
+              lower: [nomComplet],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'nomComplet',
+              lower: [],
+              upper: [nomComplet],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> telephoneEqualTo(
+      String telephone) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'telephone',
+        value: [telephone],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> telephoneNotEqualTo(
+      String telephone) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'telephone',
+              lower: [],
+              upper: [telephone],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'telephone',
+              lower: [telephone],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'telephone',
+              lower: [telephone],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'telephone',
+              lower: [],
+              upper: [telephone],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> emailIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'email',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> emailIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'email',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> emailEqualTo(
+      String? email) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'email',
+        value: [email],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> emailNotEqualTo(
+      String? email) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'email',
+              lower: [],
+              upper: [email],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'email',
+              lower: [email],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'email',
+              lower: [email],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'email',
+              lower: [],
+              upper: [email],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> niveauEtudeEqualTo(
+      String niveauEtude) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'niveauEtude',
+        value: [niveauEtude],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> niveauEtudeNotEqualTo(
+      String niveauEtude) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'niveauEtude',
+              lower: [],
+              upper: [niveauEtude],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'niveauEtude',
+              lower: [niveauEtude],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'niveauEtude',
+              lower: [niveauEtude],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'niveauEtude',
+              lower: [],
+              upper: [niveauEtude],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> createdAtEqualTo(
+      DateTime createdAt) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'createdAt',
+        value: [createdAt],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> createdAtNotEqualTo(
+      DateTime createdAt) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [],
+              upper: [createdAt],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [createdAt],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [createdAt],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [],
+              upper: [createdAt],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> createdAtGreaterThan(
+    DateTime createdAt, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createdAt',
+        lower: [createdAt],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> createdAtLessThan(
+    DateTime createdAt, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createdAt',
+        lower: [],
+        upper: [createdAt],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> createdAtBetween(
+    DateTime lowerCreatedAt,
+    DateTime upperCreatedAt, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createdAt',
+        lower: [lowerCreatedAt],
+        includeLower: includeLower,
+        upper: [upperCreatedAt],
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> updatedAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'updatedAt',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> updatedAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> updatedAtEqualTo(
+      DateTime? updatedAt) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'updatedAt',
+        value: [updatedAt],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> updatedAtNotEqualTo(
+      DateTime? updatedAt) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [],
+              upper: [updatedAt],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [updatedAt],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [updatedAt],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [],
+              upper: [updatedAt],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> updatedAtGreaterThan(
+    DateTime? updatedAt, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [updatedAt],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> updatedAtLessThan(
+    DateTime? updatedAt, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [],
+        upper: [updatedAt],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> updatedAtBetween(
+    DateTime? lowerUpdatedAt,
+    DateTime? upperUpdatedAt, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [lowerUpdatedAt],
+        includeLower: includeLower,
+        upper: [upperUpdatedAt],
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> date_relanceIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'date_relance',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> date_relanceIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'date_relance',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> date_relanceEqualTo(
+      DateTime? date_relance) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'date_relance',
+        value: [date_relance],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> date_relanceNotEqualTo(
+      DateTime? date_relance) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'date_relance',
+              lower: [],
+              upper: [date_relance],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'date_relance',
+              lower: [date_relance],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'date_relance',
+              lower: [date_relance],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'date_relance',
+              lower: [],
+              upper: [date_relance],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> date_relanceGreaterThan(
+    DateTime? date_relance, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'date_relance',
+        lower: [date_relance],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> date_relanceLessThan(
+    DateTime? date_relance, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'date_relance',
+        lower: [],
+        upper: [date_relance],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> date_relanceBetween(
+    DateTime? lowerDate_relance,
+    DateTime? upperDate_relance, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'date_relance',
+        lower: [lowerDate_relance],
+        includeLower: includeLower,
+        upper: [upperDate_relance],
+        includeUpper: includeUpper,
+      ));
     });
   }
 }
@@ -2550,6 +3184,75 @@ extension ProspectQueryFilter
       ));
     });
   }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> updatedAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'updatedAt',
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> updatedAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'updatedAt',
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> updatedAtEqualTo(
+      DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'updatedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> updatedAtGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'updatedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> updatedAtLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'updatedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> updatedAtBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'updatedAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension ProspectQueryObject
@@ -2834,6 +3537,18 @@ extension ProspectQuerySortBy on QueryBuilder<Prospect, Prospect, QSortBy> {
       return query.addSortBy(r'typeProspect', Sort.desc);
     });
   }
+
+  QueryBuilder<Prospect, Prospect, QAfterSortBy> sortByUpdatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterSortBy> sortByUpdatedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAt', Sort.desc);
+    });
+  }
 }
 
 extension ProspectQuerySortThenBy
@@ -3041,6 +3756,18 @@ extension ProspectQuerySortThenBy
       return query.addSortBy(r'typeProspect', Sort.desc);
     });
   }
+
+  QueryBuilder<Prospect, Prospect, QAfterSortBy> thenByUpdatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterSortBy> thenByUpdatedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAt', Sort.desc);
+    });
+  }
 }
 
 extension ProspectQueryWhereDistinct
@@ -3153,6 +3880,12 @@ extension ProspectQueryWhereDistinct
       return query.addDistinctBy(r'typeProspect', caseSensitive: caseSensitive);
     });
   }
+
+  QueryBuilder<Prospect, Prospect, QDistinct> distinctByUpdatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'updatedAt');
+    });
+  }
 }
 
 extension ProspectQueryProperty
@@ -3257,6 +3990,12 @@ extension ProspectQueryProperty
   QueryBuilder<Prospect, String, QQueryOperations> typeProspectProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'typeProspect');
+    });
+  }
+
+  QueryBuilder<Prospect, DateTime?, QQueryOperations> updatedAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'updatedAt');
     });
   }
 }

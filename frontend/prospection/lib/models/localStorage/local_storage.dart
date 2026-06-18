@@ -67,35 +67,43 @@ class LocalStorage {
     return _isar;
   }
 
-  // ==================== PROSPECT ====================
+  // ==================== PROSPECT - OPTIMIZED CHECKERS ====================
 
-  // Check if prospect already exists by phone number
+  // ✅ OPTIMIZED: Uses index to find by phone directly
   Future<bool> _prospectExistsByPhone(String phone) async {
     try {
-      final allProspects = await getAllProspects();
-      return allProspects.any((p) => p.telephone == phone);
+      final result = await _isar.prospects
+          .where()
+          .telephoneEqualTo(phone)
+          .findFirst();
+      return result != null;
     } catch (e) {
       return false;
     }
   }
 
-  // Check if prospect already exists by email
+  // ✅ OPTIMIZED: Uses index to find by email directly
   Future<bool> _prospectExistsByEmail(String? email) async {
     if (email == null || email.isEmpty) return false;
     try {
-      final allProspects = await getAllProspects();
-      return allProspects.any((p) => p.email == email);
+      final result = await _isar.prospects
+          .where()
+          .emailEqualTo(email)
+          .findFirst();
+      return result != null;
     } catch (e) {
       return false;
     }
   }
 
-  // Check if prospect already exists by name
+  // ✅ OPTIMIZED: Uses index to find by name directly
   Future<bool> _prospectExistsByName(String nomComplet) async {
     try {
-      final allProspects = await getAllProspects();
-      return allProspects
-          .any((p) => p.nomComplet.toLowerCase() == nomComplet.toLowerCase());
+      final result = await _isar.prospects
+          .where()
+          .nomCompletEqualTo(nomComplet)
+          .findFirst();
+      return result != null;
     } catch (e) {
       return false;
     }
@@ -164,16 +172,37 @@ class LocalStorage {
     }
   }
 
-  // ==================== FICHE ====================
+  // ==================== FICHE - OPTIMIZED CHECKER ====================
 
-  Future<void> saveFiche(Fiche fiche) async {
+  // ✅ OPTIMIZED: Check if fiche exists by ID
+  Future<bool> _ficheExists(String idFiche) async {
     try {
+      final result = await _isar.fiches
+          .where()
+          .idFicheEqualTo(idFiche)
+          .findFirst();
+      return result != null;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Save fiche with checker - returns translation key
+  Future<String> saveFiche(Fiche fiche) async {
+    try {
+      if (await _ficheExists(fiche.idFiche)) {
+        return 'fiche_already_exists';
+      }
+
       if (!isar.isOpen) print("Isar is closed");
       await _isar.writeTxn(() async {
         await _isar.fiches.put(fiche);
       });
+
+      return 'fiche_added_success';
     } catch (e) {
       print('Error saving fiche: $e');
+      return 'error_saving_fiche';
     }
   }
 
@@ -247,17 +276,38 @@ class LocalStorage {
     }
   }
 
-  // ==================== INTERET FILIERE ====================
+  // ==================== INTERET FILIERE - OPTIMIZED CHECKER ====================
 
-  Future<void> saveInteret(InteretFiliere interet) async {
+  // ✅ OPTIMIZED: Check if interet exists
+  Future<bool> _interetExists(String idInteret) async {
     try {
+      final result = await _isar.interetFilieres
+          .where()
+          .idInteretEqualTo(idInteret)
+          .findFirst();
+      return result != null;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Save interet with checker - returns translation key
+  Future<String> saveInteret(InteretFiliere interet) async {
+    try {
+      if (await _interetExists(interet.idInteret)) {
+        return 'interet_already_exists';
+      }
+
       await _isar.writeTxn(() async {
         await _isar.interetFilieres.put(interet);
         await interet.prospect.save();
         await interet.specialite.save();
       });
+
+      return 'interet_added_success';
     } catch (e) {
       print('Error saving interet: $e');
+      return 'error_saving_interet';
     }
   }
 
@@ -298,15 +348,53 @@ class LocalStorage {
     }
   }
 
-  // ==================== SOURCE ====================
+  // ==================== SOURCE - OPTIMIZED CHECKER ====================
 
-  Future<void> saveSource(Source source) async {
+  // ✅ OPTIMIZED: Check if source exists by ID
+  Future<bool> _sourceExists(String idSource) async {
     try {
+      final result = await _isar.sources
+          .where()
+          .idSourceEqualTo(idSource)
+          .findFirst();
+      return result != null;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // ✅ OPTIMIZED: Check if source exists by name
+  Future<bool> _sourceExistsByName(String libelle) async {
+    try {
+      final result = await _isar.sources
+          .where()
+          .libelleSourceEqualTo(libelle)
+          .findFirst();
+      return result != null;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Save source with checker - returns translation key
+  Future<String> saveSource(Source source) async {
+    try {
+      if (await _sourceExists(source.idSource)) {
+        return 'source_already_exists';
+      }
+
+      if (await _sourceExistsByName(source.libelleSource)) {
+        return 'source_name_already_exists';
+      }
+
       await _isar.writeTxn(() async {
         await _isar.sources.put(source);
       });
+
+      return 'source_added_success';
     } catch (e) {
       print('Error saving source: $e');
+      return 'error_saving_source';
     }
   }
 
@@ -337,14 +425,29 @@ class LocalStorage {
     }
   }
 
-  // ==================== ETABLISSEMENT ====================
+  // ==================== ETABLISSEMENT - OPTIMIZED CHECKER ====================
 
-  // Check if etablissement already exists by name
+  // ✅ OPTIMIZED: Check if etablissement exists by name using index
   Future<bool> _etablissementExistsByName(String nom) async {
     try {
-      final allEtablissements = await getAllEtablissements();
-      return allEtablissements
-          .any((e) => e.nomEtablissement.toLowerCase() == nom.toLowerCase());
+      final result = await _isar.etablissements
+          .where()
+          .nomEtablissementEqualTo(nom)
+          .findFirst();
+      return result != null;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // ✅ OPTIMIZED: Check if etablissement exists by ID
+  Future<bool> _etablissementExists(String idEtablissement) async {
+    try {
+      final result = await _isar.etablissements
+          .where()
+          .idEtablissementEqualTo(idEtablissement)
+          .findFirst();
+      return result != null;
     } catch (e) {
       return false;
     }
@@ -353,8 +456,12 @@ class LocalStorage {
   // Save etablissement with checker - returns translation key
   Future<String> saveEtablissement(Etablissement etablissement) async {
     try {
-      if (await _etablissementExistsByName(etablissement.nomEtablissement)) {
+      if (await _etablissementExists(etablissement.idEtablissement)) {
         return 'establishment_already_exists';
+      }
+
+      if (await _etablissementExistsByName(etablissement.nomEtablissement)) {
+        return 'establishment_name_already_exists';
       }
 
       await _isar.writeTxn(() async {
@@ -393,27 +500,55 @@ class LocalStorage {
 
   Future<Etablissement?> getEtablissementByNom(String nom) async {
     try {
-      final allEtablissements = await getAllEtablissements();
-      return allEtablissements.firstWhere(
-        (e) => e.nomEtablissement.toLowerCase() == nom.toLowerCase(),
-        // orElse: () => null,
-      );
+      return await _isar.etablissements
+          .where()
+          .nomEtablissementEqualTo(nom)
+          .findFirst();
     } catch (e) {
       return null;
     }
   }
 
-  // ==================== CLASSE ====================
+  // ==================== CLASSE - OPTIMIZED CHECKER ====================
+
+  // ✅ OPTIMIZED: Check if class exists
+  Future<bool> _classeExists(String idClasse) async {
+    try {
+      final result = await _isar.classes
+          .where()
+          .idClasseEqualTo(idClasse)
+          .findFirst();
+      return result != null;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // ✅ OPTIMIZED: Check if class exists by libelle and establishment
+  Future<bool> _classeExistsByLibelleAndEts(String libelle, String idEts) async {
+    try {
+      final result = await _isar.classes
+          .where()
+          .filter()
+          .libelleClasseEqualTo(libelle)
+          .and()
+          .idEtsEqualTo(idEts)
+          .findFirst();
+      return result != null;
+    } catch (e) {
+      return false;
+    }
+  }
 
   // Save class with checker - returns translation key
   Future<String> saveClasse(Classe classe) async {
     try {
-      // Check if class already exists for this establishment
-      final existing =
-          await getClasseByLibelleAndEts(classe.libelleClasse, classe.idEts);
-
-      if (existing != null) {
+      if (await _classeExists(classe.idClasse)) {
         return 'class_already_exists';
+      }
+
+      if (await _classeExistsByLibelleAndEts(classe.libelleClasse, classe.idEts)) {
+        return 'class_name_already_exists';
       }
 
       await _isar.writeTxn(() async {
@@ -449,13 +584,13 @@ class LocalStorage {
 
   Future<Classe?> getClasseByLibelleAndEts(String libelle, String idEts) async {
     try {
-      final allClasses = await getAllClasses();
-      return allClasses.firstWhere(
-        (c) =>
-            c.libelleClasse.toLowerCase() == libelle.toLowerCase() &&
-            c.idEts == idEts,
-        // orElse: () => null,
-      );
+      return await _isar.classes
+          .where()
+          .filter()
+          .libelleClasseEqualTo(libelle)
+          .and()
+          .idEtsEqualTo(idEts)
+          .findFirst();
     } catch (e) {
       return null;
     }
@@ -471,14 +606,29 @@ class LocalStorage {
     }
   }
 
-  // ==================== SPECIALITE ====================
+  // ==================== SPECIALITE - OPTIMIZED CHECKER ====================
 
-  // Check if specialite already exists by name
+  // ✅ OPTIMIZED: Check if specialite exists by name using index
   Future<bool> _specialiteExistsByName(String nom) async {
     try {
-      final allSpecialites = await getAllSpecialites();
-      return allSpecialites
-          .any((s) => s.libelleSpecialite.toLowerCase() == nom.toLowerCase());
+      final result = await _isar.specialites
+          .where()
+          .libelleSpecialiteEqualTo(nom)
+          .findFirst();
+      return result != null;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // ✅ OPTIMIZED: Check if specialite exists by ID
+  Future<bool> _specialiteExists(String idSpecialite) async {
+    try {
+      final result = await _isar.specialites
+          .where()
+          .idSpecialiteEqualTo(idSpecialite)
+          .findFirst();
+      return result != null;
     } catch (e) {
       return false;
     }
@@ -487,8 +637,12 @@ class LocalStorage {
   // Save specialite with checker - returns translation key
   Future<String> saveSpecialite(Specialite specialite) async {
     try {
-      if (await _specialiteExistsByName(specialite.libelleSpecialite)) {
+      if (await _specialiteExists(specialite.idSpecialite)) {
         return 'specialty_already_exists';
+      }
+
+      if (await _specialiteExistsByName(specialite.libelleSpecialite)) {
+        return 'specialty_name_already_exists';
       }
 
       await _isar.writeTxn(() async {
@@ -523,14 +677,13 @@ class LocalStorage {
     }
   }
 
-  /// Récupérer une spécialité par son nom
+  /// Récupérer une spécialité par son nom (OPTIMIZED)
   Future<Specialite?> getSpecialiteByNom(String nom) async {
     try {
-      final allSpecialites = await getAllSpecialites();
-      return allSpecialites.firstWhere(
-        (s) => s.libelleSpecialite.toLowerCase() == nom.toLowerCase(),
-        // orElse: () => null,
-      );
+      return await _isar.specialites
+          .where()
+          .libelleSpecialiteEqualTo(nom)
+          .findFirst();
     } catch (e) {
       return null;
     }
@@ -1083,57 +1236,7 @@ class LocalStorage {
     }
   }
 
-  // Delete user
-  // Future<void> deleteUser(String idUtilisateur) async {
-  //   try {
-  //     await _isar.writeTxn(() async {
-  //       final user = await getUserById(idUtilisateur);
-  //       if (user != null) {
-  //         // If user is an agent, delete the agent link first
-  //         if (user.isAgent) {
-  //           final agent = await getAgentByUserId(idUtilisateur);
-  //           if (agent != null) {
-  //             await agent.user.clear();
-  //             await _isar.agentCommercials.delete(agent.isarId);
-  //           }
-  //         }
-  //         await _isar.users.delete(user.isarId);
-  //       }
-  //     });
-  //   } catch (e) {
-  //     print('Error deleting user: $e');
-  //   }
-  // }
-
   // ==================== AGENT COMMERCIAL ====================
-
-  // Save agent with user link
-  // Future<void> saveAgent(AgentCommercial agent, {User? user}) async {
-  //   try {
-  //     await _isar.writeTxn(() async {
-  //       // If user is provided, save it first
-  //       if (user != null) {
-  //         await _isar.users.put(user);
-  //         agent.idUtilisateur = user.idUtilisateur;
-  //       }
-        
-  //       // Save agent
-  //       await _isar.agentCommercials.put(agent);
-        
-  //       // Link user to agent
-  //       if (user != null) {
-  //         await agent.user.set(user);
-  //       } else if (agent.idUtilisateur.isNotEmpty) {
-  //         final existingUser = await getUserById(agent.idUtilisateur);
-  //         if (existingUser != null) {
-  //           await agent.user.set(existingUser);
-  //         }
-  //       }
-  //     });
-  //   } catch (e) {
-  //     print('Error saving agent: $e');
-  //   }
-  // }
 
   // Get agent by ID with user loaded
   Future<AgentCommercial?> getAgentById(String idAgent) async {
@@ -1204,37 +1307,4 @@ class LocalStorage {
       return [];
     }
   }
-
-  // Update agent
-  // Future<void> updateAgent(AgentCommercial agent, {User? user}) async {
-  //   try {
-  //     await _isar.writeTxn(() async {
-  //       // Update user if provided
-  //       if (user != null) {
-  //         await _isar.users.put(user);
-  //         await agent.user.set(user);
-  //       }
-        
-  //       // Update agent
-  //       await _isar.agentCommercials.put(agent);
-  //     });
-  //   } catch (e) {
-  //     print('Error updating agent: $e');
-  //   }
-  // }
-
-  // Delete agent
-  // Future<void> deleteAgent(String idAgent) async {
-  //   try {
-  //     await _isar.writeTxn(() async {
-  //       final agent = await getAgentById(idAgent);
-  //       if (agent != null) {
-  //         await agent.user.clear();
-  //         await _isar.agentCommercials.delete(agent.isarId);
-  //       }
-  //     });
-  //   } catch (e) {
-  //     print('Error deleting agent: $e');
-  //   }
-  // }
 }

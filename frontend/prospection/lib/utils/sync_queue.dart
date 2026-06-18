@@ -11,6 +11,7 @@ import 'package:isetagcom/models/specialite.dart';
 import 'package:isetagcom/models/source.dart';
 
 import '../services/api_service.dart';
+import 'connection_checker.dart';
 import 'status.dart';
 
 enum QueueItemType {
@@ -28,7 +29,7 @@ class QueueItem {
   final QueueItemType type;
   final Map<String, dynamic> data;
   final DateTime createdAt;
-  final int priority; // Higher = process first
+  final int priority;
 
   QueueItem({
     required this.id,
@@ -42,409 +43,596 @@ class QueueItem {
 class SyncQueue {
   final LocalStorage _storage = LocalStorage.instance;
   final ApiService _api = ApiService();
+  final ConnectionChecker _connection = ConnectionChecker();
   
-  final List<QueueItem> _queue = [];
+  static const int BATCH_SIZE = 25;
+  
   bool _isProcessing = false;
-  final int _maxRetries = 3;
-  final Duration _retryDelay = const Duration(seconds: 10);
+  int _currentPage = 0;
+  int _totalItems = 0;
+  
+  final _queueStatusController = StreamController<bool>.broadcast();
+  Stream<bool> get queueStatusStream => _queueStatusController.stream;
+  
+  final _progressController = StreamController<double>.broadcast();
+  Stream<double> get progressStream => _progressController.stream;
 
-  // Get priority based on type (higher = sync first)
-  int _getPriority(QueueItemType type) {
-    switch (type) {
-      case QueueItemType.etablissement:
-        return 100; // Highest priority - must sync first
-      case QueueItemType.source:
-        return 90;
-      case QueueItemType.classe:
-        return 80;
-      case QueueItemType.specialite:
-        return 70;
-      case QueueItemType.fiche:
-        return 60;
-      case QueueItemType.prospect:
-        return 50;
-      case QueueItemType.interet:
-        return 10; // Lowest priority - sync last
-    }
-  }
-
-  Future<void> init() async {
-    await _loadPendingItems();
-  }
-
-  // Add item to queue with priority
-  Future<void> addItem(QueueItem item) async {
-    _queue.add(item);
-    // Sort by priority (highest first)
-    _queue.sort((a, b) => b.priority.compareTo(a.priority));
-    if (!_isProcessing) {
-      _processQueue();
-    }
-  }
-
-  // Add multiple items with correct priority
-  Future<void> addItems(List<QueueItem> items) async {
-    _queue.addAll(items);
-    _queue.sort((a, b) => b.priority.compareTo(a.priority));
-    if (!_isProcessing) {
-      _processQueue();
-    }
-  }
-
-  // Add prospect with all its dependencies
-  Future<void> addCompleteProspect({
-    required Prospect prospect,
-    required Fiche fiche,
-    required Classe classe,
-    required Etablissement etablissement,
-    required Source source,
-    required List<Specialite> specialites,
-    required List<InteretFiliere> interets,
-  }) async {
-    final now = DateTime.now();
-    
-    // Add items in dependency order (highest priority first)
-    final items = [
-      // 1. Etablissement (must sync first)
-      QueueItem(
-        id: etablissement.idEtablissement,
-        type: QueueItemType.etablissement,
-        data: etablissement.toJsonApi(),
-        createdAt: now,
-        priority: 100,
-      ),
-      
-      // 2. Source (must sync before Fiche)
-      QueueItem(
-        id: source.idSource,
-        type: QueueItemType.source,
-        data: source.toJsonApi(),
-        createdAt: now,
-        priority: 90,
-      ),
-      
-      // 3. Classe (must sync before Prospect)
-      QueueItem(
-        id: classe.idClasse,
-        type: QueueItemType.classe,
-        data: classe.toJsonApi(),
-        createdAt: now,
-        priority: 80,
-      ),
-      
-      // 4. Specialites (must sync before Interets)
-      ...specialites.map((spec) => QueueItem(
-        id: spec.idSpecialite,
-        type: QueueItemType.specialite,
-        data: spec.toLocalJson(),
-        createdAt: now,
-        priority: 70,
-      )),
-      
-      // 5. Fiche (must sync before Prospect)
-      QueueItem(
-        id: fiche.idFiche,
-        type: QueueItemType.fiche,
-        data: fiche.toJsonApi(),
-        createdAt: now,
-        priority: 60,
-      ),
-      
-      // 6. Prospect (must sync before Interets)
-      QueueItem(
-        id: prospect.idProspect,
-        type: QueueItemType.prospect,
-        data: prospect.toJsonApi(),
-        createdAt: now,
-        priority: 50,
-      ),
-      
-      // 7. Interets (sync last)
-      ...interets.map((interet) => QueueItem(
-        id: interet.idInteret,
-        type: QueueItemType.interet,
-        data: interet.toApiJson(),
-        createdAt: now,
-        priority: 10,
-      )),
-    ];
-    
-    await addItems(items);
-  }
-
-  // Process queue
-  Future<void> _processQueue() async {
-    if (_isProcessing || _queue.isEmpty) return;
-
-    _isProcessing = true;
-
-    while (_queue.isNotEmpty) {
-      final item = _queue.removeAt(0);
-      
-      // Check if dependencies are synced before processing
-      if (!await _dependenciesAreSynced(item)) {
-        // Put back at the end and try later
-        _queue.add(item);
-        await Future.delayed(_retryDelay);
-        continue;
-      }
-      
-      try {
-        await _processItem(item);
-        // Mark as synced in database
-        await _markAsSynced(item);
-      } catch (e) {
-        print('Error processing item ${item.id}: $e');
-        // Add back to queue for retry
-        _queue.add(item);
-        await Future.delayed(_retryDelay);
-      }
-    }
-
-    _isProcessing = false;
-  }
-
-  // Process individual item
-  Future<void> _processItem(QueueItem item) async {
-    switch (item.type) {
-      case QueueItemType.prospect:
-        await _api.createProspect(item.data);
-        break;
-      case QueueItemType.fiche:
-        await _api.createFiche(item.data);
-        break;
-      case QueueItemType.interet:
-        await _api.createInteret(item.data);
-        break;
-      case QueueItemType.etablissement:
-        await _api.createEtablissement(item.data);
-        break;
-      case QueueItemType.classe:
-        await _api.createClasse(item.data);
-        break;
-      case QueueItemType.specialite:
-        await _api.createSpecialite(item.data);
-        break;
-      case QueueItemType.source:
-        await _api.createSource(item.data);
-        break;
-    }
-  }
-
-  // Check if all dependencies are synced
-  Future<bool> _dependenciesAreSynced(QueueItem item) async {
+  // Get pending count from ALL data types
+  Future<int> getPendingCount() async {
     try {
-      switch (item.type) {
-        case QueueItemType.prospect:
-          // Prospect depends on Fiche and Classe
-          final ficheId = item.data['idfiche'];
-          final classeId = item.data['idClass'];
-          
-          final fiche = await _storage.isar.fiches
-              .where()
-              .idFicheEqualTo(ficheId)
-              .findFirst();
-          final classe = await _storage.isar.classes
-              .where()
-              .idClasseEqualTo(classeId)
-              .findFirst();
-              
-          return (fiche?.syncState == SyncState.synced) && 
-                 (classe?.syncState == SyncState.synced);
-                 
-        case QueueItemType.fiche:
-          // Fiche depends on Source
-          final sourceId = item.data['idSrc'];
-          final source = await _storage.isar.sources
-              .where()
-              .idSourceEqualTo(sourceId)
-              .findFirst();
-          return source?.syncState == SyncState.synced;
-          
-        case QueueItemType.classe:
-          // Classe depends on Etablissement
-          final etsId = item.data['idEts'];
-          final ets = await _storage.isar.etablissements
-              .where()
-              .idEtablissementEqualTo(etsId)
-              .findFirst();
-          return ets?.syncState == SyncState.synced;
-          
-        case QueueItemType.interet:
-          // Interet depends on Prospect and Specialite
-          final prospectId = item.data['idProspect'];
-          final specialiteId = item.data['idSpecialite'];
-          
-          final prospect = await _storage.isar.prospects
-              .where()
-              .idProspectEqualTo(prospectId)
-              .findFirst();
-          final specialite = await _storage.isar.specialites
-              .where()
-              .idSpecialiteEqualTo(specialiteId)
-              .findFirst();
-              
-          return (prospect?.syncState == SyncState.synced) && 
-                 (specialite?.syncState == SyncState.synced);
-                 
-        case QueueItemType.etablissement:
-        case QueueItemType.source:
-        case QueueItemType.specialite:
-          // No dependencies
-          return true;
-          
-        default:
-          return true;
-      }
-    } catch (e) {
-      print('Error checking dependencies for ${item.type}: $e');
-      return false;
-    }
-  }
-
-  // Mark item as synced in database
-  Future<void> _markAsSynced(QueueItem item) async {
-    await _storage.isar.writeTxn(() async {
-      switch (item.type) {
-        case QueueItemType.prospect:
-          final prospect = await _storage.isar.prospects
-              .where()
-              .idProspectEqualTo(item.id)
-              .findFirst();
-          if (prospect != null) {
-            prospect.syncState = SyncState.synced;
-            await _storage.isar.prospects.put(prospect);
-          }
-          break;
-          
-        case QueueItemType.fiche:
-          final fiche = await _storage.isar.fiches
-              .where()
-              .idFicheEqualTo(item.id)
-              .findFirst();
-          if (fiche != null) {
-            fiche.syncState = SyncState.synced;
-            await _storage.isar.fiches.put(fiche);
-          }
-          break;
-          
-        case QueueItemType.interet:
-          final interet = await _storage.isar.interetFilieres
-              .where()
-              .idInteretEqualTo(item.id)
-              .findFirst();
-          if (interet != null) {
-            interet.syncState = SyncState.synced;
-            await _storage.isar.interetFilieres.put(interet);
-          }
-          break;
-          
-        case QueueItemType.etablissement:
-          final ets = await _storage.isar.etablissements
-              .where()
-              .idEtablissementEqualTo(item.id)
-              .findFirst();
-          if (ets != null) {
-            // Add syncState to Etablissement model
-            // ets.syncState = SyncState.synced;
-            await _storage.isar.etablissements.put(ets);
-          }
-          break;
-          
-        case QueueItemType.classe:
-          final classe = await _storage.isar.classes
-              .where()
-              .idClasseEqualTo(item.id)
-              .findFirst();
-          if (classe != null) {
-            // classe.syncState = SyncState.synced;
-            await _storage.isar.classes.put(classe);
-          }
-          break;
-          
-        case QueueItemType.specialite:
-          final spec = await _storage.isar.specialites
-              .where()
-              .idSpecialiteEqualTo(item.id)
-              .findFirst();
-          if (spec != null) {
-            spec.syncState = SyncState.synced;
-            await _storage.isar.specialites.put(spec);
-          }
-          break;
-          
-        case QueueItemType.source:
-          final source = await _storage.isar.sources
-              .where()
-              .idSourceEqualTo(item.id)
-              .findFirst();
-          if (source != null) {
-            // source.syncState = SyncState.synced;
-            await _storage.isar.sources.put(source);
-          }
-          break;
-      }
-    });
-  }
-
-  // Load pending items from storage
-  Future<void> _loadPendingItems() async {
-    try {
-      final now = DateTime.now();
-      final items = <QueueItem>[];
-
-      // 1. Load pending Etablissements (highest priority)
-      final pendingEts = await _storage.isar.etablissements.where().findAll();
-      // Filter pending if you have syncState on Etablissement
-      
-      // 2. Load pending Sources
-      final pendingSources = await _storage.isar.sources.where().findAll();
-      
-      // 3. Load pending Classes
-      final pendingClasses = await _storage.isar.classes.where().findAll();
-      
-      // 4. Load pending Specialites
-      final pendingSpecialites = await _storage.isar.specialites
-          .where()
-          .filter()
-          .syncStateEqualTo(SyncState.pending)
-          .findAll();
-      
-      // 5. Load pending Fiches
-      final pendingFiches = await _storage.isar.fiches
-          .where()
-          .filter()
-          .syncStateEqualTo(SyncState.pending)
-          .findAll();
-      
-      // 6. Load pending Prospects
       final pendingProspects = await _storage.isar.prospects
           .where()
           .filter()
           .syncStateEqualTo(SyncState.pending)
-          .findAll();
+          .count();
       
-      // 7. Load pending Interets
+      final pendingFiches = await _storage.isar.fiches
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.pending)
+          .count();
+      
       final pendingInterets = await _storage.isar.interetFilieres
           .where()
           .filter()
           .syncStateEqualTo(SyncState.pending)
-          .findAll();
-
-      // Add all items with proper priorities
-      // ... (add items with _getPriority)
-
-      if (_queue.isNotEmpty) {
-        _queue.sort((a, b) => b.priority.compareTo(a.priority));
-        _processQueue();
-      }
+          .count();
+      
+      final pendingSpecialites = await _storage.isar.specialites
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.pending)
+          .count();
+      
+      final pendingEtablissements = await _storage.isar.etablissements
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.pending)
+          .count();
+      
+      final pendingClasses = await _storage.isar.classes
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.pending)
+          .count();
+      
+      final pendingSources = await _storage.isar.sources
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.pending)
+          .count();
+      
+      return pendingProspects + 
+             pendingFiches + 
+             pendingInterets + 
+             pendingSpecialites +
+             pendingEtablissements +
+             pendingClasses +
+             pendingSources;
     } catch (e) {
-      print('Error loading pending items: $e');
+      print('❌ Error getting pending count: $e');
+      return 0;
     }
   }
 
-  // Get queue size
-  int get size => _queue.length;
-  bool get isEmpty => _queue.isEmpty;
+  // Check if there are pending items
+  Future<bool> hasPendingItems() async {
+    try {
+      final count = await getPendingCount();
+      return count > 0;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<void> init() async {
+    await _connection.init();
+    
+    if (await hasPendingItems()) {
+      print('📋 Found pending items on startup');
+      _queueStatusController.add(true);
+      
+      if (_connection.isConnected) {
+        await processPendingItems();
+      }
+    }
+    
+    _connection.apiReachableStream.listen((isReachable) {
+      if (isReachable && !_isProcessing) {
+        print('🌐 API reachable, checking for pending items...');
+        processPendingItems();
+      }
+    });
+  }
+
+  // Main method: Process ALL pending items with pagination
+  Future<void> processPendingItems() async {
+    if (_isProcessing) {
+      print('⏳ Sync already in progress');
+      return;
+    }
+
+    if (!_connection.isConnected) {
+      print('📴 No connection, cannot process pending items');
+      return;
+    }
+
+    if (!await hasPendingItems()) {
+      print('✅ No pending items to sync');
+      _queueStatusController.add(false);
+      return;
+    }
+
+    _isProcessing = true;
+    _currentPage = 0;
+    _totalItems = await getPendingCount();
+    
+    print('🔄 Starting sync: $_totalItems total pending items');
+    _queueStatusController.add(true);
+
+    try {
+      // Sync in priority order (highest priority first)
+      await _syncAllTypes();
+      
+      // Final check
+      final remaining = await getPendingCount();
+      if (remaining == 0) {
+        print('✅ All items synced successfully!');
+        _queueStatusController.add(false);
+        _progressController.add(1.0);
+      } else {
+        print('⏳ $remaining items remaining, will retry later');
+        _queueStatusController.add(true);
+      }
+
+    } catch (e) {
+      print('❌ Sync error: $e');
+    } finally {
+      _isProcessing = false;
+    }
+  }
+
+  // Sync all data types in priority order
+  Future<void> _syncAllTypes() async {
+    // 1. Etablissements (highest priority)
+    await _syncEtablissements();
+
+    // 2. Sources
+    // await _syncSources(); // The agent do not need to sync source, cause it come from db once connected to the app
+
+    // 3. Classes
+    await _syncClasses();
+
+    // 4. Specialites
+    await _syncSpecialites();
+
+    // 5. Fiches
+    // await _syncFiches();// The agent do not need to sync fiche, cause it come from db once connected to the app
+
+    // 6. Prospects
+    await _syncProspects();
+
+    // 7. Interets (lowest priority)
+    await _syncInterets();
+  }
+
+  //  Sync Etablissements
+  Future<void> _syncEtablissements() async {
+    try {
+      int page = 0;
+      
+      while (true) {
+        final items = await _storage.isar.etablissements
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .offset(page * BATCH_SIZE)
+            .limit(BATCH_SIZE)
+            .findAll();
+        
+        if (items.isEmpty) break;
+        
+        print('📦 Syncing ${items.length} etablissements (batch ${page + 1})');
+        
+        for (final item in items) {
+          try {
+            await _api.createEtablissement(item.toJsonApi());
+            
+            // Mark as synced
+            await _storage.isar.writeTxn(() async {
+              // item.syncState = SyncState.synced;
+              await _storage.isar.etablissements.put(item);
+            });
+            
+            print('✅ Synced: etablissement (${item.idEtablissement})');
+            
+          } catch (e) {
+            print('❌ Error syncing etablissement ${item.idEtablissement}: $e');
+          }
+          
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+        
+        page++;
+        
+        if (!_connection.isConnected) {
+          print('📴 Connection lost, pausing etablissement sync');
+          break;
+        }
+      }
+      
+    } catch (e) {
+      print('❌ Error syncing etablissements: $e');
+    }
+  }
+
+  //  Sync Sources
+  Future<void> _syncSources() async {
+    try {
+      int page = 0;
+      
+      while (true) {
+        final items = await _storage.isar.sources
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .offset(page * BATCH_SIZE)
+            .limit(BATCH_SIZE)
+            .findAll();
+        
+        if (items.isEmpty) break;
+        
+        print('📦 Syncing ${items.length} sources (batch ${page + 1})');
+        
+        for (final item in items) {
+          try {
+            await _api.createSource(item.toJsonApi());
+            
+            await _storage.isar.writeTxn(() async {
+              // item.syncState = SyncState.synced;
+              await _storage.isar.sources.put(item);
+            });
+            
+            print('✅ Synced: source (${item.idSource})');
+            
+          } catch (e) {
+            print('❌ Error syncing source ${item.idSource}: $e');
+          }
+          
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+        
+        page++;
+        
+        if (!_connection.isConnected) {
+          print('📴 Connection lost, pausing source sync');
+          break;
+        }
+      }
+      
+    } catch (e) {
+      print('❌ Error syncing sources: $e');
+    }
+  }
+
+  //  Sync Classes
+  Future<void> _syncClasses() async {
+    try {
+      int page = 0;
+      
+      while (true) {
+        final items = await _storage.isar.classes
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .offset(page * BATCH_SIZE)
+            .limit(BATCH_SIZE)
+            .findAll();
+        
+        if (items.isEmpty) break;
+        
+        print('📦 Syncing ${items.length} classes (batch ${page + 1})');
+        
+        for (final item in items) {
+          try {
+            await _api.createClasse(item.toJsonApi());
+            
+            await _storage.isar.writeTxn(() async {
+              // item.syncState = SyncState.synced;
+              await _storage.isar.classes.put(item);
+            });
+            
+            print('✅ Synced: classe (${item.idClasse})');
+            
+          } catch (e) {
+            print('❌ Error syncing classe ${item.idClasse}: $e');
+          }
+          
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+        
+        page++;
+        
+        if (!_connection.isConnected) {
+          print('📴 Connection lost, pausing classe sync');
+          break;
+        }
+      }
+      
+    } catch (e) {
+      print('❌ Error syncing classes: $e');
+    }
+  }
+
+  //  Sync Specialites
+  Future<void> _syncSpecialites() async {
+    try {
+      int page = 0;
+      
+      while (true) {
+        final items = await _storage.isar.specialites
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .offset(page * BATCH_SIZE)
+            .limit(BATCH_SIZE)
+            .findAll();
+        
+        if (items.isEmpty) break;
+        
+        print('📦 Syncing ${items.length} specialites (batch ${page + 1})');
+        
+        for (final item in items) {
+          try {
+            await _api.createSpecialite(item.toLocalJson());
+            
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.synced;
+              await _storage.isar.specialites.put(item);
+            });
+            
+            print('✅ Synced: specialite (${item.idSpecialite})');
+            
+          } catch (e) {
+            print('❌ Error syncing specialite ${item.idSpecialite}: $e');
+          }
+          
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+        
+        page++;
+        
+        if (!_connection.isConnected) {
+          print('📴 Connection lost, pausing specialite sync');
+          break;
+        }
+      }
+      
+    } catch (e) {
+      print('❌ Error syncing specialites: $e');
+    }
+  }
+
+  //  Sync Fiches
+  Future<void> _syncFiches() async {
+    try {
+      int page = 0;
+      
+      while (true) {
+        final items = await _storage.isar.fiches
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .offset(page * BATCH_SIZE)
+            .limit(BATCH_SIZE)
+            .findAll();
+        
+        if (items.isEmpty) break;
+        
+        print('📦 Syncing ${items.length} fiches (batch ${page + 1})');
+        
+        for (final item in items) {
+          try {
+            await _api.createFiche(item.toJsonApi());
+            
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.synced;
+              await _storage.isar.fiches.put(item);
+            });
+            
+            print('✅ Synced: fiche (${item.idFiche})');
+            
+          } catch (e) {
+            print('❌ Error syncing fiche ${item.idFiche}: $e');
+          }
+          
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+        
+        page++;
+        
+        if (!_connection.isConnected) {
+          print('📴 Connection lost, pausing fiche sync');
+          break;
+        }
+      }
+      
+    } catch (e) {
+      print('❌ Error syncing fiches: $e');
+    }
+  }
+
+  //  Sync Prospects
+  Future<void> _syncProspects() async {
+    try {
+      int page = 0;
+      
+      while (true) {
+        final items = await _storage.isar.prospects
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .offset(page * BATCH_SIZE)
+            .limit(BATCH_SIZE)
+            .findAll();
+        
+        if (items.isEmpty) break;
+        
+        print('📦 Syncing ${items.length} prospects (batch ${page + 1})');
+        
+        for (final item in items) {
+          try {
+            // Load linked data
+            await item.interets.load();
+            
+            await _api.createProspect(item.toJsonApi());
+            
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.synced;
+              await _storage.isar.prospects.put(item);
+            });
+            
+            print('✅ Synced: prospect (${item.idProspect})');
+            
+          } catch (e) {
+            print('❌ Error syncing prospect ${item.idProspect}: $e');
+          }
+          
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+        
+        page++;
+        
+        if (!_connection.isConnected) {
+          print('📴 Connection lost, pausing prospect sync');
+          break;
+        }
+      }
+      
+    } catch (e) {
+      print('❌ Error syncing prospects: $e');
+    }
+  }
+
+  //  Sync Interets
+  Future<void> _syncInterets() async {
+    try {
+      int page = 0;
+      
+      while (true) {
+        final items = await _storage.isar.interetFilieres
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .offset(page * BATCH_SIZE)
+            .limit(BATCH_SIZE)
+            .findAll();
+        
+        if (items.isEmpty) break;
+        
+        print('📦 Syncing ${items.length} interets (batch ${page + 1})');
+        
+        for (final item in items) {
+          try {
+            // Load linked data
+            await item.prospect.load();
+            await item.specialite.load();
+            
+            await _api.createInteret(item.toApiJson());
+            
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.synced;
+              await _storage.isar.interetFilieres.put(item);
+            });
+            
+            print('✅ Synced: interet (${item.idInteret})');
+            
+          } catch (e) {
+            print('❌ Error syncing interet ${item.idInteret}: $e');
+          }
+          
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+        
+        page++;
+        
+        if (!_connection.isConnected) {
+          print('📴 Connection lost, pausing interet sync');
+          break;
+        }
+      }
+      
+    } catch (e) {
+      print('❌ Error syncing interets: $e');
+    }
+  }
+
+  // Manual sync trigger
+  Future<void> syncNow() async {
+    if (!_connection.isConnected) {
+      print('📴 No connection, cannot sync');
+      throw Exception('No internet connection');
+    }
+    
+    if (_isProcessing) {
+      print('⏳ Sync already in progress');
+      return;
+    }
+    
+    await processPendingItems();
+  }
+
+  // Get pending count from Isar
+  Future<int> getPendingItemsCount() async {
+    return await getPendingCount();
+  }
+
+  // Get all pending items (for debugging)
+  Future<Map<String, int>> getPendingItemsByType() async {
+    try {
+      return {
+        'prospects': await _storage.isar.prospects
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .count(),
+        'fiches': await _storage.isar.fiches
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .count(),
+        'interets': await _storage.isar.interetFilieres
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .count(),
+        'specialites': await _storage.isar.specialites
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .count(),
+        'etablissements': await _storage.isar.etablissements
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .count(),
+        'classes': await _storage.isar.classes
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .count(),
+        'sources': await _storage.isar.sources
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .count(),
+      };
+    } catch (e) {
+      return {};
+    }
+  }
+
+  // Getters
   bool get isProcessing => _isProcessing;
+  bool get isConnected => _connection.isConnected;
 }

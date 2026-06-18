@@ -14,7 +14,9 @@ class AgentCommercial {
   @Index()
   String idUtilisateur; // Reference to User
 
+  @Index()
   String matriculeAgent;
+  @Index()
   DateTime dateEmbauche;
   String statut; // Actif, En congé, Arrêté
 
