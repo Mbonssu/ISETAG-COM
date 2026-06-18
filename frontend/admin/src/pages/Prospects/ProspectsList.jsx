@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Edit, Trash2, Eye, Filter, Download, AlertCircle, FileSpreadsheet, FileJson, FileText, FileImage } from 'lucide-react';
 import Modal from '../../components/common/Modal';
@@ -6,6 +6,8 @@ import { ToastContainer } from '../../components/common/Toast';
 import Pagination from '../../components/Pagination/Pagination';
 import { usePagination } from '../../hooks/usePagination';
 import { useTranslation } from '../../hooks/useTranslation';
+import { prospectService } from '../../services/prospectService';
+import { Prospect } from '../../models/prospect';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
@@ -22,6 +24,9 @@ const ProspectsList = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, prospectId: null, prospectName: '' });
   const [toasts, setToasts] = useState([]);
+  const [allProspects, setAllProspects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
   const addToast = (message, type = 'success') => {
     const id = Date.now();
@@ -33,20 +38,28 @@ const ProspectsList = () => {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-  const prospects = [
-    { id: 'P001', nomComplet: 'Marie L.', telephone: '691234567', email: 'marie@email.com', niveauEtude: 'Terminale', concerne: 'Lycée de Biyem-Assi', adresse: 'Biyem-Assi, Yaoundé', sexe: 'F', typeProspect: 'Etudiant', createdAt: '25 Mai 2025' },
-    { id: 'P002', nomComplet: 'David P.', telephone: '692345678', email: 'david@email.com', niveauEtude: 'Bac+1', concerne: 'Université de Douala', adresse: 'Logbessou, Douala', sexe: 'M', typeProspect: 'Etudiant', createdAt: '24 Mai 2025' },
-    { id: 'P003', nomComplet: 'Anne S.', telephone: '693456789', email: 'anne@email.com', niveauEtude: 'Bac+2', concerne: 'Institut Supérieur', adresse: 'Bonamoussadi, Douala', sexe: 'F', typeProspect: 'Parent', createdAt: '23 Mai 2025' },
-    { id: 'P004', nomComplet: 'Junior B.', telephone: '694567890', email: 'junior@email.com', niveauEtude: 'Terminale', concerne: 'Lycée Technique', adresse: 'Efouan, Yaoundé', sexe: 'M', typeProspect: 'Etudiant', createdAt: '22 Mai 2025' },
-    { id: 'P005', nomComplet: 'Luc M.', telephone: '695678901', email: 'luc@email.com', niveauEtude: 'Bac+3', concerne: 'Université de Douala', adresse: 'Logbessou, Douala', sexe: 'M', typeProspect: 'Etudiant', createdAt: '21 Mai 2025' },
-    { id: 'P006', nomComplet: 'Sophie L.', telephone: '696789012', email: 'sophie@email.com', niveauEtude: 'Master', concerne: 'Institut Supérieur', adresse: 'Bonamoussadi, Douala', sexe: 'F', typeProspect: 'Professionnel', createdAt: '20 Mai 2025' },
-    { id: 'P007', nomComplet: 'Paul D.', telephone: '697890123', email: 'paul@email.com', niveauEtude: 'Bac+1', concerne: 'Lycée de Biyem-Assi', adresse: 'Biyem-Assi, Yaoundé', sexe: 'M', typeProspect: 'Parent', createdAt: '19 Mai 2025' },
-    { id: 'P008', nomComplet: 'Claire N.', telephone: '698901234', email: 'claire@email.com', niveauEtude: 'Terminale', concerne: 'Lycée Technique', adresse: 'Efouan, Yaoundé', sexe: 'F', typeProspect: 'Etudiant', createdAt: '18 Mai 2025' },
-    { id: 'P009', nomComplet: 'Michel K.', telephone: '699012345', email: 'michel@email.com', niveauEtude: 'Bac+2', concerne: 'Université de Douala', adresse: 'Logbessou, Douala', sexe: 'M', typeProspect: 'Professionnel', createdAt: '17 Mai 2025' },
-    { id: 'P010', nomComplet: 'Isabelle M.', telephone: '690123456', email: 'isabelle@email.com', niveauEtude: 'Doctorat', concerne: 'Institut Supérieur', adresse: 'Bonamoussadi, Douala', sexe: 'F', typeProspect: 'Professionnel', createdAt: '16 Mai 2025' },
-  ];
+  // Le backend (ProspectView.get) renvoie un TABLEAU JSON direct,
+  // pas un objet enveloppé { data: { items: [...] } }.
+  const fetchProspects = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const data = await prospectService.getAll();
+      const list = Array.isArray(data) ? data.map(item => Prospect.fromDjango(item)) : [];
+      setAllProspects(list);
+    } catch (error) {
+      setLoadError(error.message);
+      addToast('Erreur lors du chargement des prospects', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const filteredProspects = prospects.filter(prospect => {
+  useEffect(() => {
+    fetchProspects();
+  }, [fetchProspects]);
+
+  const filteredProspects = allProspects.filter(prospect => {
     const matchesSearch = prospect.nomComplet.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           prospect.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           prospect.telephone.includes(searchTerm);
@@ -59,9 +72,21 @@ const ProspectsList = () => {
 
   const getSexeLabel = (sexe) => sexe === 'M' ? 'Masculin' : 'Féminin';
 
-  const handleDelete = () => {
-    addToast(`${deleteModal.prospectName} ${t('suppressionReussie')}`, 'success');
+  const handleDelete = async () => {
+    // On capture l'id/nom localement avant de fermer la modale, pour
+    // éviter qu'un double-clic relance handleDelete avec un id déjà
+    // remis à null (même bug que celui corrigé sur Utilisateurs).
+    const { prospectId, prospectName } = deleteModal;
+    if (!prospectId) return;
     setDeleteModal({ isOpen: false, prospectId: null, prospectName: '' });
+
+    try {
+      await prospectService.delete(prospectId);
+      addToast(`${prospectName} ${t('suppressionReussie')}`, 'success');
+      fetchProspects();
+    } catch (error) {
+      addToast('Erreur lors de la suppression', 'error');
+    }
   };
 
   const renderNoResults = () => (
@@ -129,13 +154,17 @@ const ProspectsList = () => {
         </div>
       </div>
 
-      {filteredProspects.length === 0 ? renderNoResults() : (
+      {loading ? (
+        <p className="page-loading">Chargement des prospects…</p>
+      ) : loadError ? (
+        <p className="form-error">{loadError}</p>
+      ) : filteredProspects.length === 0 ? renderNoResults() : (
         <>
           <div className="table-container">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>ID</th><th>{t('nomComplet')}</th><th>{t('telephone')}</th><th>{t('email')}</th><th>{t('niveauEtude')}</th><th>{t('etablissement')}</th><th>{t('sexe')}</th><th>{t('typeProspect')}</th><th>{t('dateCreation')}</th><th>{t('actions')}</th>
+                  <th>ID</th><th>{t('nomComplet')}</th><th>{t('telephone')}</th><th>{t('email')}</th><th>{t('niveauEtude')}</th><th>Domaine</th><th>{t('sexe')}</th><th>{t('typeProspect')}</th><th>{t('dateCreation')}</th><th>{t('actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -146,10 +175,10 @@ const ProspectsList = () => {
                     <td>{prospect.telephone}</td>
                     <td>{prospect.email}</td>
                     <td>{prospect.niveauEtude}</td>
-                    <td>{prospect.concerne}</td>
+                    <td>{prospect.domaineEtude || '-'}</td>
                     <td>{getSexeLabel(prospect.sexe)}</td>
                     <td>{prospect.typeProspect}</td>
-                    <td>{prospect.createdAt}</td>
+                    <td>{prospect.createdAt ? new Date(prospect.createdAt).toLocaleDateString('fr-FR') : '-'}</td>
                     <td>
                       <div className="action-buttons">
                         <button className="action-btn view" onClick={() => navigate(`/prospects/${prospect.id}`)}><Eye size={16} /></button>

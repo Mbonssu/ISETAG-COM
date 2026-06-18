@@ -1,42 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Edit, Mail, Phone, Calendar, MapPin, User, Briefcase } from 'lucide-react';
+import { ArrowLeft, Edit, Mail, Phone, Calendar, MapPin, GraduationCap, Users } from 'lucide-react';
+import { prospectService } from '../../services/prospectService';
+import { Prospect } from '../../models/prospect';
 import './Prospects.css';
 
 const ProspectDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // Données mockées
-  const prospect = {
-    id: id,
-    name: 'Marie L.',
-    email: 'marie.l@email.com',
-    phone: '691234567',
-    source: 'Lycée',
-    filiere: 'Génie Logiciel',
-    agent: 'Jean M.',
-    date: '25 Mai 2025',
-    status: 'À relancer',
-    notes: 'Prospect très intéressé par la formation. À rappeler pour confirmer l\'inscription.',
-    etablissement: 'Lycée de Biyem-Assi',
-    niveau: 'Terminale C',
-    activites: [
-      { date: '25 Mai 2025', action: 'Premier contact', agent: 'Jean M.', description: 'Appel initial, prospect intéressé' },
-      { date: '26 Mai 2025', action: 'Relance', agent: 'Jean M.', description: 'Email envoyé avec documentation' }
-    ]
-  };
+  const [prospect, setProspect] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const getStatusBadge = (status) => {
-    const classes = {
-      'À relancer': 'badge-warning',
-      'Nouveau': 'badge-success',
-      'Contacté': 'badge-info',
-      'Qualifié': 'badge-primary',
-      'Converti': 'badge-dark'
-    };
-    return <span className={`badge ${classes[status] || 'badge-secondary'}`}>{status}</span>;
-  };
+  useEffect(() => {
+    prospectService.getById(id)
+      .then((data) => setProspect(Prospect.fromDjango(data)))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) return <p className="page-loading">Chargement…</p>;
+  if (error) return <p className="form-error">{error}</p>;
+  if (!prospect) return <p className="form-error">Prospect introuvable.</p>;
 
   return (
     <div className="page-container">
@@ -60,10 +46,10 @@ const ProspectDetail = () => {
       <div className="detail-grid">
         <div className="detail-card">
           <div className="detail-header">
-            <div className="detail-avatar">{prospect.name.charAt(0)}</div>
+            <div className="detail-avatar">{prospect.initials}</div>
             <div>
-              <h2>{prospect.name}</h2>
-              {getStatusBadge(prospect.status)}
+              <h2>{prospect.nomComplet}</h2>
+              <span className="badge badge-info">{prospect.typeProspect}</span>
             </div>
           </div>
           <div className="detail-info">
@@ -73,50 +59,42 @@ const ProspectDetail = () => {
             </div>
             <div className="info-row">
               <Phone size={18} />
-              <span>{prospect.phone}</span>
+              <span>{prospect.telephone}</span>
             </div>
             <div className="info-row">
               <Calendar size={18} />
-              <span>Ajouté le {prospect.date}</span>
+              <span>Ajouté le {prospect.createdAt ? new Date(prospect.createdAt).toLocaleDateString('fr-FR') : '-'}</span>
             </div>
             <div className="info-row">
               <MapPin size={18} />
-              <span>{prospect.etablissement}</span>
+              <span>{prospect.adresse}{prospect.ville ? `, ${prospect.ville}` : ''}{prospect.pays ? ` (${prospect.pays})` : ''}</span>
             </div>
             <div className="info-row">
-              <User size={18} />
-              <span>Agent: {prospect.agent}</span>
+              <GraduationCap size={18} />
+              <span>{prospect.niveauEtude} — {prospect.domaineEtude || 'Domaine non renseigné'}</span>
             </div>
             <div className="info-row">
-              <Briefcase size={18} />
-              <span>{prospect.filiere} - {prospect.niveau}</span>
+              <Users size={18} />
+              <span>{prospect.sexeLabel}</span>
             </div>
           </div>
         </div>
 
-        <div className="detail-card">
-          <h3>Notes</h3>
-          <p className="detail-notes">{prospect.notes}</p>
-        </div>
-
-        <div className="detail-card full-width">
-          <h3>Historique des activités</h3>
-          <div className="activities-timeline">
-            {prospect.activites.map((act, idx) => (
-              <div key={idx} className="activity-timeline-item">
-                <div className="timeline-dot"></div>
-                <div className="timeline-content">
-                  <div className="timeline-header">
-                    <strong>{act.action}</strong>
-                    <span>{act.date}</span>
-                  </div>
-                  <div className="timeline-agent">Agent: {act.agent}</div>
-                  <p>{act.description}</p>
-                </div>
+        {(prospect.nomParent || prospect.numeroParent) && (
+          <div className="detail-card">
+            <h3>Contact parent</h3>
+            <div className="detail-info">
+              <div className="info-row">
+                <Users size={18} />
+                <span>{prospect.nomParent || 'Nom non renseigné'}</span>
               </div>
-            ))}
+              <div className="info-row">
+                <Phone size={18} />
+                <span>{prospect.numeroParent || 'Téléphone non renseigné'}</span>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit, Trash2, Eye, Filter, Download, ChevronLeft, ChevronRight, AlertCircle, Calendar, Clock, FileText } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, Filter, Download, ChevronLeft, ChevronRight, AlertCircle, Calendar, Clock, FileText, Loader } from 'lucide-react';
 import Modal from '../../components/common/Modal';
 import { ToastContainer } from '../../components/common/Toast';
-import { useTranslation } from '../../hooks/useTranslation';
+import Pagination from '../../components/Pagination/Pagination';
+import { usePagination } from '../../hooks/usePagination';
+import { suiviService } from '../../services/suiviService';
+import { Suivi } from '../../models/suivi';
 import '../Prospects/Prospects.css';
 
 const SuivisList = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, suiviId: null, suiviName: '' });
   const [toasts, setToasts] = useState([]);
+  const [suivis, setSuivis] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const itemsPerPage = 5;
 
   const addToast = (message, type = 'success') => {
@@ -26,44 +31,99 @@ const SuivisList = () => {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-  // Données mockées pour les suivis
-  const suivis = [
-    { id: 1, prospect: 'Marie L.', dateSuivi: '25 Mai 2025', typeSuivi: 'Appel', commentaire: 'Premier contact, prospect intéressé', prochainAction: 'Rappeler dans 2 jours', agent: 'Jean M.', createdAt: '25 Mai 2025' },
-    { id: 2, prospect: 'David P.', dateSuivi: '24 Mai 2025', typeSuivi: 'Email', commentaire: 'Envoi de documentation', prochainAction: 'Relance par téléphone', agent: 'David P.', createdAt: '24 Mai 2025' },
-    { id: 3, prospect: 'Anne S.', dateSuivi: '23 Mai 2025', typeSuivi: 'Visite', commentaire: 'Visite de l\'établissement', prochainAction: 'Envoyer proposition', agent: 'Sophie A.', createdAt: '23 Mai 2025' },
-  ];
+  // Charger les suivis depuis l'API
+  const fetchSuivis = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await suiviService.getAll();
+      console.log('📥 Suivis chargés:', data);
+      const suivisData = Suivi.fromDjango(data);
+      setSuivis(suivisData);
+    } catch (err) {
+      console.error('❌ Erreur de chargement:', err);
+      setError(err.message);
+      addToast('Erreur lors du chargement des suivis', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSuivis();
+  }, []);
 
   const typesSuivi = ['Appel', 'Email', 'Visite', 'SMS', 'Autre'];
 
   const filteredSuivis = suivis.filter(s => {
-    const matchesSearch = s.prospect.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          s.agent.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (s.nomProspect || s.idProspect || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (s.nomAgent || s.idAgent || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === 'all' || s.typeSuivi === filterType;
     return matchesSearch && matchesType;
   });
 
-  const totalPages = Math.ceil(filteredSuivis.length / itemsPerPage);
-  const paginatedSuivis = filteredSuivis.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const { currentPage: page, totalPages, paginatedItems, goToPage, itemsPerPage: perPage } = usePagination(filteredSuivis, itemsPerPage);
 
-  const handleDelete = () => {
-    addToast(`Suivi supprimé avec succès`, 'success');
+  const handleDelete = async () => {
+    try {
+      await suiviService.delete(deleteModal.suiviId);
+      addToast(`Suivi supprimé avec succès`, 'success');
+      fetchSuivis(); // Rafraîchir la liste
+    } catch (err) {
+      addToast('Erreur lors de la suppression', 'error');
+    }
     setDeleteModal({ isOpen: false, suiviId: null, suiviName: '' });
+  };
+
+  const getTypeBadge = (type) => {
+    const classes = {
+      'Appel': 'badge-info',
+      'Email': 'badge-primary',
+      'Visite': 'badge-success',
+      'SMS': 'badge-warning',
+      'Autre': 'badge-secondary'
+    };
+    return <span className={`badge ${classes[type] || 'badge-secondary'}`}>{type}</span>;
   };
 
   const renderNoResults = () => (
     <div className="no-results">
       <AlertCircle size={48} />
-      <h3>{t('aucunResultat')}</h3>
+      <h3>Aucun résultat trouvé</h3>
       <p>Aucun suivi ne correspond à votre recherche "{searchTerm}"</p>
-      <button className="btn-outline" onClick={() => { setSearchTerm(''); setFilterType('all'); }}>{t('effacerFiltres')}</button>
+      <button className="btn-outline" onClick={() => { setSearchTerm(''); setFilterType('all'); }}>Effacer les filtres</button>
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="loading-container">
+          <Loader size={48} className="spin" />
+          <p>Chargement des suivis...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="page-container">
+        <div className="error-container">
+          <AlertCircle size={48} color="#ef4444" />
+          <h3>Erreur de chargement</h3>
+          <p>{error}</p>
+          <button className="btn-outline" onClick={() => fetchSuivis()}>Réessayer</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-container">
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       
-      <Modal isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, suiviId: null, suiviName: '' })} onConfirm={handleDelete} title={t('confirmer')} message="Êtes-vous sûr de vouloir supprimer ce suivi ?" confirmText={t('supprimer')} type="warning" />
+      <Modal isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, suiviId: null, suiviName: '' })} onConfirm={handleDelete} title="Confirmer la suppression" message="Êtes-vous sûr de vouloir supprimer ce suivi ?" confirmText="Supprimer" type="warning" />
 
       <div className="page-header-actions">
         <div>
@@ -79,7 +139,12 @@ const SuivisList = () => {
       <div className="filters-bar">
         <div className="search-box">
           <Search size={18} />
-          <input type="text" placeholder="Rechercher par prospect ou agent..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+          <input 
+            type="text" 
+            placeholder="Rechercher par prospect ou agent..." 
+            value={searchTerm} 
+            onChange={(e) => setSearchTerm(e.target.value)} 
+          />
         </div>
         <div className="filter-group">
           <Filter size={18} />
@@ -91,41 +156,49 @@ const SuivisList = () => {
       </div>
 
       {filteredSuivis.length === 0 ? renderNoResults() : (
-        <div className="table-container">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Prospect</th><th>Date</th><th>Type</th><th>Commentaire</th><th>Prochaine action</th><th>Agent</th><th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedSuivis.map((suivi) => (
-                <tr key={suivi.id}>
-                  <td><strong>{suivi.prospect}</strong></td>
-                  <td><Calendar size={14} /> {suivi.dateSuivi}</td>
-                  <td><span className="badge badge-info">{suivi.typeSuivi}</span></td>
-                  <td><div className="commentaire-cell"><small>{suivi.commentaire}</small></div></td>
-                  <td><Clock size={14} /> {suivi.prochainAction}</td>
-                  <td>{suivi.agent}</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="action-btn view" onClick={() => navigate(`/suivis/${suivi.id}`)}><Eye size={16} /></button>
-                      <button className="action-btn edit" onClick={() => navigate(`/suivis/edit/${suivi.id}`)}><Edit size={16} /></button>
-                      <button className="action-btn delete" onClick={() => setDeleteModal({ isOpen: true, suiviId: suivi.id, suiviName: suivi.prospect })}><Trash2 size={16} /></button>
-                    </div>
-                  </td>
+        <>
+          <div className="table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Prospect</th>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Commentaire</th>
+                  <th>Prochaine action</th>
+                  <th>Agent</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {totalPages > 1 && (
-            <div className="pagination">
-              <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}><ChevronLeft size={16} /> Précédent</button>
-              <span className="pagination-info">Page {currentPage} sur {totalPages}</span>
-              <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Suivant <ChevronRight size={16} /></button>
-            </div>
-          )}
-        </div>
+              </thead>
+              <tbody>
+                {paginatedItems.map((suivi) => (
+                  <tr key={suivi.id}>
+                    <td><strong>{suivi.nomProspect || suivi.idProspect}</strong></td>
+                    <td><Calendar size={14} /> {suivi.dateFormatee || suivi.dateSuivi}</td>
+                    <td>{getTypeBadge(suivi.typeSuivi)}</td>
+                    <td><div className="commentaire-cell"><small>{suivi.commentaire || '-'}</small></div></td>
+                    <td><Clock size={14} /> {suivi.prochainAction || '-'}</td>
+                    <td>{suivi.nomAgent || suivi.idAgent}</td>
+                    <td>
+                      <div className="action-buttons">
+                        <button className="action-btn view" onClick={() => navigate(`/suivis/${suivi.id}`)}><Eye size={16} /></button>
+                        <button className="action-btn edit" onClick={() => navigate(`/suivis/edit/${suivi.id}`)}><Edit size={16} /></button>
+                        <button className="action-btn delete" onClick={() => setDeleteModal({ isOpen: true, suiviId: suivi.id, suiviName: suivi.nomProspect || suivi.idProspect })}><Trash2 size={16} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Pagination 
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+            itemsPerPage={perPage}
+            totalItems={filteredSuivis.length}
+          />
+        </>
       )}
     </div>
   );

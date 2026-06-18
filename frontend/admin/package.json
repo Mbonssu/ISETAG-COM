@@ -1,5 +1,5 @@
 {
-  "name": "admin",
+  "name": "ISETAG-COM Admin",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -26,7 +26,7 @@
     "eject": "react-scripts eject"
   },
 
-  "proxy": "http://192.168.30.106:8000",
+  "proxy": "http://192.168.30.107:8000",
 
   "eslintConfig": {
     "extends": [

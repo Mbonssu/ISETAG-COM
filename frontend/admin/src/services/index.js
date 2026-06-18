@@ -290,3 +290,5 @@ export { ficheService } from './ficheService';
  * ✅ Facile à refactoriser
  * ✅ Centralisation des services
  */
+
+export { suiviService } from './suiviService';
