@@ -14,7 +14,8 @@ urlpatterns = [
     # path('authentification/',    include('authentification.urls')),
     path('user_api/',            include('user_api.urls')),
     path('campagne_api/',        include('campagne_api.urls')),
-    path('prospect_api/',        include('prospect_api.urls'))
+    path('prospect_api/',        include('prospect_api.urls')),
+    path('specialite_api/',       include('specialite_api.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

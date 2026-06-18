@@ -1,5 +1,7 @@
 from django.shortcuts import render
 # from authentification.permissions import IsAdmin, IsSuperviseur,IsAgent
+# from backend.ISETAG_COM_API.user_api.models import Utilisateur
+# from backend.ISETAG_COM_API.user_api.serializers import UtilisateurSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -26,7 +28,14 @@ class ProspectView(APIView):
     #         return [IsAdmin()]         # admins seulement
     #     return [IsAdmin()]             # fallback sécurisé
 
-    def get(self, request):
+    def get(self, request, pk=None):
+        if pk:
+            try:
+                prospect = Prospect.objects.get(pk=pk)
+                serializer = ProspectSerializer(prospect, context={'request': request})
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except Prospect.DoesNotExist:
+                return Response({'error': 'Prospect not found'}, status=status.HTTP_404_NOT_FOUND)
         prospects = Prospect.objects.all()
         serializer = ProspectSerializer(prospects, many=True, context={'request': request})
         return Response(serializer.data)
@@ -125,7 +134,7 @@ class RendezVousView(APIView):
         rendezvous.delete()
         return Response({'message': 'Rendez-vous deleted successfully'}, status=status.HTTP_200_OK)
     
-class SuiviProspectListCreateView(APIView):
+class SuiviProspectView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     
     # def get_permissions(self):

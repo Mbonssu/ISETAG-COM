@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from models import Specialite, interetSpecialite
+from .models import Specialite, interetSpecialite
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import SpecialiteSerializer, interetSpecialiteSerializer
