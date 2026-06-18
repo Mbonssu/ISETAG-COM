@@ -29,6 +29,13 @@ class RendezVousSerializer(serializers.ModelSerializer):
 class SuiviProspectSerializer(serializers.ModelSerializer):
     idProspect = serializers.PrimaryKeyRelatedField(queryset=Prospect.objects.all())
     prospect_details = serializers.SerializerMethodField(read_only=True)
+    
+    def get_prospect_details(self, obj):
+        return {
+            "idProspect": obj.idProspect.idProspect,
+            "nom": obj.idProspect.nomComplet
+        }
+    
     class Meta:
         model = SuiviProspect
         fields = '__all__'

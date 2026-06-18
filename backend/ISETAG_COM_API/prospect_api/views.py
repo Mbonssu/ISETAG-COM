@@ -93,8 +93,15 @@ class RendezVousView(APIView):
     #         return [IsAdmin()]         # admins seulement
     #     return [IsAdmin()]             # fallback sécurisé
 
-    def get(self, request):
-        rendezvous = RendezVous.objects.all()
+    def get(self, request, pk=None):
+        if pk is None:
+            rendezvous = RendezVous.objects.all()
+        else:
+            try:
+                rendezvous = RendezVous.objects.get(pk=pk)
+            except RendezVous.DoesNotExist:
+                return Response({'error': 'Rendez-vous not found'}, status=status.HTTP_404_NOT_FOUND)
+
         serializer = RendezVousSerializer(rendezvous, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -151,8 +158,14 @@ class SuiviProspectView(APIView):
     #         return [IsAdmin()]         # admins seulement
     #     return [IsAdmin()]             # fallback sécurisé
 
-    def get(self, request):
-        suivis = SuiviProspect.objects.all()
+    def get(self, request, pk=None):
+        if pk is None:
+            suivis = SuiviProspect.objects.all()
+        else:
+            try:
+                suivis = SuiviProspect.objects.get(pk=pk)
+            except SuiviProspect.DoesNotExist:
+                return Response({'error': 'Suivi not found'}, status=status.HTTP_404_NOT_FOUND)
         serializer = SuiviProspectSerializer(suivis, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -166,6 +179,31 @@ class SuiviProspectView(APIView):
             except IntegrityError:
                 return Response({"error": "Un suivi avec ce libellé existe déjà."}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request, pk):
+        try:
+            suivi = SuiviProspect.objects.get(pk=pk)
+        except SuiviProspect.DoesNotExist:
+            return Response({'error': 'Suivi not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = SuiviProspectSerializer(suivi, data=request.data, context={'request': request})
+        if serializer.is_valid():
+            try:
+                serializer.save()
+                # notify_service_updated(suivi)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except IntegrityError:
+                return Response({"error": "Un suivi avec ce libellé existe déjà."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, pk):
+        try:
+            suivi = SuiviProspect.objects.get(pk=pk)
+        except SuiviProspect.DoesNotExist:
+            return Response({'error': 'Suivi not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        suivi.delete()
+        return Response({'message': 'Suivi deleted successfully'}, status=status.HTTP_200_OK)
 
 class RelanceView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
