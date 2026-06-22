@@ -83,24 +83,29 @@ const ProspectSchema = CollectionSchema(
       name: r'sexe',
       type: IsarType.string,
     ),
-    r'syncState': PropertySchema(
+    r'source_infos': PropertySchema(
       id: 13,
+      name: r'source_infos',
+      type: IsarType.string,
+    ),
+    r'syncState': PropertySchema(
+      id: 14,
       name: r'syncState',
       type: IsarType.byte,
       enumMap: _ProspectsyncStateEnumValueMap,
     ),
     r'telephone': PropertySchema(
-      id: 14,
+      id: 15,
       name: r'telephone',
       type: IsarType.string,
     ),
     r'typeProspect': PropertySchema(
-      id: 15,
+      id: 16,
       name: r'typeProspect',
       type: IsarType.string,
     ),
     r'updatedAt': PropertySchema(
-      id: 16,
+      id: 17,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -197,6 +202,19 @@ const ProspectSchema = CollectionSchema(
       properties: [
         IndexPropertySchema(
           name: r'niveauEtude',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'source_infos': IndexSchema(
+      id: -3986019428943511649,
+      name: r'source_infos',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'source_infos',
           type: IndexType.hash,
           caseSensitive: true,
         )
@@ -306,6 +324,7 @@ int _prospectEstimateSize(
   bytesCount += 3 + object.niveauEtude.length * 3;
   bytesCount += 3 + object.nomComplet.length * 3;
   bytesCount += 3 + object.sexe.length * 3;
+  bytesCount += 3 + object.source_infos.length * 3;
   bytesCount += 3 + object.telephone.length * 3;
   bytesCount += 3 + object.typeProspect.length * 3;
   return bytesCount;
@@ -330,10 +349,11 @@ void _prospectSerialize(
   writer.writeString(offsets[10], object.nomComplet);
   writer.writeByte(offsets[11], object.prospectStatus.index);
   writer.writeString(offsets[12], object.sexe);
-  writer.writeByte(offsets[13], object.syncState.index);
-  writer.writeString(offsets[14], object.telephone);
-  writer.writeString(offsets[15], object.typeProspect);
-  writer.writeDateTime(offsets[16], object.updatedAt);
+  writer.writeString(offsets[13], object.source_infos);
+  writer.writeByte(offsets[14], object.syncState.index);
+  writer.writeString(offsets[15], object.telephone);
+  writer.writeString(offsets[16], object.typeProspect);
+  writer.writeDateTime(offsets[17], object.updatedAt);
 }
 
 Prospect _prospectDeserialize(
@@ -358,14 +378,15 @@ Prospect _prospectDeserialize(
             reader.readByteOrNull(offsets[11])] ??
         ProspectStatus.relancer,
     sexe: reader.readString(offsets[12]),
+    source_infos: reader.readString(offsets[13]),
     syncState:
-        _ProspectsyncStateValueEnumMap[reader.readByteOrNull(offsets[13])] ??
+        _ProspectsyncStateValueEnumMap[reader.readByteOrNull(offsets[14])] ??
             SyncState.pending,
-    telephone: reader.readString(offsets[14]),
-    typeProspect: reader.readString(offsets[15]),
+    telephone: reader.readString(offsets[15]),
+    typeProspect: reader.readString(offsets[16]),
   );
   object.isarId = id;
-  object.updatedAt = reader.readDateTimeOrNull(offsets[16]);
+  object.updatedAt = reader.readDateTimeOrNull(offsets[17]);
   return object;
 }
 
@@ -405,13 +426,15 @@ P _prospectDeserializeProp<P>(
     case 12:
       return (reader.readString(offset)) as P;
     case 13:
+      return (reader.readString(offset)) as P;
+    case 14:
       return (_ProspectsyncStateValueEnumMap[reader.readByteOrNull(offset)] ??
           SyncState.pending) as P;
-    case 14:
-      return (reader.readString(offset)) as P;
     case 15:
       return (reader.readString(offset)) as P;
     case 16:
+      return (reader.readString(offset)) as P;
+    case 17:
       return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -941,6 +964,51 @@ extension ProspectQueryWhere on QueryBuilder<Prospect, Prospect, QWhereClause> {
               indexName: r'niveauEtude',
               lower: [],
               upper: [niveauEtude],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> source_infosEqualTo(
+      String source_infos) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'source_infos',
+        value: [source_infos],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> source_infosNotEqualTo(
+      String source_infos) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'source_infos',
+              lower: [],
+              upper: [source_infos],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'source_infos',
+              lower: [source_infos],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'source_infos',
+              lower: [source_infos],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'source_infos',
+              lower: [],
+              upper: [source_infos],
               includeUpper: false,
             ));
       }
@@ -2867,6 +2935,140 @@ extension ProspectQueryFilter
     });
   }
 
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> source_infosEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'source_infos',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      source_infosGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'source_infos',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> source_infosLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'source_infos',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> source_infosBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'source_infos',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      source_infosStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'source_infos',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> source_infosEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'source_infos',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> source_infosContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'source_infos',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> source_infosMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'source_infos',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      source_infosIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'source_infos',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      source_infosIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'source_infos',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<Prospect, Prospect, QAfterFilterCondition> syncStateEqualTo(
       SyncState value) {
     return QueryBuilder.apply(this, (query) {
@@ -3502,6 +3704,18 @@ extension ProspectQuerySortBy on QueryBuilder<Prospect, Prospect, QSortBy> {
     });
   }
 
+  QueryBuilder<Prospect, Prospect, QAfterSortBy> sortBySource_infos() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'source_infos', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterSortBy> sortBySource_infosDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'source_infos', Sort.desc);
+    });
+  }
+
   QueryBuilder<Prospect, Prospect, QAfterSortBy> sortBySyncState() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'syncState', Sort.asc);
@@ -3721,6 +3935,18 @@ extension ProspectQuerySortThenBy
     });
   }
 
+  QueryBuilder<Prospect, Prospect, QAfterSortBy> thenBySource_infos() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'source_infos', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterSortBy> thenBySource_infosDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'source_infos', Sort.desc);
+    });
+  }
+
   QueryBuilder<Prospect, Prospect, QAfterSortBy> thenBySyncState() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'syncState', Sort.asc);
@@ -3861,6 +4087,13 @@ extension ProspectQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Prospect, Prospect, QDistinct> distinctBySource_infos(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'source_infos', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Prospect, Prospect, QDistinct> distinctBySyncState() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'syncState');
@@ -3972,6 +4205,12 @@ extension ProspectQueryProperty
   QueryBuilder<Prospect, String, QQueryOperations> sexeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'sexe');
+    });
+  }
+
+  QueryBuilder<Prospect, String, QQueryOperations> source_infosProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'source_infos');
     });
   }
 

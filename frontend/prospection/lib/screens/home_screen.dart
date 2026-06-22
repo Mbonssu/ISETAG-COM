@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           // Just 4 last recorded Prospects
           _cachedProspects =
-              prospects.reversed.take(4).toList().reversed.toList();
+              prospects.reversed.take(7).toList().reversed.toList();
           // Just full recorded Prospects
           _cachedProspectsFull = prospects;
 
@@ -660,9 +660,10 @@ class _HomeScreenState extends State<HomeScreen> {
             'color': AppColors.statOrange
           },
           {
-            'icon': Icons.check_circle_outline,
-            'value': stats['visitesFormatted'] ?? '0',
-            'label': 'visits_done'.tr,
+            'icon': Icons.file_copy_sharp,
+            // 'value': stats['visitesFormatted'] ?? '0',
+            'value': stats['fiche_formatted'] ?? '0',
+            'label': 'all_fiches'.tr,
             'color': AppColors.statBlue
           },
           {

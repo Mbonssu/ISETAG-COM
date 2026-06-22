@@ -1,26 +1,29 @@
 /// Configuration centralisée de l'application
 class AppConfig {
   // API Configuration
-  static const String apiBaseUrl = 'http://192.168.30.106:8000';
-  static const String sch = '/ISETAG_COM';
+  static const String apiBaseUrl = 'http://192.168.137.1:8000/';
+  // static const String apiBaseUrl = 'http://192.168.43.234:8000/';
+  static const String sch = 'ISETAG_COM';
   static const String typeApi = '_api/';
   static const String addUsers = '.users/';
   static const String addProspect = '.prospects/';
-  static const String addSpeciality = '.specialite/';
-  static const String addEts = '.etablissement/';
+  static const String addSpeciality = '.specialites/';
+  static const String addEts = '.etablissements/';
   static const String addClasses = '.classes/';
   static const String addInteret = '.classes/';
+  static const String addSrc = '.sources/';
 
 
   static const int apiTimeout = 30;
 
   // POST, GET
-  static const String prospect = '${apiBaseUrl}prosospect$typeApi$sch$addProspect';
+  static const String prospect = '${apiBaseUrl}prospect$typeApi$sch$addProspect';
   static const String speciality = '${apiBaseUrl}specialite$typeApi$sch$addSpeciality';
   static const String classes = '${apiBaseUrl}classe$typeApi$sch$addClasses';
-  static const String ets = '${apiBaseUrl}etablissement$typeApi$sch$addEts';
+  static const String ets = '${apiBaseUrl}campagne$typeApi$sch$addEts';
+  static const String src = '${apiBaseUrl}campagne$typeApi$sch$addSrc';
   static const String users = '${apiBaseUrl}users$typeApi$sch$addUsers';
-  static const String interest = '${apiBaseUrl}interest$typeApi$sch$addInteret';
+  static const String interest = '${apiBaseUrl}specialite$typeApi$sch$addInteret';
 
 
   // App Configuration

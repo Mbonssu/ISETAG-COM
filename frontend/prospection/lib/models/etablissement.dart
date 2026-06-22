@@ -34,44 +34,42 @@ class Etablissement {
   @enumerated
   SyncState syncState;
 
-  Etablissement({
-    required this.idEtablissement,
-    required this.nomEtablissement,
-    this.typeEtablissement,
-    this.adresse,
-    this.telephone,
-    this.ville,
-    this.region,
-    this.createdAt,
-    required this.syncState
-  });
+  Etablissement(
+      {required this.idEtablissement,
+      required this.nomEtablissement,
+      this.typeEtablissement,
+      this.adresse,
+      this.telephone,
+      this.ville,
+      this.region,
+      this.createdAt,
+      required this.syncState});
 
   factory Etablissement.fromJson(Map<String, dynamic> json) => Etablissement(
-        idEtablissement: json['idEtablissement'],
-        nomEtablissement: json['nomEtablissement'] ?? '',
-        typeEtablissement: json['typeEtablissement'],
-        adresse: json['adresse'],
-        telephone: json['telephone'],
-        ville: json['ville'],
-        region: json['region'],
-        createdAt: json['createdAt'] != null
-            ? DateTime.tryParse(json['createdAt'])
-            : null,
-            syncState: json["sync"]
-      );
+      idEtablissement: json['idEtablissement'],
+      nomEtablissement: json['nomEtablissement'] ?? '',
+      typeEtablissement: json['typeEtablissement'],
+      adresse: json['adresse'],
+      telephone: json['telephone'],
+      ville: json['ville'],
+      region: json['region'],
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'])
+          : null,
+      syncState: json["sync"]);
 
   /// Local/UI display
   Map<String, dynamic> toJson() {
     return {
       'idEtablissement': idEtablissement,
-      'nomEtablissement': nomEtablissement,
-      'typeEtablissement': typeEtablissement,
+      'nom': nomEtablissement,
+      'type': typeEtablissement,
       'adresse': adresse,
       'telephone': telephone,
       'ville': ville,
       'region': region,
       'createdAt': createdAt,
-      'classes': classes.map((e) => e.toJson()).toList(),
+      // 'classes': classes.map((e) => e.toJson()).toList(),
     };
   }
 

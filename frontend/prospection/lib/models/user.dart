@@ -107,19 +107,17 @@ class User {
         createdAt: json['createdAt'] ?? DateTime.now().toIso8601String(),
       );
 
-  Map<String, dynamic> toJson() {
-    return {
-      'idUtilisateur': idUtilisateur,
-      'nom': nom,
-      'prenom': prenom,
-      'telephone': telephone,
-      'email': email,
-      'motDePasse': motDePasse,
-      'role': role,
-      'actif': actif,
-      'createdAt': createdAt,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+        'idUtilisateur': idUtilisateur,
+        'nom': nom,
+        'prenom': prenom,
+        'telephone': telephone,
+        'email': email,
+        'motDePasse': motDePasse,
+        'role': role,
+        'actif': actif,
+        'createdAt': createdAt,
+      };
 
   // Helper getters
   String get fullName => '$prenom $nom';

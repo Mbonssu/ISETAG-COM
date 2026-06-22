@@ -12,7 +12,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-        // ✅ AJOUTE CETTE LIGNE (TRÈS IMPORTANTE)
+        // AJOUTE CETTE LIGNE (TRÈS IMPORTANTE)
         isCoreLibraryDesugaringEnabled = true
     }
 
@@ -26,7 +26,7 @@ android {
         targetSdk = 36  // ← Fixe explicitement
         versionCode = 1
         versionName = "1.0.0"
-        // ✅ AJOUTE CETTE LIGNE
+        // AJOUTE CETTE LIGNE
         multiDexEnabled = true
     }
 
@@ -37,7 +37,7 @@ android {
     }
 }
 
-// ✅ AJOUTE CE BLOC dependencies
+//  AJOUTE CE BLOC dependencies
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

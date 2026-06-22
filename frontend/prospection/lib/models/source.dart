@@ -55,11 +55,12 @@ class Source {
   Map<String, dynamic> toJsonApi() {
     return {
       'idSource': idSource,
-      'libelleSource': libelleSource,
+      'libelle': libelleSource,
+      'description': 'src1',
       'createdAt': createdAt.toIso8601String(),
       'syncState': syncState.name,
       // Only send IDs
-      'fiches': fiches.map((f) => f.idFiche).toList(),
+      // 'fiches': fiches.map((f) => f.idFiche).toList(),
     };
   }
 }

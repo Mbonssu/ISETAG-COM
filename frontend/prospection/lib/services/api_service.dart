@@ -87,7 +87,7 @@ class ApiService {
       Map<String, dynamic> data) async {
     try {
       final headers = await _getHeaders();
-      final url = Uri.parse(AppConfig.addSpeciality);
+      final url = Uri.parse(AppConfig.speciality);
       print("URL: $url");
       final response = await _client.post(
         url,
@@ -112,6 +112,7 @@ class ApiService {
         headers: headers,
         body: jsonEncode(data),
       );
+
       return _handleResponse(response);
     } catch (e) {
       throw Exception('Failed to create classe: $e');
@@ -121,11 +122,16 @@ class ApiService {
   // Handle response
   Map<String, dynamic> _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
+      
+      print("📥 Response: ${response.statusCode}");
+      print("📥 Response Body: ${response.body}");
       return {
         'success': true,
         'data': jsonDecode(response.body),
       };
     } else {
+      print("📥 Response: ${response.statusCode}");
+      print("📥 Response Body: ${response.body}");
       return {
         'success': false,
         'message': 'Server error: ${response.statusCode}',
@@ -146,6 +152,7 @@ class ApiService {
         headers: headers,
         body: jsonEncode(data),
       );
+
       return _handleResponse(response);
     } catch (e) {
       throw Exception('Failed to create etablissement: $e');
@@ -156,13 +163,14 @@ class ApiService {
   Future<Map<String, dynamic>> createSource(Map<String, dynamic> data) async {
     try {
       final headers = await _getHeaders();
-      final url = Uri.parse('');
+      final url = Uri.parse(AppConfig.src);
       print("URL: $url");
       final response = await _client.post(
         url,
         headers: headers,
         body: jsonEncode(data),
       );
+
       return _handleResponse(response);
     } catch (e) {
       throw Exception('Failed to create source: $e');
@@ -171,7 +179,6 @@ class ApiService {
 
   // To check whether the API is recheable
   Future<Map<String, dynamic>> healthCheck() async {
-    
     final url = Uri.parse(AppConfig.prospect);
     print("The checkHealth Url: $url");
     try {
@@ -179,6 +186,7 @@ class ApiService {
         url,
         headers: {'Content-Type': 'application/json'},
       );
+
       return _handleResponse(response);
     } catch (e) {
       return {

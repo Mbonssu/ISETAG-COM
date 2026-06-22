@@ -95,7 +95,7 @@ class InteretFiliere {
       'niveauInteret': niveauInteret,
       'commentaire': commentaire,
       'createdAt': createdAt.toIso8601String(),
-      'syncState': syncState
+      'syncState': syncState.name
     };
   }
 }

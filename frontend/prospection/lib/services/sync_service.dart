@@ -146,7 +146,7 @@ class SyncService {
       _lastError = e.toString();
       _statusController.add(_status);
       print('Sync failed: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -286,7 +286,7 @@ class SyncService {
       }
     } catch (e) {
       print('Error syncing fiche ${fiche.idFiche}: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -307,7 +307,7 @@ class SyncService {
       }
     } catch (e) {
       print('Error syncing interet ${interet.idInteret}: $e');
-      throw e;
+      rethrow;
     }
   }
 

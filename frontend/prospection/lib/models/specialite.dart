@@ -45,10 +45,10 @@ class Specialite {
   Map<String, dynamic> toLocalJson() {
     return {
       'idSpecialite': idSpecialite,
-      'libelleSpecialite': libelleSpecialite,
+      'libeleSpecialite': libelleSpecialite,
       'description': description,
       'createdAt': createdAt?.toIso8601String(),
-      'syncState': syncState
+      'syncState': syncState.name
       // 'interets': interets.values.map((i) => i.toJson()).toList(),
     };
   }

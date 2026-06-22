@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:isar/isar.dart';
 import 'package:isetagcom/models/classe.dart';
 import 'package:isetagcom/models/fiche.dart';
@@ -25,6 +27,8 @@ class Prospect {
   final String? email;
   @Index()
   final String niveauEtude;
+  @Index()
+  final String source_infos;
   final String? concerne;
   final String? commentaireGen;
   final String? adresse;
@@ -72,6 +76,7 @@ class Prospect {
     required this.sexe,
     required this.typeProspect,
     required this.createdAt,
+    required this.source_infos,
     required this.syncState,
     this.prospectStatus = ProspectStatus.relancer,
     // String? idEtablissement,
@@ -90,6 +95,7 @@ class Prospect {
       adresse: json['adresse'],
       sexe: json['sexe'],
       typeProspect: json['typeProspect'],
+      source_infos: json['sourceInfos'],
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       syncState: json["sync"]);
 
@@ -105,10 +111,14 @@ class Prospect {
       'concerne': concerne,
       'adresse': adresse,
       'sexe': sexe,
+      "ville": 'ville1',
+      "codePostal": 'cd1',
+      "pays": "CMR",
+      "domaineEtude": 'domaine',
       'typeProspect': typeProspect,
+      'source_infos': source_infos,
       'createdAt': createdAt.toIso8601String(),
       'syncState': syncState.name,
-      // 'interets': interets.map((e) => e.toJson()).toList(),
     };
   }
 
