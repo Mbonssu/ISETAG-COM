@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Edit, Trash2, Eye, Filter, Download, ChevronLeft, ChevronRight, AlertCircle, Calendar, Clock, FileText } from 'lucide-react';
 import Modal from '../../components/common/Modal';
 import { ToastContainer } from '../../components/common/Toast';
+import { useTranslation } from '../../hooks/useTranslation';
 import '../Prospects/Prospects.css';
 
 const SuivisList = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);

@@ -11,11 +11,19 @@
 // ============================================================
 
 /**
- * URL de base de l'API
- * Utilise un chemin relatif qui sera redirigé via le proxy React
- * vers http://192.168.30.106:8000/user_api/ISETAG_COM.users/
+ * IMPORTANT : il n'y a PAS d'URL de base unique.
+ *
+ * Le backend Django expose plusieurs apps, chacune avec son propre préfixe :
+ *   /user_api/ISETAG_COM.users/
+ *   /prospect_api/ISETAG_COM.prospects/
+ *   /campagne_api/ISETAG_COM.campagnes/
+ *   /authentification/login/
+ *
+ * Chaque service (userService, prospectService...) doit donc fournir
+ * l'URL ABSOLUE complète à apiRequest(). Avant ce correctif, une seule
+ * URL de base était figée ici, ce qui rendait impossible d'appeler
+ * autre chose que /user_api/ISETAG_COM.users/.
  */
-const API_BASE_URL = '/user_api/ISETAG_COM.users/';
 
 // ============================================================
 // 2. FONCTIONS UTILITAIRES
@@ -66,17 +74,16 @@ const getCSRFToken = () => {
  * @returns {Promise} - La réponse JSON de l'API
  * @throws {Error} - Lance une erreur si la requête échoue
  */
-export const apiRequest = async (endpoint, options = {}) => {
+export const apiRequest = async (url, options = {}) => {
   // ============================================================
-  // 3a. CONSTRUCTION DE L'URL
+  // 3a. L'URL EST DÉJÀ COMPLÈTE
   // ============================================================
-  
+
   /**
-   * Construction de l'URL complète en concaténant l'URL de base et l'endpoint
-   * Exemple: '/user_api/ISETAG_COM.users/' + '?search=test'
-   *          → '/user_api/ISETAG_COM.users/?search=test'
+   * `url` doit être un chemin absolu fourni par le service appelant,
+   * ex: '/user_api/ISETAG_COM.users/' ou '/user_api/ISETAG_COM.users/5/'
+   * On ne préfixe plus rien automatiquement.
    */
-  const url = `${API_BASE_URL}${endpoint}`;
 
   // ============================================================
   // 3b. RÉCUPÉRATION DES TOKENS D'AUTHENTIFICATION
@@ -102,14 +109,19 @@ export const apiRequest = async (endpoint, options = {}) => {
    * Construction de l'objet de configuration pour fetch()
    * Fusionne les options passées en paramètre avec les options par défaut
    */
+  const isFormData = options.body instanceof FormData;
+
   const config = {
     // Spread operator pour inclure toutes les options passées
     ...options,
     
     // Configuration des headers HTTP
     headers: {
-      // Indique que le corps de la requête est en JSON
-      'Content-Type': 'application/json',
+      // Indique que le corps de la requête est en JSON.
+      // Exception : si on envoie du FormData (ex: upload photoProfil),
+      // il ne faut PAS fixer Content-Type nous-mêmes : le navigateur
+      // doit générer le bon "multipart/form-data; boundary=..." lui-même.
+      ...(!isFormData && { 'Content-Type': 'application/json' }),
       
       // Indique que la réponse attendue est en JSON
       'Accept': 'application/json',
@@ -168,24 +180,30 @@ export const apiRequest = async (endpoint, options = {}) => {
     const contentType = response.headers.get('content-type');
     
     /**
-     * Parse la réponse en fonction de son type
-     * Si c'est du JSON, on le parse avec response.json()
-     * Sinon, on récupère le texte brut pour l'erreur
+     * Parse la réponse en fonction de son type.
+     * Cas particulier : un DELETE réussi renvoie souvent 204 No Content,
+     * donc aucun corps à parser — il ne faut pas appeler response.json()
+     * dans ce cas, sinon ça lève une erreur de parsing.
      */
-    let data;
-    if (contentType && contentType.includes('application/json')) {
-      /**
-       * response.json() parse le JSON reçu
-       * Exemple: { "status": "ok", "data": [...] }
-       */
-      data = await response.json();
-    } else {
-      /**
-       * Si ce n'est pas du JSON, on récupère le texte pour l'erreur
-       * Cela arrive souvent avec les erreurs 403, 404, 500
-       */
-      const text = await response.text();
-      throw new Error(`Erreur ${response.status}: Réponse non-JSON reçue`);
+    let data = null;
+    if (response.status !== 204) {
+      if (contentType && contentType.includes('application/json')) {
+        /**
+         * response.json() parse le JSON reçu
+         * Exemple: { "status": "ok", "data": [...] }
+         */
+        data = await response.json();
+      } else {
+        /**
+         * Si ce n'est pas du JSON, on récupère le texte pour l'erreur
+         * Cela arrive souvent avec les erreurs 403, 404, 500
+         */
+        const text = await response.text();
+        if (!response.ok) {
+          throw new Error(`Erreur ${response.status}: ${text || 'réponse invalide du serveur'}`);
+        }
+        data = text;
+      }
     }
 
     /**
@@ -194,17 +212,35 @@ export const apiRequest = async (endpoint, options = {}) => {
      */
     if (!response.ok) {
       /**
-       * Le backend Django peut renvoyer plusieurs formats d'erreur :
-       * - message: message d'erreur simple
-       * - detail: message détaillé (DRF)
-       * - non_field_errors: erreurs générales
+       * Le backend Django/DRF peut renvoyer plusieurs formats d'erreur :
+       * - { detail: "..." }            -> erreur générale DRF
+       * - { error: "..." }             -> erreur custom des vues de ce projet
+       * - { nom: ["Le nom est requis"] } -> erreurs de validation par champ
        */
-      throw new Error(data.message || data.detail || `Erreur ${response.status}`);
+      const fieldErrors =
+        data && typeof data === 'object'
+          ? Object.entries(data)
+              .filter(([key]) => !['detail', 'error', 'message'].includes(key))
+              .map(([field, errs]) => `${field}: ${Array.isArray(errs) ? errs.join(', ') : errs}`)
+              .join(' | ')
+          : null;
+
+      const message = data?.message || data?.detail || data?.error || fieldErrors || `Erreur ${response.status}`;
+
+      const err = new Error(message);
+      err.status = response.status;
+      // On expose aussi `response` avec un `.data` et un `.json()` pour rester
+      // compatible avec le code existant qui fait `error.response.data`
+      // ou `await error.response.json()` (ex: UtilisateurForm.jsx).
+      err.response = { status: response.status, data, json: async () => data };
+      throw err;
     }
 
     /**
-     * Retourne les données parsées
-     * Exemple: { data: { items: [...], total: 10 } }
+     * Retourne les données parsées.
+     * Le backend de ce projet renvoie directement le JSON de DRF
+     * (un tableau pour une liste, un objet pour un élément) —
+     * PAS un objet enveloppé du type { data: { items: [...] } }.
      */
     return data;
     
@@ -231,58 +267,44 @@ export const apiRequest = async (endpoint, options = {}) => {
 // ============================================================
 
 /**
- * Export des méthodes HTTP pour une utilisation simplifiée
- * 
- * Chaque méthode est une fonction qui appelle apiRequest avec la méthode appropriée
- * 
- * Exemple d'utilisation:
- *   api.get('/prospects')          → GET /user_api/ISETAG_COM.users/prospects/
- *   api.post('/prospects', {...})  → POST /user_api/ISETAG_COM.users/prospects/
- *   api.put('/prospects/1', {...}) → PUT /user_api/ISETAG_COM.users/prospects/1/
- *   api.delete('/prospects/1')     → DELETE /user_api/ISETAG_COM.users/prospects/1/
+ * Export des méthodes HTTP pour une utilisation simplifiée.
+ *
+ * Chaque méthode prend désormais une URL ABSOLUE (et non plus un simple
+ * suffixe collé à une base figée) :
+ *   api.get('/user_api/ISETAG_COM.users/')
+ *   api.post('/user_api/ISETAG_COM.users/', { nom: 'Test' })
+ *   api.put('/user_api/ISETAG_COM.users/APP-1234/', { nom: 'Nouveau' })
+ *   api.delete('/user_api/ISETAG_COM.users/APP-1234/')
  */
 export const api = {
+  /** Requête GET. Exemple: api.get('/user_api/ISETAG_COM.users/?search=test') */
+  get: (url) => apiRequest(url, { method: 'GET' }),
+
   /**
-   * Requête GET
-   * Utilisée pour récupérer des données
-   * Exemple: api.get('?search=test')
+   * Requête POST. Accepte un objet JS classique (sera sérialisé en JSON)
+   * ou un FormData (pour l'upload de fichiers, ex: photoProfil) — dans ce
+   * cas il ne faut PAS appeler JSON.stringify dessus.
    */
-  get: (endpoint) => apiRequest(endpoint, { method: 'GET' }),
-  
-  /**
-   * Requête POST
-   * Utilisée pour créer de nouvelles ressources
-   * Exemple: api.post('', { nom: 'Test' })
-   */
-  post: (endpoint, body) => apiRequest(endpoint, { 
-    method: 'POST', 
-    body: JSON.stringify(body) 
-  }),
-  
-  /**
-   * Requête PUT
-   * Utilisée pour remplacer complètement une ressource
-   * Exemple: api.put('1/', { nom: 'Nouveau' })
-   */
-  put: (endpoint, body) => apiRequest(endpoint, { 
-    method: 'PUT', 
-    body: JSON.stringify(body) 
-  }),
-  
-  /**
-   * Requête PATCH
-   * Utilisée pour modifier partiellement une ressource
-   * Exemple: api.patch('1/', { nom: 'Modification' })
-   */
-  patch: (endpoint, body) => apiRequest(endpoint, { 
-    method: 'PATCH', 
-    body: JSON.stringify(body) 
-  }),
-  
-  /**
-   * Requête DELETE
-   * Utilisée pour supprimer une ressource
-   * Exemple: api.delete('1/')
-   */
-  delete: (endpoint) => apiRequest(endpoint, { method: 'DELETE' }),
+  post: (url, body) =>
+    apiRequest(url, {
+      method: 'POST',
+      body: body instanceof FormData ? body : JSON.stringify(body),
+    }),
+
+  /** Requête PUT. Même règle que POST pour le FormData. */
+  put: (url, body) =>
+    apiRequest(url, {
+      method: 'PUT',
+      body: body instanceof FormData ? body : JSON.stringify(body),
+    }),
+
+  /** Requête PATCH. Même règle que POST pour le FormData. */
+  patch: (url, body) =>
+    apiRequest(url, {
+      method: 'PATCH',
+      body: body instanceof FormData ? body : JSON.stringify(body),
+    }),
+
+  /** Requête DELETE. Exemple: api.delete('/user_api/ISETAG_COM.users/APP-1234/') */
+  delete: (url) => apiRequest(url, { method: 'DELETE' }),
 };
