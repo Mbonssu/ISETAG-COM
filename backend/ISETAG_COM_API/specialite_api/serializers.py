@@ -22,6 +22,18 @@ class interetSpecialiteSerializer(serializers.ModelSerializer):
     idProspect = serializers.PrimaryKeyRelatedField(queryset=Prospect.objects.all())
     prospect_details = serializers.SerializerMethodField(read_only=True)
 
+    def get_specialite_details(self, obj):
+        return {
+            "idSpecialite": obj.idSpecialite.idSpecialite,
+            "libeleSpecialite": obj.idSpecialite.libeleSpecialite
+        }
+
+    def get_prospect_details(self, obj):
+        return {
+            "idProspect": obj.idProspect.idProspect,
+            "nom": obj.idProspect.nomComplet
+        }
+
     class Meta:
         model = interetSpecialite
         fields = '__all__'

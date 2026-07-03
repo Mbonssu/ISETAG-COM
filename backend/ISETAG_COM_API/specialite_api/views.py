@@ -5,9 +5,17 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import SpecialiteSerializer, interetSpecialiteSerializer
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
+from drf_spectacular.utils import extend_schema, extend_schema_view
 # from .ws_utils import notify_service_created, notify_service_updated, notify_service_deleted
 # from authentification.permissions import IsAdmin, IsSuperviseur,IsAgent
 
+
+@extend_schema_view(
+    get=extend_schema(tags=['Spécialités'], summary="Lister les spécialités (filières)", responses=SpecialiteSerializer(many=True)),
+    post=extend_schema(tags=['Spécialités'], summary="Créer une spécialité", request=SpecialiteSerializer, responses=SpecialiteSerializer),
+    put=extend_schema(tags=['Spécialités'], summary="Mettre à jour une spécialité", request=SpecialiteSerializer, responses=SpecialiteSerializer),
+    delete=extend_schema(tags=['Spécialités'], summary="Supprimer une spécialité", responses={200: None}),
+)
 class SpecialiteView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
@@ -57,6 +65,14 @@ class SpecialiteView(APIView):
         specialite.delete()
         return Response({'message': 'Specialite deleted successfully'}, status=200)
     
+
+@extend_schema_view(
+    get=extend_schema(tags=['Intérêts Spécialité'], summary="Lister les intérêts d'un prospect pour une spécialité", responses=interetSpecialiteSerializer(many=True)),
+    post=extend_schema(tags=['Intérêts Spécialité'], summary="Créer un intérêt spécialité", request=interetSpecialiteSerializer, responses=interetSpecialiteSerializer),
+    put=extend_schema(tags=['Intérêts Spécialité'], summary="Mettre à jour un intérêt spécialité", request=interetSpecialiteSerializer, responses=interetSpecialiteSerializer),
+    delete=extend_schema(tags=['Intérêts Spécialité'], summary="Supprimer un intérêt spécialité", responses={200: None}),
+)
+
 class interetSpecialiteView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 

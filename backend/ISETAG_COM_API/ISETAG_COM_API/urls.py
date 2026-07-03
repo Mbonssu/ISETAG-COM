@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView,TokenVerifyView
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
 from ISETAG_COM_API import settings
 
@@ -15,7 +16,12 @@ urlpatterns = [
     path('user_api/',            include('user_api.urls')),
     path('campagne_api/',        include('campagne_api.urls')),
     path('prospect_api/',        include('prospect_api.urls')),
-    path('specialite_api/',       include('specialite_api.urls')),
+    path('specialite_api/',      include('specialite_api.urls')),
+
+    # --- Documentation API (drf-spectacular) ---
+    path('api/schema/',          SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/',            SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/redoc/',           SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

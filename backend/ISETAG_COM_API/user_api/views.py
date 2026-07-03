@@ -7,8 +7,36 @@ from django.db import IntegrityError
 from .models import Utilisateur
 from .serializers import UtilisateurSerializer
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
 
 
+@extend_schema_view(
+    get=extend_schema(
+        tags=['Utilisateurs'],
+        summary="Lister les utilisateurs ou récupérer un utilisateur par pk",
+        parameters=[
+            OpenApiParameter(name='pk', location=OpenApiParameter.PATH, required=False, type=str, description="Identifiant de l'utilisateur (APP-XXXXXXXX)"),
+        ],
+        responses=UtilisateurSerializer(many=True),
+    ),
+    post=extend_schema(
+        tags=['Utilisateurs'],
+        summary="Créer un utilisateur",
+        request=UtilisateurSerializer,
+        responses=UtilisateurSerializer,
+    ),
+    put=extend_schema(
+        tags=['Utilisateurs'],
+        summary="Mettre à jour un utilisateur",
+        request=UtilisateurSerializer,
+        responses=UtilisateurSerializer,
+    ),
+    delete=extend_schema(
+        tags=['Utilisateurs'],
+        summary="Supprimer un utilisateur",
+        responses={204: None},
+    ),
+)
 class UtilisateurView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 

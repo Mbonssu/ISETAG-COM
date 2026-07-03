@@ -1,5 +1,4 @@
 from django.db import models
-from django.db import models
 from prospect_api.models import Prospect
 
 class Specialite(models.Model):
