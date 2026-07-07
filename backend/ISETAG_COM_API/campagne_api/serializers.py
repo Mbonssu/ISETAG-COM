@@ -1,6 +1,6 @@
 import uuid
 
-from .models import CampagneProspection, Sortie, Zone, source, Participation, ficheSortie
+from .models import CampagneProspection, Etablissement, Sortie, Zone, source, Participation, ficheSortie
 from prospect_api.models import Prospect
 from user_api.models import Utilisateur
 from user_api.serializers import UtilisateurSerializer
@@ -17,6 +17,16 @@ class CampagneProspectionSerializer(serializers.ModelSerializer):
     # On génère le code ici avant la sauvegarde
     def create(self, validated_data):
         validated_data['idCampagne'] = f"CAMP-{uuid.uuid4().hex[:8].upper()}"
+        return super().create(validated_data)
+    
+class etablissementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Etablissement
+        fields = '__all__'
+    
+    # On génère le code ici avant la sauvegarde
+    def create(self, validated_data):
+        validated_data['idEtablissement'] = f"ETAB-{uuid.uuid4().hex[:8].upper()}"
         return super().create(validated_data)
 
 #Serializer des donnees de la classe Zone (pour GET, POST, PUT, DELETE)
@@ -42,9 +52,16 @@ class SortieSerializer(serializers.ModelSerializer):
         queryset=CampagneProspection.objects.all()
     )
     
+    idEtablissement = serializers.PrimaryKeyRelatedField(
+        queryset=Etablissement.objects.all(),
+        allow_null=True,
+        required=False
+    )
+    
     #passage des details de la zone et de la campagne dans le serializer pour les inclure dans les réponses API
     campagne_detail = CampagneProspectionSerializer(source='idCampagne', read_only=True)
     zone_detail = ZoneSerializer(source='idZone', read_only=True)
+    etablissement_detail = etablissementSerializer(source='idEtablissement', read_only=True)
 
     class Meta:
         model = Sortie
@@ -119,3 +136,4 @@ class ficheSortieSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['idFiche'] = f"FICHE-{uuid.uuid4().hex[:8].upper()}"
         return super().create(validated_data)
+    

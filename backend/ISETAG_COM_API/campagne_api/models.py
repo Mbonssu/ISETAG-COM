@@ -42,6 +42,7 @@ class Sortie(models.Model):
     idSortie = models.CharField(max_length=25, primary_key=True)
     idZone = models.ForeignKey('campagne_api.Zone', on_delete=models.CASCADE)
     idCampagne = models.ForeignKey('campagne_api.CampagneProspection', on_delete=models.CASCADE)
+    idEtablissement = models.ForeignKey('campagne_api.Etablissement', on_delete=models.CASCADE, null=True, blank=True)
     dateSortie = models.DateTimeField()
     statut = models.CharField(max_length=50)
     typeSortie = models.CharField(max_length=50)
@@ -103,3 +104,20 @@ class Participation(models.Model):
 
     def __str__(self):
         return f"Participation de {self.idUtilisateur.nomComplet} {self.statut}"
+    
+class Etablissement(models.Model):
+    idEtablissement = models.CharField(max_length=25, primary_key=True)
+    nom = models.CharField(max_length=200)
+    adresse = models.CharField(max_length=255)
+    ville = models.CharField(max_length=100)
+    region = models.CharField(max_length=100)
+    type = models.CharField(max_length=100)
+    telephone = models.CharField(max_length=20)
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'etablissement'
+
+    def __str__(self):
+        return self.nom

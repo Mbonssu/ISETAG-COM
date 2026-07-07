@@ -1,5 +1,7 @@
 from django.shortcuts import render
 # from authentification.permissions import IsAdmin, IsSuperviseur,IsAgent
+# from backend.ISETAG_COM_API.user_api.models import Utilisateur
+# from backend.ISETAG_COM_API.user_api.serializers import UtilisateurSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -26,7 +28,14 @@ class ProspectView(APIView):
     #         return [IsAdmin()]         # admins seulement
     #     return [IsAdmin()]             # fallback sécurisé
 
-    def get(self, request):
+    def get(self, request, pk=None):
+        if pk:
+            try:
+                prospect = Prospect.objects.get(pk=pk)
+                serializer = ProspectSerializer(prospect, context={'request': request})
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except Prospect.DoesNotExist:
+                return Response({'error': 'Prospect not found'}, status=status.HTTP_404_NOT_FOUND)
         prospects = Prospect.objects.all()
         serializer = ProspectSerializer(prospects, many=True, context={'request': request})
         return Response(serializer.data)
@@ -84,8 +93,15 @@ class RendezVousView(APIView):
     #         return [IsAdmin()]         # admins seulement
     #     return [IsAdmin()]             # fallback sécurisé
 
-    def get(self, request):
-        rendezvous = RendezVous.objects.all()
+    def get(self, request, pk=None):
+        if pk is None:
+            rendezvous = RendezVous.objects.all()
+        else:
+            try:
+                rendezvous = RendezVous.objects.get(pk=pk)
+            except RendezVous.DoesNotExist:
+                return Response({'error': 'Rendez-vous not found'}, status=status.HTTP_404_NOT_FOUND)
+
         serializer = RendezVousSerializer(rendezvous, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -125,7 +141,7 @@ class RendezVousView(APIView):
         rendezvous.delete()
         return Response({'message': 'Rendez-vous deleted successfully'}, status=status.HTTP_200_OK)
     
-class SuiviProspectListCreateView(APIView):
+class SuiviProspectView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     
     # def get_permissions(self):
@@ -142,8 +158,14 @@ class SuiviProspectListCreateView(APIView):
     #         return [IsAdmin()]         # admins seulement
     #     return [IsAdmin()]             # fallback sécurisé
 
-    def get(self, request):
-        suivis = SuiviProspect.objects.all()
+    def get(self, request, pk=None):
+        if pk is None:
+            suivis = SuiviProspect.objects.all()
+        else:
+            try:
+                suivis = SuiviProspect.objects.get(pk=pk)
+            except SuiviProspect.DoesNotExist:
+                return Response({'error': 'Suivi not found'}, status=status.HTTP_404_NOT_FOUND)
         serializer = SuiviProspectSerializer(suivis, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -157,6 +179,31 @@ class SuiviProspectListCreateView(APIView):
             except IntegrityError:
                 return Response({"error": "Un suivi avec ce libellé existe déjà."}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request, pk):
+        try:
+            suivi = SuiviProspect.objects.get(pk=pk)
+        except SuiviProspect.DoesNotExist:
+            return Response({'error': 'Suivi not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = SuiviProspectSerializer(suivi, data=request.data, context={'request': request})
+        if serializer.is_valid():
+            try:
+                serializer.save()
+                # notify_service_updated(suivi)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except IntegrityError:
+                return Response({"error": "Un suivi avec ce libellé existe déjà."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, pk):
+        try:
+            suivi = SuiviProspect.objects.get(pk=pk)
+        except SuiviProspect.DoesNotExist:
+            return Response({'error': 'Suivi not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        suivi.delete()
+        return Response({'message': 'Suivi deleted successfully'}, status=status.HTTP_200_OK)
 
 class RelanceView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]

@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .serializers import CampagneProspectionSerializer, ZoneSerializer, SortieSerializer, SourceSerializer, ParticipationSerializer, ficheSortieSerializer
-from .models import CampagneProspection, Zone, Sortie, source, Participation, ficheSortie
+from .serializers import CampagneProspectionSerializer, ZoneSerializer, SortieSerializer, SourceSerializer, ParticipationSerializer, etablissementSerializer, ficheSortieSerializer
+from .models import CampagneProspection, Etablissement, Zone, Sortie, source, Participation, ficheSortie
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -313,4 +313,55 @@ class ficheSortieView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         fiche_instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class etablissementView(APIView):
+    
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+    
+    # def get_permissions(self):
+    #     """
+    #     Permissions différentes selon la méthode HTTP.
+    #     """
+    #     if self.request.method == 'GET':
+    #         return [IsSuperviseur()]   # admins + superviseurs
+    #     elif self.request.method == 'POST':
+    #         return [IsAgent()]         # admins seulement
+    #     elif self.request.method == 'PUT':
+    #         return [IsAgent()]         # tous les rôles
+    #     elif self.request.method == 'DELETE':
+    #         return [IsAdmin()]         # admins seulement
+    #     return [IsAdmin()]             # fallback sécurisé
+    
+    def get(self, request):
+        etablissements = Etablissement.objects.all()
+        serializer = etablissementSerializer(etablissements, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request):
+        serializer = etablissementSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request, pk):
+        try:
+            etablissement_instance = Etablissement.objects.get(pk=pk)
+        except Etablissement.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = etablissementSerializer(etablissement_instance, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        try:
+            etablissement_instance = Etablissement.objects.get(pk=pk)
+        except Etablissement.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        etablissement_instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

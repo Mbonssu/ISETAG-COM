@@ -8,5 +8,5 @@ from user_api.views import UtilisateurView
 
 urlpatterns = urlpatterns = [
     path('ISETAG_COM.users/',          UtilisateurView.as_view()),
-    path('ISETAG_COM.users/<int:pk>/', UtilisateurView.as_view()),
+    path('ISETAG_COM.users/<str:pk>/', UtilisateurView.as_view()),
 ] 
