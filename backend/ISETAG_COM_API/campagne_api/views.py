@@ -5,9 +5,17 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
+from drf_spectacular.utils import extend_schema, extend_schema_view
 # from .ws_utils import notify_service_created, notify_service_updated, notify_service_deleted
 # from authentification.permissions import IsAdmin, IsSuperviseur,IsAgent
 
+
+@extend_schema_view(
+    get=extend_schema(tags=['Campagnes'], summary="Lister les campagnes de prospection", responses=CampagneProspectionSerializer(many=True)),
+    post=extend_schema(tags=['Campagnes'], summary="Créer une campagne de prospection", request=CampagneProspectionSerializer, responses=CampagneProspectionSerializer),
+    put=extend_schema(tags=['Campagnes'], summary="Mettre à jour une campagne de prospection", request=CampagneProspectionSerializer, responses=CampagneProspectionSerializer),
+    delete=extend_schema(tags=['Campagnes'], summary="Supprimer une campagne de prospection", responses={204: None}),
+)
 class CampagneView(APIView):
     
     parser_classes = [JSONParser, MultiPartParser, FormParser]
@@ -60,6 +68,13 @@ class CampagneView(APIView):
         campagne.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+
+@extend_schema_view(
+    get=extend_schema(tags=['Zones'], summary="Lister les zones géographiques", responses=ZoneSerializer(many=True)),
+    post=extend_schema(tags=['Zones'], summary="Créer une zone géographique", request=ZoneSerializer, responses=ZoneSerializer),
+    put=extend_schema(tags=['Zones'], summary="Mettre à jour une zone géographique", request=ZoneSerializer, responses=ZoneSerializer),
+    delete=extend_schema(tags=['Zones'], summary="Supprimer une zone géographique", responses={204: None}),
+)
 class ZoneView(APIView):
     
     parser_classes = [JSONParser, MultiPartParser, FormParser]
@@ -111,6 +126,13 @@ class ZoneView(APIView):
         zone.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+
+@extend_schema_view(
+    get=extend_schema(tags=['Sorties'], summary="Lister les sorties terrain", responses=SortieSerializer(many=True)),
+    post=extend_schema(tags=['Sorties'], summary="Créer une sortie terrain", request=SortieSerializer, responses=SortieSerializer),
+    put=extend_schema(tags=['Sorties'], summary="Mettre à jour une sortie terrain", request=SortieSerializer, responses=SortieSerializer),
+    delete=extend_schema(tags=['Sorties'], summary="Supprimer une sortie terrain", responses={204: None}),
+)
 class SortieView(APIView):
         
     parser_classes = [JSONParser, MultiPartParser, FormParser]
@@ -162,6 +184,13 @@ class SortieView(APIView):
         sortie.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+@extend_schema_view(
+    get=extend_schema(tags=['Sources'], summary="Lister les sources de prospection", responses=SourceSerializer(many=True)),
+    post=extend_schema(tags=['Sources'], summary="Créer une source de prospection", request=SourceSerializer, responses=SourceSerializer),
+    put=extend_schema(tags=['Sources'], summary="Mettre à jour une source de prospection", request=SourceSerializer, responses=SourceSerializer),
+    delete=extend_schema(tags=['Sources'], summary="Supprimer une source de prospection", responses={204: None}),
+)
 class SourceView(APIView):
         
     parser_classes = [JSONParser, MultiPartParser, FormParser]
@@ -213,6 +242,13 @@ class SourceView(APIView):
         source_instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+
+@extend_schema_view(
+    get=extend_schema(tags=['Participations'], summary="Lister les participations d'agents aux sorties", responses=ParticipationSerializer(many=True)),
+    post=extend_schema(tags=['Participations'], summary="Créer une participation", request=ParticipationSerializer, responses=ParticipationSerializer),
+    put=extend_schema(tags=['Participations'], summary="Mettre à jour une participation", request=ParticipationSerializer, responses=ParticipationSerializer),
+    delete=extend_schema(tags=['Participations'], summary="Supprimer une participation", responses={204: None}),
+)
 class ParticipationView(APIView):
         
     parser_classes = [JSONParser, MultiPartParser, FormParser]
@@ -264,6 +300,13 @@ class ParticipationView(APIView):
         participation_instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+@extend_schema_view(
+    get=extend_schema(tags=['Fiches de sortie'], summary="Lister les fiches de sortie", responses=ficheSortieSerializer(many=True)),
+    post=extend_schema(tags=['Fiches de sortie'], summary="Créer une fiche de sortie", request=ficheSortieSerializer, responses=ficheSortieSerializer),
+    put=extend_schema(tags=['Fiches de sortie'], summary="Mettre à jour une fiche de sortie", request=ficheSortieSerializer, responses=ficheSortieSerializer),
+    delete=extend_schema(tags=['Fiches de sortie'], summary="Supprimer une fiche de sortie", responses={204: None}),
+)
 class ficheSortieView(APIView):
         
     parser_classes = [JSONParser, MultiPartParser, FormParser]
@@ -315,6 +358,13 @@ class ficheSortieView(APIView):
         fiche_instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+@extend_schema_view(
+    get=extend_schema(tags=['Établissements'], summary="Lister les établissements", responses=etablissementSerializer(many=True)),
+    post=extend_schema(tags=['Établissements'], summary="Créer un établissement", request=etablissementSerializer, responses=etablissementSerializer),
+    put=extend_schema(tags=['Établissements'], summary="Mettre à jour un établissement", request=etablissementSerializer, responses=etablissementSerializer),
+    delete=extend_schema(tags=['Établissements'], summary="Supprimer un établissement", responses={204: None}),
+)
 class etablissementView(APIView):
     
     parser_classes = [JSONParser, MultiPartParser, FormParser]

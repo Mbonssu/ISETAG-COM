@@ -103,7 +103,7 @@ class Participation(models.Model):
         db_table = 'participation'
 
     def __str__(self):
-        return f"Participation de {self.idUtilisateur.nomComplet} {self.statut}"
+        return f"Participation de {self.idUtilisateur.nom} {self.idUtilisateur.prenom} - {self.statut}"
     
 class Etablissement(models.Model):
     idEtablissement = models.CharField(max_length=25, primary_key=True)

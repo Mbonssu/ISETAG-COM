@@ -17,6 +17,12 @@ class RendezVousSerializer(serializers.ModelSerializer):
     
     prospect_details = serializers.SerializerMethodField(read_only=True)
     
+    def get_prospect_details(self, obj):
+        return {
+            "idProspect": obj.idProspect.idProspect,
+            "nom": obj.idProspect.nomComplet
+        }
+    
     class Meta:
         model = RendezVous
         fields = '__all__'
@@ -48,6 +54,13 @@ class SuiviProspectSerializer(serializers.ModelSerializer):
 class RelanceSerializer(serializers.ModelSerializer):
     idProspect = serializers.PrimaryKeyRelatedField(queryset=Prospect.objects.all())
     prospect_details = serializers.SerializerMethodField(read_only=True)
+    
+    def get_prospect_details(self, obj):
+        return {
+            "idProspect": obj.idProspect.idProspect,
+            "nom": obj.idProspect.nomComplet
+        }
+    
     class Meta:
         model = Relance
         fields = '__all__'
