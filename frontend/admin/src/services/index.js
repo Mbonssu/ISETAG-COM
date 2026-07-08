@@ -122,22 +122,40 @@ export { etablissementService } from './etablissementService';
 export { userService } from './userService';
 
 /**
- * Service de gestion des filières
- * 
+ * Service de gestion des spécialités
+ *
+ * ⚠️ CORRIGÉ : ce projet n'a pas de notion de "filière" côté backend.
+ * L'API (ISETAG_COM_API.yaml) expose uniquement :
+ *   /specialite_api/ISETAG_COM.specialites/
+ * Le fichier filiereService.js exporte donc réellement `specialiteService`
+ * (pas `filiereService`, qui n'existe pas et faisait planter cet import).
+ *
  * Fonctions disponibles:
- *   - getAll()   : Récupérer toutes les filières
- *   - getById()  : Récupérer une filière par ID
- *   - create()   : Créer une filière
- *   - update()   : Mettre à jour une filière
- *   - delete()   : Supprimer une filière
- *   - getSpecialites() : Récupérer les spécialités d'une filière
- *   - addSpecialite()  : Ajouter une spécialité à une filière
+ *   - getAll()   : Récupérer toutes les spécialités
+ *   - getById()  : Récupérer une spécialité par ID
+ *   - create()   : Créer une spécialité
+ *   - update()   : Mettre à jour une spécialité
+ *   - delete()   : Supprimer une spécialité
  * 
  * Utilisation:
- *   import { filiereService } from '../services';
- *   const filieres = await filiereService.getAll();
+ *   import { specialiteService } from '../services';
+ *   const specialites = await specialiteService.getAll();
  */
-export { filiereService } from './filiereService';
+export { specialiteService } from './filiereService';
+
+/**
+ * Service de gestion des intérêts (prospect x spécialité x niveau)
+ *
+ * Fonctions disponibles:
+ *   - getAll()          : Récupérer tous les intérêts
+ *   - getByProspect(id)  : Récupérer les intérêts d'un prospect
+ *   - create/update/delete/syncInterets
+ *
+ * Utilisation:
+ *   import { interetService } from '../services';
+ *   const interets = await interetService.getAll();
+ */
+export { interetService } from './interetService';
 
 /**
  * Service de gestion des sources
@@ -290,5 +308,3 @@ export { ficheService } from './ficheService';
  * ✅ Facile à refactoriser
  * ✅ Centralisation des services
  */
-
-export { suiviService } from './suiviService';
