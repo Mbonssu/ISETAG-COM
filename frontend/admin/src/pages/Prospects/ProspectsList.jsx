@@ -8,6 +8,9 @@ import { usePagination } from '../../hooks/usePagination';
 import { useTranslation } from '../../hooks/useTranslation';
 import { prospectService } from '../../services/prospectService';
 import { Prospect } from '../../models/prospect';
+import { SkeletonTable } from '../../components/Skeleton/Skeleton';
+import EmptyState from '../../components/EmptyState/EmptyState';
+import { useUrlState } from '../../hooks/useUrlState';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
@@ -17,9 +20,9 @@ import './Prospects.css';
 const ProspectsList = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterSexe, setFilterSexe] = useState('all');
-  const [filterType, setFilterType] = useState('all');
+  const [searchTerm, setSearchTerm] = useUrlState('q', '');
+  const [filterSexe, setFilterSexe] = useUrlState('sexe', 'all');
+  const [filterType, setFilterType] = useUrlState('type', 'all');
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, prospectId: null, prospectName: '' });
@@ -90,12 +93,21 @@ const ProspectsList = () => {
   };
 
   const renderNoResults = () => (
-    <div className="no-results">
-      <AlertCircle size={48} />
-      <h3>{t('aucunResultat')}</h3>
-      <p>Aucun prospect ne correspond à votre recherche "{searchTerm}"</p>
-      <button className="btn-outline" onClick={() => { setSearchTerm(''); setFilterSexe('all'); setFilterType('all'); }}>{t('effacerFiltres')}</button>
-    </div>
+    <EmptyState
+      variant="search"
+      searchTerm={searchTerm}
+      onClearFilters={() => { setSearchTerm(''); setFilterSexe('all'); setFilterType('all'); }}
+    />
+  );
+
+  const renderEmptyList = () => (
+    <EmptyState
+      variant="empty"
+      title="Aucun prospect pour le moment"
+      message="Commence par ajouter ton premier prospect pour le suivre ici."
+      actionLabel="Ajouter un prospect"
+      onAction={() => navigate('/prospects/new')}
+    />
   );
 
   return (
@@ -155,10 +167,12 @@ const ProspectsList = () => {
       </div>
 
       {loading ? (
-        <p className="page-loading">Chargement des prospects…</p>
+        <SkeletonTable rows={6} columns={6} />
       ) : loadError ? (
         <p className="form-error">{loadError}</p>
-      ) : filteredProspects.length === 0 ? renderNoResults() : (
+      ) : filteredProspects.length === 0 ? (
+        allProspects.length === 0 ? renderEmptyList() : renderNoResults()
+      ) : (
         <>
           <div className="table-container">
             <table className="data-table">

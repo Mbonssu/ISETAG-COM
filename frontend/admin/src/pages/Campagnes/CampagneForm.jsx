@@ -10,7 +10,7 @@ import '../Prospects/Prospects.css';
 // Champs réels : idCampagne, libele, description, dateDebut, dateFin,
 // objectif (texte libre, pas un nombre), type.
 
-const types = ['Email', 'SMS', 'Appel'];
+const types = ['Interurbain', 'Urbain'];
 
 const CampagneForm = () => {
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ const CampagneForm = () => {
   const removeToast = (id) => setToasts(prev => prev.filter(t => t.id !== id));
 
   const [formData, setFormData] = useState({
-    libele: '', type: 'Email', dateDebut: '', dateFin: '', objectif: '', description: '',
+    libele: '', type: 'Urbain', dateDebut: '', dateFin: '', objectif: '', description: '',
   });
 
   useEffect(() => {
@@ -40,7 +40,7 @@ const CampagneForm = () => {
           const data = Array.isArray(raw) ? raw[0] : raw;
           setFormData({
             libele: data?.libele || '',
-            type: data?.type || 'Email',
+            type: data?.type || 'Urbain',
             dateDebut: data?.dateDebut ? data.dateDebut.slice(0, 16) : '',
             dateFin: data?.dateFin ? data.dateFin.slice(0, 16) : '',
             objectif: data?.objectif || '',
@@ -107,14 +107,13 @@ const CampagneForm = () => {
     }
   };
 
-  const getTypeIcon = (type) => {
-    switch (type) {
-      case 'Email': return <Mail size={18} />;
-      case 'SMS': return <Smartphone size={18} />;
-      case 'Appel': return <Phone size={18} />;
-      default: return <Mail size={18} />;
-    }
-  };
+  // const getTypeIcon = (type) => {
+  //   switch (type) {
+  //     case 'Interubain': return < size={18} />;
+  //     case 'Urbain': return <Smartphone size={18} />;
+  //     default: return <Mail size={18} />;
+  //   }
+  // };
 
   if (loading) {
     return <div className="page-container"><div className="loading-container"><Loader size={48} className="spin" /><p>Chargement...</p></div></div>;
@@ -145,7 +144,7 @@ const CampagneForm = () => {
           <div className="form-group">
             <label>Type de campagne</label>
             <div className="input-icon">
-              {getTypeIcon(formData.type)}
+              {/* {getTypeIcon(formData.type)} */}
               <select name="type" value={formData.type} onChange={handleChange} disabled={saving}>
                 {types.map(t => <option key={t} value={t}>{t}</option>)}
               </select>

@@ -46,14 +46,14 @@ const CampagnesList = () => {
 
   useEffect(() => { fetchCampagnes(); }, []);
 
-  const getTypeIcon = (type) => {
-    switch (type) {
-      case 'Email': return <Mail size={16} />;
-      case 'SMS': return <Smartphone size={16} />;
-      case 'Appel': return <Phone size={16} />;
-      default: return <Mail size={16} />;
-    }
-  };
+  // const getTypeIcon = (type) => {
+  //   switch (type) {
+  //     case 'Email': return <Mail size={16} />;
+  //     case 'SMS': return <Smartphone size={16} />;
+  //     case 'Appel': return <Phone size={16} />;
+  //     default: return <Mail size={16} />;
+  //   }
+  // };
 
   const formatDate = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '-');
 
@@ -140,7 +140,7 @@ const CampagnesList = () => {
                 {paginatedItems.map((campagne) => (
                   <tr key={campagne.idCampagne}>
                     <td><strong>{campagne.libele}</strong></td>
-                    <td><div className="type-badge">{getTypeIcon(campagne.type)}<span>{campagne.type}</span></div></td>
+                    <td><div className="type-badge"><span>{campagne.type}</span></div></td>
                     <td><div className="date-range"><small>{formatDate(campagne.dateDebut)}</small><small>→</small><small>{formatDate(campagne.dateFin)}</small></div></td>
                     <td>{campagne.objectif}</td>
                     <td>

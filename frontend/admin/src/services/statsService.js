@@ -113,11 +113,24 @@ export function computeKPIs({ prospects, relances, sorties, agents }) {
 // les N derniers mois, pour tracer les deux courbes du graphe.
 export function computeEvolution(prospects, relances, monthsBack = 7) {
   const now = new Date();
-  const buckets = [];
 
-  for (let i = monthsBack - 1; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    buckets.push({ key: monthKey(d), label: `${MONTHS_FR[d.getMonth()]} ${d.getFullYear()}`, total: 0, relance: 0 });
+  // Début fixe : à partir de juin (mois=5)
+  // On prend soit juin de l'année courante (si on est avant juin),
+  // soit juin de l'année précédente (si on est après juin).
+  const startYear = now.getMonth() >= 5 ? now.getFullYear() : now.getFullYear() - 1;
+  const startDate = new Date(startYear, 5, 1); // 1er juin
+
+  // Pour rester compatible avec l'ancien param `monthsBack`, on limite la fenêtre.
+  const windowMonths = Math.max(1, monthsBack);
+  const buckets = [];
+  for (let i = 0; i < windowMonths; i++) {
+    const d = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
+    buckets.push({
+      key: monthKey(d),
+      label: `${MONTHS_FR[d.getMonth()]} ${d.getFullYear()}`,
+      total: 0,
+      relance: 0,
+    });
   }
 
   prospects.forEach((p) => {

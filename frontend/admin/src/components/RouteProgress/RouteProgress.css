@@ -1,0 +1,17 @@
+.route-progress-track {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 9999;
+  background: transparent;
+  pointer-events: none;
+}
+
+.route-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #2d7a3a, #f5c842);
+  box-shadow: 0 0 8px rgba(45, 122, 58, 0.6);
+  transition: width 0.25s ease-out;
+}
