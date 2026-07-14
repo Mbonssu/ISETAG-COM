@@ -35,7 +35,14 @@ class CampagneView(APIView):
     #     return [IsAdmin()]             # fallback sécurisé
 
     
-    def get(self, request):
+    def get(self, request, pk=None):
+        if pk is not None:
+            try:
+                campagne = CampagneProspection.objects.get(pk=pk)
+                serializer = CampagneProspectionSerializer(campagne)
+                return Response(serializer.data)
+            except CampagneProspection.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
         campagnes = CampagneProspection.objects.all()
         serializer = CampagneProspectionSerializer(campagnes, many=True)
         return Response(serializer.data)
@@ -93,7 +100,14 @@ class ZoneView(APIView):
     #         return [IsAdmin()]         # admins seulement
     #     return [IsAdmin()]             # fallback sécurisé
     
-    def get(self, request):
+    def get(self, request, pk=None):
+        if(pk):
+            try:
+                Zones = Zone.objects.filter(idZone=pk)
+                serializer = ZoneSerializer(Zones, many=True)
+                return Response(serializer.data)
+            except Zone.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
         zones = Zone.objects.all()
         serializer = ZoneSerializer(zones, many=True)
         return Response(serializer.data)
@@ -151,7 +165,14 @@ class SortieView(APIView):
     #         return [IsAdmin()]         # admins seulement
     #     return [IsAdmin()]             # fallback sécurisé
     
-    def get(self, request):
+    def get(self, request, pk=None):
+        if pk is not None:
+            try:
+                sortie = Sortie.objects.get(pk=pk)
+                serializer = SortieSerializer(sortie)
+                return Response(serializer.data)
+            except Sortie.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
         sorties = Sortie.objects.all()
         serializer = SortieSerializer(sorties, many=True)
         return Response(serializer.data)
@@ -209,7 +230,14 @@ class SourceView(APIView):
     #         return [IsAdmin()]         # admins seulement
     #     return [IsAdmin()]             # fallback sécurisé
     
-    def get(self, request):
+    def get(self, request, pk=None):
+        if(pk):
+            try:
+                sources = source.objects.filter(idSource=pk)
+            except source.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            serializer = SourceSerializer(sources, many=True)
+            return Response(serializer.data)
         sources = source.objects.all()
         serializer = SourceSerializer(sources, many=True)
         return Response(serializer.data)
@@ -267,7 +295,14 @@ class ParticipationView(APIView):
     #         return [IsAdmin()]         # admins seulement
     #     return [IsAdmin()]             # fallback sécurisé
     
-    def get(self, request):
+    def get(self, request, pk=None):
+        if pk is not None:
+            try:
+                participation_instance = Participation.objects.get(pk=pk)
+                serializer = ParticipationSerializer(participation_instance)
+                return Response(serializer.data)
+            except Participation.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
         participations = Participation.objects.all()
         serializer = ParticipationSerializer(participations, many=True)
         return Response(serializer.data)
@@ -325,7 +360,14 @@ class ficheSortieView(APIView):
     #         return [IsAdmin()]         # admins seulement
     #     return [IsAdmin()]             # fallback sécurisé
     
-    def get(self, request):
+    def get(self, request, pk=None):
+        if(pk):
+            try:
+                fiches = ficheSortie.objects.filter(idFiche=pk)
+            except ficheSortie.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            serializer = ficheSortieSerializer(fiches, many=True)
+            return Response(serializer.data)
         fiches = ficheSortie.objects.all()
         serializer = ficheSortieSerializer(fiches, many=True)
         return Response(serializer.data)
@@ -383,8 +425,12 @@ class etablissementView(APIView):
     #         return [IsAdmin()]         # admins seulement
     #     return [IsAdmin()]             # fallback sécurisé
     
-    def get(self, request):
-        etablissements = Etablissement.objects.all()
+    def get(self, request,pk=None):
+        if pk is None:
+            etablissements = Etablissement.objects.all()
+        else:
+            etablissements = Etablissement.objects.filter(pk=pk)
+
         serializer = etablissementSerializer(etablissements, many=True)
         return Response(serializer.data)
     

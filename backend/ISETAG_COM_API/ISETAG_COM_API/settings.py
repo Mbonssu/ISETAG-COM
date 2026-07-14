@@ -23,7 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'channels',
+    #'channels',
     'campagne_api',
     'prospect_api',
     'user_api',
@@ -60,6 +60,7 @@ else:
         'http://127.0.0.1:5173',
         'http://localhost:3000',
         'http://127.0.0.1:3000',
+        'https://cake-reset-smoky.ngrok-free.dev'
     ]
 CORS_ALLOW_CREDENTIALS = True
 

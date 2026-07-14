@@ -321,3 +321,36 @@ class RelanceView(APIView):
 
         relance.delete()
         return Response({'message': 'Relance deleted successfully'}, status=status.HTTP_200_OK)
+
+class ProspectRelanceView(APIView):
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def get(self, request, prospect_id):
+        try:
+            relances = Relance.objects.filter(idProspect=prospect_id)
+            serializer = RelanceSerializer(relances, many=True, context={'request': request})
+            return Response(serializer.data)
+        except Prospect.DoesNotExist:
+            return Response({'error': 'Prospect not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+class ProspectRendezVousView(APIView):
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def get(self, request, prospect_id):
+        try:
+            rendezvous = RendezVous.objects.filter(idProspect=prospect_id)
+            serializer = RendezVousSerializer(rendezvous, many=True, context={'request': request})
+            return Response(serializer.data)
+        except Prospect.DoesNotExist:
+            return Response({'error': 'Prospect not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+class ProspectSuiviView(APIView):
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def get(self, request, prospect_id):
+        try:
+            suivis = SuiviProspect.objects.filter(idProspect=prospect_id)
+            serializer = SuiviProspectSerializer(suivis, many=True, context={'request': request})
+            return Response(serializer.data)
+        except Prospect.DoesNotExist:
+            return Response({'error': 'Prospect not found'}, status=status.HTTP_404_NOT_FOUND)

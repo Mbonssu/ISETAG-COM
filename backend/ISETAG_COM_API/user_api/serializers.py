@@ -1,11 +1,14 @@
 from rest_framework import serializers
 from .models import Utilisateur
 import uuid
+from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.types import OpenApiTypes
 
 class UtilisateurSerializer(serializers.ModelSerializer):
     
     photoProfil = serializers.SerializerMethodField()
 
+    @extend_schema_field(OpenApiTypes.URI)
     def get_photoProfil(self, obj):
         if obj.photoProfil and obj.photoProfil.name:
             request = self.context.get('request')

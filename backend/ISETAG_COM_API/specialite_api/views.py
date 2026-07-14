@@ -33,10 +33,24 @@ class SpecialiteView(APIView):
     #         return [IsAdmin()]         # admins seulement
     #     return [IsAdmin()]             # fallback sécurisé
     
-    def get(self, request):
-        specialites = Specialite.objects.all()
-        serializer = SpecialiteSerializer(specialites, many=True)
+    def get(self, request, pk=None):
+        if pk is None:
+            specialites = Specialite.objects.all()
+            serializer = SpecialiteSerializer(specialites, many=True, context={'request': request})
+            return Response(serializer.data)
+
+        try:
+            specialite = Specialite.objects.get(pk=pk)
+        except Specialite.DoesNotExist:
+            return Response({'error': 'Specialite not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = SpecialiteSerializer(specialite, context={'request': request})
         return Response(serializer.data)
+    
+    # def get(self, request):
+    #     specialites = Specialite.objects.all()
+    #     serializer = SpecialiteSerializer(specialites, many=True)
+    #     return Response(serializer.data)
     
     def post(self, request):
         serializer = SpecialiteSerializer(data=request.data)
@@ -72,7 +86,6 @@ class SpecialiteView(APIView):
     put=extend_schema(tags=['Intérêts Spécialité'], summary="Mettre à jour un intérêt spécialité", request=interetSpecialiteSerializer, responses=interetSpecialiteSerializer),
     delete=extend_schema(tags=['Intérêts Spécialité'], summary="Supprimer un intérêt spécialité", responses={200: None}),
 )
-
 class interetSpecialiteView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
@@ -107,3 +120,11 @@ class interetSpecialiteView(APIView):
             return Response({'error': 'Interet not found'}, status=404)
         interet.delete()
         return Response({'message': 'Interet deleted successfully'}, status=200)
+    
+class interetSpecialiteByProspectView(APIView):
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def get(self, request, prospect_id):
+        interets = interetSpecialite.objects.filter(idProspect=prospect_id)
+        serializer = interetSpecialiteSerializer(interets, many=True)
+        return Response(serializer.data)

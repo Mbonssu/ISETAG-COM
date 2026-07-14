@@ -4,6 +4,7 @@ from prospect_api.models import Prospect
 class Specialite(models.Model):
     idSpecialite = models.CharField(max_length=25, primary_key=True)
     libeleSpecialite = models.CharField(max_length=200)
+    acronyme = models.CharField(max_length=50, null = True, blank = True)
     description = models.TextField()
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)

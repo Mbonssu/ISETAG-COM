@@ -1,21 +1,21 @@
 from django.db import models
 from user_api.models import Utilisateur
-# from campagne_api.models import Campagne
+from campagne_api.models import source
 
 class Prospect(models.Model):
     idProspect = models.CharField(max_length=25, primary_key=True)
     nomComplet = models.CharField(max_length=200)
-    email = models.EmailField(max_length=254)
-    telephone = models.CharField(max_length=20)
-    adresse = models.CharField(max_length=255)
-    ville = models.CharField(max_length=100)
-    codePostal = models.CharField(max_length=20)
-    pays = models.CharField(max_length=100)
-    sexe = models.CharField(max_length=10)
+    email = models.EmailField(max_length=254, null = True, blank = True)
+    telephone = models.CharField(max_length=20, null = True, blank = True)
+    adresse = models.CharField(max_length=255, null = True, blank = True)
+    ville = models.CharField(max_length=100, null = True, blank = True)
+    codePostal = models.CharField(max_length=20, null = True, blank = True)
+    pays = models.CharField(max_length=100, null = True, blank = True)
+    sexe = models.CharField(max_length=10, null = True, blank = True)
     dateNaissance = models.DateField(null = True, blank = True)
-    niveauEtude = models.CharField(max_length=100)
-    domaineEtude = models.CharField(max_length=100)
-    typeProspect = models.CharField(max_length=50)
+    niveauEtude = models.CharField(max_length=100, null = True, blank = True)
+    domaineEtude = models.CharField(max_length=100, null = True, blank = True)
+    typeProspect = models.CharField(max_length=50, null = True, blank = True)
     nomParent = models.CharField(max_length=200, null = True, blank = True)
     numeroParent = models.CharField(max_length=20, null = True, blank = True)
     specialiteInteret = models.ManyToManyField('specialite_api.Specialite', through='specialite_api.interetSpecialite')

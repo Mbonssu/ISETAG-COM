@@ -121,3 +121,5 @@ class Etablissement(models.Model):
 
     def __str__(self):
         return self.nom
+
+#class classe(models.model):
