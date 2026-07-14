@@ -2,18 +2,18 @@
 // ignore_for_file: avoid_print
 
 import 'dart:async';
-import 'package:flutter/material.dart';
+// import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:isar/isar.dart';
-import 'package:isetagcom/models/agent_commercial.dart';
-import 'package:isetagcom/models/classe.dart';
-import 'package:isetagcom/models/etablissement.dart';
+// import 'package:isetagcom/models/agent_commercial.dart';
+// import 'package:isetagcom/models/classe.dart';
+// import 'package:isetagcom/models/etablissement.dart';
 import 'package:isetagcom/models/fiche.dart';
 import 'package:isetagcom/models/interet_filiere.dart';
 import 'package:isetagcom/models/pros.dart';
-import 'package:isetagcom/models/source.dart';
-import 'package:isetagcom/models/specialite.dart';
-import 'package:isetagcom/models/user.dart';
+// import 'package:isetagcom/models/source.dart';
+// import 'package:isetagcom/models/specialite.dart';
+// import 'package:isetagcom/models/user.dart';
 import 'package:isetagcom/models/localStorage/local_storage.dart';
 // import 'package:isetagcom/services/api_service.dart';
 // import 'package:isetagcom/utils/sync_queue.dart';
@@ -146,7 +146,7 @@ class SyncService {
       _lastError = e.toString();
       _statusController.add(_status);
       print('Sync failed: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -259,7 +259,7 @@ class SyncService {
       }
     } catch (e) {
       print('Error syncing prospect ${prospect.idProspect}: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -286,7 +286,7 @@ class SyncService {
       }
     } catch (e) {
       print('Error syncing fiche ${fiche.idFiche}: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -307,7 +307,7 @@ class SyncService {
       }
     } catch (e) {
       print('Error syncing interet ${interet.idInteret}: $e');
-      throw e;
+      rethrow;
     }
   }
 

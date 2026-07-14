@@ -8,6 +8,7 @@ import 'package:isetagcom/models/stats.dart';
 import '../models/localStorage/local_storage.dart';
 import '../services/translation_service.dart';
 import '../utils/themes/app_colors.dart';
+import '../widgets/sync_progress.dart';
 import 'prospect_detail_screen.dart';
 import '../models/prospectData.dart';
 import '../routes/app_router.dart';
@@ -30,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Contrôleur pour le rafraîchissement
   late StreamSubscription<List<ProspectDetails>> _prospectsSubscription;
-  
+
   // Service de chargement
   final LoadingService _loadingService = LoadingService();
 
@@ -47,10 +48,10 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           // Just 4 last recorded Prospects
           _cachedProspects =
-              prospects.reversed.take(4).toList().reversed.toList();
+              prospects.reversed.take(7).toList().reversed.toList();
           // Just full recorded Prospects
           _cachedProspectsFull = prospects;
-          
+
           _isLoadingProspects = false;
           Stats["all_prosp"] = prospects.length;
         });
@@ -85,7 +86,12 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _buildNeumorphicBackground(
         child: Column(
           children: [
-            const SizedBox(height: 20),
+            // ✅ SyncProgress in a Container with proper padding
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: const SyncProgress(),
+            ),
+            const SizedBox(height: 4),
             _buildNeumorphicHeader(isSmallScreen),
             Expanded(child: _buildBody(isSmallScreen)),
           ],
@@ -251,7 +257,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.badgeOrange.withOpacity(0.4),
+                                    color:
+                                        AppColors.badgeOrange.withOpacity(0.4),
                                     blurRadius: 4,
                                     offset: const Offset(0, 2),
                                   ),
@@ -304,14 +311,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(
                           child: TextField(
                             onTap: () {
-                              _loadingService.show(context, message: 'Chargement...');
-                              Future.delayed(const Duration(milliseconds: 300), () {
+                              _loadingService.show(context,
+                                  message: 'Chargement...');
+                              Future.delayed(const Duration(milliseconds: 300),
+                                  () {
                                 _loadingService.hide();
                                 Navigator.pushNamed(
-                                  context, 
-                                  AppRoutes.prospectsList,
-                                  arguments: {'prospectsList': _cachedProspectsFull}
-                                );
+                                    context, AppRoutes.prospectsList,
+                                    arguments: {
+                                      'prospectsList': _cachedProspectsFull
+                                    });
                               });
                             },
                             decoration: InputDecoration(
@@ -550,9 +559,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     _loadingService.show(context, message: 'loading'.tr);
                     Future.delayed(const Duration(milliseconds: 500), () {
                       _loadingService.hide();
-                      Navigator.pushNamed(context, AppRoutes.prospectsList, arguments: {
-                        'prospectsList': _cachedProspectsFull
-                      });
+                      Navigator.pushNamed(context, AppRoutes.prospectsList,
+                          arguments: {'prospectsList': _cachedProspectsFull});
                     });
                   },
                   child: Text(
@@ -574,7 +582,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Padding(
                       padding: EdgeInsets.all(32),
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E7D32)),
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Color(0xFF2E7D32)),
                       ),
                     ),
                   )
@@ -651,9 +660,10 @@ class _HomeScreenState extends State<HomeScreen> {
             'color': AppColors.statOrange
           },
           {
-            'icon': Icons.check_circle_outline,
-            'value': stats['visitesFormatted'] ?? '0',
-            'label': 'visits_done'.tr,
+            'icon': Icons.file_copy_sharp,
+            // 'value': stats['visitesFormatted'] ?? '0',
+            'value': stats['fiche_formatted'] ?? '0',
+            'label': 'all_fiches'.tr,
             'color': AppColors.statBlue
           },
           {
@@ -815,7 +825,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => ProspectDetailScreen(prospect: prospectDetail),
+                    builder: (_) =>
+                        ProspectDetailScreen(prospect: prospectDetail),
                   ),
                 );
               });

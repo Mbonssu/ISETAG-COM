@@ -67,14 +67,21 @@ class User {
   @Index(unique: true)
   String idUtilisateur;
 
+  @Index()
   String nom;
+  @Index()
   String prenom;
+  @Index()
   String telephone;
+  @Index()
   String? email;
   String motDePasse;
   String role; // 'admin', 'agent', 'user'
   bool actif;
-  String? createdAt;
+  @Index()
+  DateTime? createdAt;
+  @Index()
+  DateTime? updatedAt;
 
   User({
     required this.idUtilisateur,
@@ -100,19 +107,17 @@ class User {
         createdAt: json['createdAt'] ?? DateTime.now().toIso8601String(),
       );
 
-  Map<String, dynamic> toJson() {
-    return {
-      'idUtilisateur': idUtilisateur,
-      'nom': nom,
-      'prenom': prenom,
-      'telephone': telephone,
-      'email': email,
-      'motDePasse': motDePasse,
-      'role': role,
-      'actif': actif,
-      'createdAt': createdAt,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+        'idUtilisateur': idUtilisateur,
+        'nom': nom,
+        'prenom': prenom,
+        'telephone': telephone,
+        'email': email,
+        'motDePasse': motDePasse,
+        'role': role,
+        'actif': actif,
+        'createdAt': createdAt,
+      };
 
   // Helper getters
   String get fullName => '$prenom $nom';

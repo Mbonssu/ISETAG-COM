@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:isar/isar.dart';
 import 'package:isetagcom/models/localStorage/local_storage.dart';
 import 'package:isetagcom/models/prospectData.dart';
+import '../models/classe.dart';
+import '../models/etablissement.dart';
+import '../models/interet_filiere.dart';
+import '../models/pros.dart';
+import '../models/specialite.dart';
 import '../services/notification_service.dart';
 import '../services/translation_service.dart';
 import '../utils/status.dart';
@@ -16,9 +22,17 @@ class RelancesScreen extends StatefulWidget {
 }
 
 class _RelancesScreenState extends State<RelancesScreen> {
-  List<ProspectDetails> _relancesProspects = [];
-  List<ProspectDetails> _filteredProspects = [];
+  // ✅ Pagination
+  static const int _pageSize = 20;
+  int _currentPage = 0;
   bool _isLoading = true;
+  bool _hasMoreData = true;
+  bool _isLoadingMore = false;
+  
+  List<ProspectDetails> _allProspects = [];
+  List<ProspectDetails> _filteredProspects = [];
+  
+  final ScrollController _scrollController = ScrollController();
   String _searchQuery = '';
   String _filterType = 'all';
 
@@ -37,6 +51,20 @@ class _RelancesScreenState extends State<RelancesScreen> {
     super.initState();
     _loadRelances();
     _initNotificationService();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= 
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMoreData();
+    }
   }
 
   Future<void> _initNotificationService() async {
@@ -44,26 +72,141 @@ class _RelancesScreenState extends State<RelancesScreen> {
   }
 
   Future<void> _loadRelances() async {
-    setState(() => _isLoading = true);
-
-    final allProspectsRaw = await LocalStorage.instance.getAllProspects();
-
-    final now = DateTime.now();
-    final allProspects = <ProspectDetails>[];
-    for (final prospect in allProspectsRaw) {
-      allProspects
-          .add(await LocalStorage.instance.buildProspectDetails(prospect));
-    }
-    _relancesProspects = allProspects.where((p) {
-      return p.prosp.date_relance != null &&
-          p.prosp.prospectStatus == ProspectStatus.relancer &&
-          p.prosp.date_relance!.isBefore(now.add(const Duration(days: 7)));
-    }).toList();
-
-    _applyFilters();
+    setState(() {
+      _isLoading = true;
+      _currentPage = 0;
+      _allProspects = [];
+      _filteredProspects = [];
+      _hasMoreData = true;
+    });
+    
+    await _loadProspects();
     setState(() => _isLoading = false);
+  }
 
-    _checkOverdueNotifications();
+  Future<void> _loadProspects() async {
+    if (!_hasMoreData || _isLoadingMore) return;
+    
+    setState(() => _isLoadingMore = true);
+    
+    try {
+      final newProspects = await _getPaginatedRelances(
+        page: _currentPage,
+        pageSize: _pageSize,
+      );
+      
+      if (newProspects.isEmpty) {
+        setState(() => _hasMoreData = false);
+      } else {
+        setState(() {
+          _allProspects.addAll(newProspects);
+          _currentPage++;
+          _applyFilters();
+        });
+      }
+    } catch (e) {
+      print('Error loading relances: $e');
+    } finally {
+      setState(() => _isLoadingMore = false);
+    }
+  }
+
+  Future<List<ProspectDetails>> _getPaginatedRelances({
+    required int page,
+    required int pageSize,
+  }) async {
+    final localStorage = LocalStorage.instance;
+    final isar = localStorage.isar;
+    
+    final now = DateTime.now();
+    final weekFromNow = now.add(const Duration(days: 7));
+    
+    // ✅ Get prospects with date_relance in next 7 days
+    final prospects = await isar.prospects
+        .where()
+        .filter()
+        .date_relanceIsNotNull()
+        .and()
+        .date_relanceBetween(now, weekFromNow)
+        .offset(page * pageSize)
+        .limit(pageSize)
+        .findAll();
+    
+    if (prospects.isEmpty) return [];
+    
+    // ✅ Batch load all relations
+    final prospectIds = prospects.map((p) => p.idProspect).toList();
+    
+    final allInterets = await isar.interetFilieres
+        .where()
+        .filter()
+        .anyOf(prospectIds, (q, id) => q.idProspectEqualTo(id))
+        .findAll();
+    
+    final specialiteIds = allInterets.map((i) => i.idSpecialite).toList();
+    final allSpecialites = specialiteIds.isNotEmpty 
+        ? await isar.specialites
+            .where()
+            .anyOf(specialiteIds, (q, id) => q.idSpecialiteEqualTo(id))
+            .findAll()
+        : [];
+    
+    final specialiteMap = {
+      for (var s in allSpecialites) s.idSpecialite: s
+    };
+    
+    final classeIds = prospects.map((p) => p.idClass).toList();
+    final allClasses = await isar.classes
+        .where()
+        .anyOf(classeIds, (q, id) => q.idClasseEqualTo(id))
+        .findAll();
+    
+    final classeMap = {
+      for (var c in allClasses) c.idClasse: c
+    };
+    
+    final etsIds = allClasses.map((c) => c.idEts).toList();
+    final allEts = await isar.etablissements
+        .where()
+        .anyOf(etsIds, (q, id) => q.idEtablissementEqualTo(id))
+        .findAll();
+    
+    final etsMap = {
+      for (var e in allEts) e.idEtablissement: e
+    };
+    
+    // ✅ Build details
+    final detailsList = <ProspectDetails>[];
+    for (final prospect in prospects) {
+      final interets = allInterets.where((i) => i.idProspect == prospect.idProspect).toList();
+      final specialities = interets.map((i) {
+        final spec = specialiteMap[i.idSpecialite];
+        return spec != null ? SpecialityDetail(
+          libelleSpecialite: spec.libelleSpecialite,
+          orderPreference: i.ordrePreference,
+          niveau: i.niveauInteret,
+          commentaire: i.commentaire,
+        ) : null;
+      }).whereType<SpecialityDetail>().toList()
+        ..sort((a, b) => a.orderPreference.compareTo(b.orderPreference));
+      
+      final classe = classeMap[prospect.idClass];
+      final ets = classe != null ? etsMap[classe.idEts] : null;
+      
+      detailsList.add(ProspectDetails(
+        prosp: prospect,
+        etablissement: ets?.nomEtablissement ?? 'Non spécifié',
+        classe: classe?.libelleClasse ?? 'Non spécifié',
+        specialities: specialities,
+      ));
+    }
+    
+    return detailsList;
+  }
+
+  void _loadMoreData() {
+    if (!_hasMoreData || _isLoadingMore) return;
+    _loadProspects();
   }
 
   void _applyFilters() {
@@ -71,7 +214,7 @@ class _RelancesScreenState extends State<RelancesScreen> {
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
     final endOfWeek = startOfWeek.add(const Duration(days: 7));
 
-    _filteredProspects = _relancesProspects.where((p) {
+    _filteredProspects = _allProspects.where((p) {
       final dateRelance = p.prosp.date_relance!;
 
       switch (_filterType) {
@@ -104,54 +247,9 @@ class _RelancesScreenState extends State<RelancesScreen> {
         .sort((a, b) => a.prosp.date_relance!.compareTo(b.prosp.date_relance!));
   }
 
-  // Future<void> _checkOverdueNotifications() async {
-  //   final now = DateTime.now();
-  //   final overdueProspects = _relancesProspects.where((p) {
-  //     return p.prosp.date_relance!.isBefore(now) &&
-  //         !_appNotifications.any((n) => n['prospectId'] == p.prosp.idProspect);
-  //   }).toList();
-
-  //   for (final prospect in overdueProspects) {
-  //     setState(() {
-  //       _appNotifications.insert(0, {
-  //         'id': DateTime.now().millisecondsSinceEpoch,
-  //         'prospectId': prospect.prosp.idProspect,
-  //         'title': 'reminder_overdue'.tr,
-  //         'body': 'reminder_overdue_body'.tr.replaceFirst('{name}', prospect.prosp.nomComplet),
-  //         'date': now,
-  //         'read': false,
-  //       });
-  //     });
-
-  //     await NotificationService().showNotification(
-  //       id: DateTime.now().millisecondsSinceEpoch,
-  //       title: 'reminder_overdue'.tr,
-  //       body: 'reminder_overdue_body'.tr.replaceFirst('{name}', prospect.prosp.nomComplet),
-  //     );
-  //   }
-  // }
-
-  // Future<void> _scheduleReminder(
-  //     ProspectDetails prospect, DateTime dateTime) async {
-  //   await NotificationService().showNotification(
-  //     id: DateTime.now().millisecondsSinceEpoch,
-  //     title: 'reminder_scheduled_title'.tr,
-  //     body: 'reminder_scheduled_body'.tr.replaceFirst('{name}', prospect.prosp.nomComplet),
-  //     scheduledTime: dateTime,
-  //   );
-
-  //   if (!mounted) return;
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     SnackBar(
-  //       content: Text('reminder_scheduled_message'.tr.replaceFirst('{date}', DateFormat('dd/MM/yyyy HH:mm').format(dateTime))),
-  //       backgroundColor: AppColors.primaryGreen,
-  //     ),
-  //   );
-  // }
-  // Partie modifiée dans _checkOverdueNotifications()
   Future<void> _checkOverdueNotifications() async {
     final now = DateTime.now();
-    final overdueProspects = _relancesProspects.where((p) {
+    final overdueProspects = _allProspects.where((p) {
       return p.prosp.date_relance != null &&
           p.prosp.date_relance!.isBefore(now) &&
           !_appNotifications.any((n) => n['prospectId'] == p.prosp.idProspect);
@@ -171,7 +269,6 @@ class _RelancesScreenState extends State<RelancesScreen> {
         });
       });
 
-      // Utiliser la nouvelle méthode avec ID généré automatiquement
       await NotificationService().showOverdueNotification(
         prospectName: prospect.prosp.nomComplet,
         prospectId: prospect.prosp.idProspect,
@@ -179,7 +276,6 @@ class _RelancesScreenState extends State<RelancesScreen> {
     }
   }
 
-// Partie modifiée dans _scheduleReminder()
   Future<void> _scheduleReminder(
       ProspectDetails prospect, DateTime dateTime) async {
     await NotificationService().showReminderNotification(
@@ -199,8 +295,12 @@ class _RelancesScreenState extends State<RelancesScreen> {
   }
 
   Future<void> _markAsDone(ProspectDetails prospect) async {
+    // Update status to contacted
+    prospect.prosp.prospectStatus = ProspectStatus.contacte;
+    await LocalStorage.instance.saveProspect(prospect.prosp);
+
     setState(() {
-      _relancesProspects
+      _allProspects
           .removeWhere((p) => p.prosp.idProspect == prospect.prosp.idProspect);
       _applyFilters();
     });
@@ -248,11 +348,56 @@ class _RelancesScreenState extends State<RelancesScreen> {
                 ? const Center(child: CircularProgressIndicator())
                 : _filteredProspects.isEmpty
                     ? _buildEmptyState()
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(12),
-                        itemCount: _filteredProspects.length,
-                        itemBuilder: (context, index) => _buildRelanceCard(
-                            _filteredProspects[index], isSmallScreen),
+                    : Column(
+                        children: [
+                          if (_isLoadingMore)
+                            const LinearProgressIndicator(
+                              color: AppColors.primaryGreen,
+                            ),
+                          Expanded(
+                            child: ListView.builder(
+                              controller: _scrollController,
+                              padding: const EdgeInsets.all(12),
+                              itemCount: _filteredProspects.length + 1,
+                              itemBuilder: (context, index) {
+                                if (index == _filteredProspects.length) {
+                                  if (_hasMoreData) {
+                                    return const Padding(
+                                      padding: EdgeInsets.all(16),
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(
+                                            AppColors.primaryGreen,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Center(
+                                        child: Text(
+                                          'no_more_data'.tr,
+                                          style: TextStyle(
+                                            color: Colors.grey.shade500,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                }
+                                
+                                final prospect = _filteredProspects[index];
+                                return _buildCompactRelanceCard(
+                                  prospect, 
+                                  isSmallScreen,
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
           ),
         ],
@@ -501,149 +646,277 @@ class _RelancesScreenState extends State<RelancesScreen> {
     );
   }
 
-  Widget _buildRelanceCard(ProspectDetails prospect, bool isSmallScreen) {
+  // ✅ COMPACT PROFESSIONAL RELANCE CARD
+  Widget _buildCompactRelanceCard(ProspectDetails prospect, bool isSmallScreen) {
     final dateRelance = prospect.prosp.date_relance!;
     final isOverdue = dateRelance.isBefore(DateTime.now());
     final dateFormatted = DateFormat('dd/MM/yyyy').format(dateRelance);
     final timeFormatted = DateFormat('HH:mm').format(dateRelance);
-
-    final double avatarSize = isSmallScreen ? 40 : 50;
-    final double fontSize = isSmallScreen ? 14 : 16;
-    final double cardPadding = isSmallScreen ? 12 : 16;
+    final dayDifference = DateTime.now().difference(dateRelance).inDays;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: AppColors.lightShadow,
-        border: isOverdue ? Border.all(color: Colors.red, width: 1) : null,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: isOverdue 
+            ? Border.all(color: Colors.red.shade300, width: 1.5) 
+            : null,
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (_) => ProspectDetailScreen(prospect: prospect)),
+              builder: (_) => ProspectDetailScreen(prospect: prospect),
+            ),
           ),
           child: Padding(
-            padding: EdgeInsets.all(cardPadding),
-            child: Column(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 10,
+            ),
+            child: Row(
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: avatarSize,
-                      height: avatarSize,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryGreen.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.access_time,
-                        color: isOverdue ? Colors.red : AppColors.primaryGreen,
-                        size: avatarSize * 0.55,
+                // ✅ Status indicator
+                Container(
+                  width: 4,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: isOverdue ? Colors.red : AppColors.primaryGreen,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                
+                // ✅ Avatar
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(prospect.color).withOpacity(0.8),
+                        Color(prospect.color).withOpacity(0.5),
+                      ],
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      prospect.prosp.nomComplet.isNotEmpty
+                          ? prospect.prosp.nomComplet[0].toUpperCase()
+                          : '?',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                
+                // ✅ Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Text(
-                            prospect.prosp.nomComplet,
-                            style: TextStyle(
-                              fontSize: fontSize,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                          Expanded(
+                            child: Text(
+                              prospect.prosp.nomComplet,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            prospect.etablissement,
-                            style: const TextStyle(
-                                fontSize: 12, color: AppColors.textSecondary),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          // ✅ Overdue badge
+                          if (isOverdue)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.warning_amber_rounded,
+                                    size: 12,
+                                    color: Colors.red.shade700,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${dayDifference}j',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.red.shade700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.school_outlined,
+                            size: 12,
+                            color: Colors.grey.shade500,
                           ),
-                          const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 12,
-                            runSpacing: 4,
-                            children: [
-                              _buildInfoChip(
-                                icon: Icons.calendar_today,
-                                text: dateFormatted,
+                          const SizedBox(width: 3),
+                          Expanded(
+                            child: Text(
+                              prospect.etablissement,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey.shade600,
                               ),
-                              _buildInfoChip(
-                                icon: Icons.access_time,
-                                text: timeFormatted,
-                              ),
-                              if (isOverdue)
-                                _buildInfoChip(
-                                  text: 'overdue'.tr,
-                                  color: Colors.red,
-                                  backgroundColor: Colors.red.withOpacity(0.1),
-                                ),
-                            ],
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            size: 11,
+                            color: isOverdue ? Colors.red.shade400 : Colors.grey.shade500,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            dateFormatted,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: isOverdue ? Colors.red.shade400 : Colors.grey.shade500,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.access_time,
+                            size: 11,
+                            color: isOverdue ? Colors.red.shade400 : Colors.grey.shade500,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            timeFormatted,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: isOverdue ? Colors.red.shade400 : Colors.grey.shade500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _markAsDone(prospect),
-                        icon: const Icon(Icons.check, size: 16),
-                        label: Text('done'.tr),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.green,
-                          side: const BorderSide(color: Colors.green),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                        ),
+                
+                // ✅ Actions
+                PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.more_vert,
+                    size: 18,
+                    color: Colors.grey.shade500,
+                  ),
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'done':
+                        _markAsDone(prospect);
+                        break;
+                      case 'postpone_1':
+                        _postponeRelance(prospect, 1);
+                        break;
+                      case 'postpone_3':
+                        _postponeRelance(prospect, 3);
+                        break;
+                      case 'postpone_7':
+                        _postponeRelance(prospect, 7);
+                        break;
+                      case 'reminder':
+                        _showScheduleDialog(prospect);
+                        break;
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'done',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check, size: 18, color: Colors.green),
+                          const SizedBox(width: 8),
+                          Text('marked_as_done'.tr),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _showPostponeDialog(prospect),
-                        icon: const Icon(Icons.schedule, size: 16),
-                        label: Text('postpone'.tr),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.orange,
-                          side: const BorderSide(color: Colors.orange),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                        ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem(
+                      value: 'postpone_1',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.schedule, size: 18, color: Colors.orange),
+                          const SizedBox(width: 8),
+                          Text('postpone_1_day'.tr),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () => _showScheduleDialog(prospect),
-                        icon: const Icon(Icons.notifications_active, size: 16),
-                        label: Text('reminder'.tr),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryGreen,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                    PopupMenuItem(
+                      value: 'postpone_3',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.schedule, size: 18, color: Colors.orange),
+                          const SizedBox(width: 8),
+                          Text('postpone_3_days'.tr),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'postpone_7',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.schedule, size: 18, color: Colors.orange),
+                          const SizedBox(width: 8),
+                          Text('postpone_1_week'.tr),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem(
+                      value: 'reminder',
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.notifications_active,
+                            size: 18,
+                            color: AppColors.primaryGreen,
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                        ),
+                          const SizedBox(width: 8),
+                          Text('reminder'.tr),
+                        ],
                       ),
                     ),
                   ],
@@ -651,73 +924,6 @@ class _RelancesScreenState extends State<RelancesScreen> {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoChip({
-    IconData? icon,
-    required String text,
-    Color color = AppColors.textTertiary,
-    Color backgroundColor = Colors.transparent,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 12, color: color),
-            const SizedBox(width: 4),
-          ],
-          Text(
-            text,
-            style: TextStyle(fontSize: 11, color: color),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showPostponeDialog(ProspectDetails prospect) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('postpone_followup'.tr),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              dense: true,
-              title: Text('postpone_1_day'.tr),
-              onTap: () {
-                Navigator.pop(context);
-                _postponeRelance(prospect, 1);
-              },
-            ),
-            ListTile(
-              dense: true,
-              title: Text('postpone_3_days'.tr),
-              onTap: () {
-                Navigator.pop(context);
-                _postponeRelance(prospect, 3);
-              },
-            ),
-            ListTile(
-              dense: true,
-              title: Text('postpone_1_week'.tr),
-              onTap: () {
-                Navigator.pop(context);
-                _postponeRelance(prospect, 7);
-              },
-            ),
-          ],
         ),
       ),
     );
@@ -733,7 +939,7 @@ class _RelancesScreenState extends State<RelancesScreen> {
         builder: (context, setState) {
           return AlertDialog(
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: Text('schedule_reminder'.tr),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -798,6 +1004,10 @@ class _RelancesScreenState extends State<RelancesScreen> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryGreen,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 child: Text('schedule'.tr),
               ),
@@ -813,7 +1023,11 @@ class _RelancesScreenState extends State<RelancesScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.check_circle_outline, size: 70, color: Colors.grey),
+          Icon(
+            Icons.check_circle_outline,
+            size: 70,
+            color: Colors.grey.shade300,
+          ),
           const SizedBox(height: 16),
           Text(
             'no_followups'.tr,

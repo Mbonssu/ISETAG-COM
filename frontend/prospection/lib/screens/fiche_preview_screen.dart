@@ -93,7 +93,7 @@ class _FichePreviewScreenState extends State<FichePreviewScreen> {
         // Save bytes to temporary file
         final directory = await getTemporaryDirectory();
         final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final file = File('${directory.path}/fiche_${widget.fiche.idFiche}_$timestamp.pdf');
+        final file = File('${directory.path}/${widget.fiche.idFiche}_$timestamp.pdf');
         await file.writeAsBytes(pdfBytes);
         
         _showSnackBar(context, 'PDF exporté avec succès !');
@@ -230,7 +230,7 @@ class _FichePreviewScreenState extends State<FichePreviewScreen> {
                       widget.fiche, 
                       widget.prospectsList
                     );
-                    return pdfBytes ?? Uint8List(0);
+                    return pdfBytes;
                   },
                   allowSharing: true,  
                   allowPrinting: true, 

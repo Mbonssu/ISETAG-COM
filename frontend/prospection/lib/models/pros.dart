@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:isar/isar.dart';
 import 'package:isetagcom/models/classe.dart';
 import 'package:isetagcom/models/fiche.dart';
@@ -17,21 +19,31 @@ class Prospect {
   final String idClass;
   @Index()
   final String idfiche;
+  @Index()
   final String nomComplet;
+  @Index()
   final String telephone;
+  @Index()
   final String? email;
+  @Index()
   final String niveauEtude;
+  @Index()
+  final String source_infos;
   final String? concerne;
   final String? commentaireGen;
   final String? adresse;
   final String sexe;
   final String typeProspect;
+  @Index()
   final DateTime createdAt;
+  @Index()
+  DateTime? updatedAt;
+  @Index()
   DateTime? date_relance;
   // List<Prospect> allProspects = [];
 
   @enumerated
-  SyncState syncState = SyncState.pending;
+  SyncState syncState;
 
   @enumerated
   ProspectStatus prospectStatus;
@@ -64,26 +76,28 @@ class Prospect {
     required this.sexe,
     required this.typeProspect,
     required this.createdAt,
-    this.syncState = SyncState.pending,
+    required this.source_infos,
+    required this.syncState,
     this.prospectStatus = ProspectStatus.relancer,
     // String? idEtablissement,
     // String? idSource,
   });
 
   factory Prospect.fromJson(Map<String, dynamic> json) => Prospect(
-        idProspect: json['idProspect'] ?? '',
-        idClass: json['idClass'],
-        idfiche: json['idfiche'] ?? '',
-        nomComplet: json['nomComplet'] ?? '',
-        telephone: json['telephone'] ?? '',
-        email: json['email'],
-        niveauEtude: json['niveauEtude'],
-        concerne: json['concerne'],
-        adresse: json['adresse'],
-        sexe: json['sexe'],
-        typeProspect: json['typeProspect'],
-        createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
-      );
+      idProspect: json['idProspect'] ?? '',
+      idClass: json['idClass'],
+      idfiche: json['idfiche'] ?? '',
+      nomComplet: json['nomComplet'] ?? '',
+      telephone: json['telephone'] ?? '',
+      email: json['email'],
+      niveauEtude: json['niveauEtude'],
+      concerne: json['concerne'],
+      adresse: json['adresse'],
+      sexe: json['sexe'],
+      typeProspect: json['typeProspect'],
+      source_infos: json['sourceInfos'],
+      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      syncState: json["sync"]);
 
   Map<String, dynamic> toJsonApi() {
     return {
@@ -97,10 +111,14 @@ class Prospect {
       'concerne': concerne,
       'adresse': adresse,
       'sexe': sexe,
+      "ville": 'ville1',
+      "codePostal": 'cd1',
+      "pays": "CMR",
+      "domaineEtude": 'domaine',
       'typeProspect': typeProspect,
+      'source_infos': source_infos,
       'createdAt': createdAt.toIso8601String(),
-      // 'syncState': syncState.name,
-      // 'interets': interets.map((e) => e.toJson()).toList(),
+      'syncState': syncState.name,
     };
   }
 

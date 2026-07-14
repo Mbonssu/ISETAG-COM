@@ -11,6 +11,8 @@ import 'models/localStorage/local_storage.dart';
 import 'services/auto_sync_service.dart';
 import 'services/sync_service.dart';
 
+
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -19,39 +21,14 @@ Future<void> main() async {
     statusBarIconBrightness: Brightness.dark,
   ));
 
-  try {
-    // Annule toutes les tâches existantes avant d'initialiser
-    // UNCOMMENT THIS IF YOU'RE USING OFFLINE QUEUE
-    // await OfflineQueue().cancelAll();
+  // ✅ ONLY initialize timezone here (lightweight)
+  tz.initializeTimeZones();
+  final location = tz.getLocation('Africa/Lagos');
+  tz.setLocalLocation(location);
 
-    // Initialize timezone before anything else
-    tz.initializeTimeZones();
-    final location = tz.getLocation('Africa/Lagos');
-    tz.setLocalLocation(location);
-
-    // Initialize notification service
-    // await NotificationService().init();
-
-    // Initialize translation service
-    await TranslationService.init();
-
-    // Initialize LocalStorage (Isar database)
-    await LocalStorage.instance.init();
-
-    // Initialize sync service
-    await SyncService().init();
-
-    // Initialize auto-sync service
-    await AutoSyncService().init();
-    
-  } catch (e) {
-    print('Error during initialization: $e');
-    // Continue anyway - the app might still work
-  }
-
+  // ✅ Run app immediately - splash screen shows quickly
   runApp(const IsetagApp());
 }
-
 // If you only need to sync once
 
 class IsetagApp extends StatelessWidget {
@@ -91,7 +68,7 @@ class IsetagApp extends StatelessWidget {
       ),
 
       // Start with splash screen
-      home: const SplashScreen(),
+      home: const SplashScreen(), //,SyncScreen(),
       onGenerateRoute: AppRouter.generateRoute,
     );
   }

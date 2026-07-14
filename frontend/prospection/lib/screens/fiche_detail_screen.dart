@@ -2,13 +2,18 @@
 
 // ignore_for_file: deprecated_member_use
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:isetagcom/models/fiche.dart';
 import 'package:isetagcom/models/localStorage/local_storage.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 import '../models/prospectData.dart';
 import '../routes/app_router.dart';
-import '../services/export_service.dart';
+import '../services/fiche_excel_export_service.dart';
+import '../services/fiche_pdf_export_service.dart';
 import '../services/translation_service.dart';
 import '../utils/themes/app_colors.dart';
 import 'prospect_detail_screen.dart';
@@ -75,11 +80,11 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
 
               prospectsDetails = snapshot.data ?? [];
               return SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   children: [
                     _buildFicheInfo(fiche),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     _buildProspectsList(prospectsDetails),
                   ],
                 ),
@@ -93,12 +98,12 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
 
   Widget _buildHeader(Fiche fiche) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
       decoration: const BoxDecoration(
         color: AppColors.primaryGreen,
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
       ),
       child: SafeArea(
@@ -107,29 +112,30 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
           children: [
             GestureDetector(
               onTap: () => Navigator.pop(_globalContext),
-              child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+              child: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'fiche_detail'.tr,
-                    style: const TextStyle(fontSize: 16, color: Colors.white70),
+                    style: const TextStyle(fontSize: 13, color: Colors.white70),
                   ),
                   Text(
                     DateFormat('dd/MM/yyyy').format(fiche.dateCollecte),
                     style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: Colors.white),
                   ),
                 ],
               ),
             ),
+            
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, color: Colors.white),
+              icon: const Icon(Icons.more_vert, color: Colors.white, size: 22),
               onSelected: (value) async {
                 if (value == 'preview_pdf') {
                   Navigator.pushNamed(context, AppRoutes.preview_fiche, arguments: {
@@ -137,9 +143,9 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
                     'prospectsList': prospectsDetails,
                   });
                 } else if (value == 'export_pdf') {
-                  await _exportAndSharePDF(fiche);
+                  await _exportAndSharePDF(fiche, prospectsDetails);
                 } else if (value == 'export_excel') {
-                  await _exportAndShareExcel(fiche);
+                  await _exportAndShareExcel(fiche, prospectsDetails);
                 }
               },
               itemBuilder: (context) => [
@@ -147,8 +153,8 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
                   value: 'preview_pdf',
                   child: Row(
                     children: [
-                      const Icon(Icons.remove_red_eye, color: Colors.blue, size: 20),
-                      const SizedBox(width: 12),
+                      const Icon(Icons.remove_red_eye, color: Colors.blue, size: 18),
+                      const SizedBox(width: 10),
                       Text('preview_pdf'.tr),
                     ],
                   ),
@@ -157,8 +163,8 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
                   value: 'export_pdf',
                   child: Row(
                     children: [
-                      const Icon(Icons.picture_as_pdf, color: Colors.red, size: 20),
-                      const SizedBox(width: 12),
+                      const Icon(Icons.picture_as_pdf, color: Colors.red, size: 18),
+                      const SizedBox(width: 10),
                       Text('export_pdf'.tr),
                     ],
                   ),
@@ -168,8 +174,8 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
                   child: Row(
                     children: [
                       const Icon(Icons.table_chart,
-                          color: AppColors.primaryGreen, size: 20),
-                      const SizedBox(width: 12),
+                          color: AppColors.primaryGreen, size: 18),
+                      const SizedBox(width: 10),
                       Text('export_excel'.tr),
                     ],
                   ),
@@ -182,27 +188,63 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
     );
   }
 
-  Future<void> _exportAndSharePDF(Fiche fiche) async {
-    _showLoadingDialog('generating_pdf'.tr);
-    final file = await ExportService.exportFicheToPDF(fiche);
-    if (mounted) Navigator.pop(context);
-    if (file != null && mounted) {
-      await ExportService.shareFile(file, file.path.split('/').last);
-      _showSnackBar('pdf_export_success'.tr, AppColors.primaryGreen);
-    } else {
-      _showSnackBar('pdf_export_error'.tr, Colors.red);
+  Future<void> _exportAndSharePDF(Fiche f, List<ProspectDetails> prosps) async {
+    try {
+      _showLoadingDialog('Génération du PDF...');
+      
+      final pdfBytes = await FichePdfExportService.generateFichePdf(f, prosps);
+      
+      if (mounted) Navigator.pop(context);
+      
+      if (pdfBytes.isNotEmpty && mounted) {
+        final directory = await getTemporaryDirectory();
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final file = File('${directory.path}/${f.idFiche}_$timestamp.pdf');
+        await file.writeAsBytes(pdfBytes);
+        
+        _showSnackBar('PDF exporté avec succès !', Colors.green);
+        
+        final openResult = await OpenFile.open(file.path);
+        
+        if (openResult.type != ResultType.done) {
+          _showSnackBar('Impossible d\'ouvrir le fichier', Colors.green);
+        }
+      } else {
+        _showSnackBar('Erreur lors de l\'export PDF', Colors.red);
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+      _showSnackBar('Erreur: $e', Colors.red);
     }
   }
 
-  Future<void> _exportAndShareExcel(Fiche fiche) async {
-    _showLoadingDialog('generating_excel'.tr);
-    final file = await ExportService.exportFicheToExcel(fiche);
-    if (mounted) Navigator.pop(context);
-    if (file != null && mounted) {
-      await ExportService.shareFile(file, file.path.split('/').last);
-      _showSnackBar('excel_export_success'.tr, AppColors.primaryGreen);
-    } else {
-      _showSnackBar('excel_export_error'.tr, Colors.red);
+  Future<void> _exportAndShareExcel(Fiche f, List<ProspectDetails> prosps) async {
+    try {
+      _showLoadingDialog('Génération du fichier Excel...');
+      
+      final excelBytes = FicheExcelExportService.exportFicheToExcel(f, prosps);
+      
+      if (mounted) Navigator.pop(context);
+      
+      if (excelBytes != null && excelBytes.isNotEmpty && mounted) {
+        final directory = await getTemporaryDirectory();
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final file = File('${directory.path}/${f.idFiche}_$timestamp.xlsx');
+        await file.writeAsBytes(excelBytes);
+        
+        _showSnackBar('Excel exporté avec succès !', Colors.green);
+        
+        final openResult = await OpenFile.open(file.path);
+        
+        if (openResult.type != ResultType.done) {
+          _showSnackBar('Impossible d\'ouvrir le fichier', Colors.green);
+        }
+      } else {
+        _showSnackBar('Erreur lors de l\'export Excel', Colors.red);
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+      _showSnackBar('Erreur lors de l\'export Excel', Colors.red);
     }
   }
 
@@ -237,10 +279,10 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
     final source = fiche.source.value;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: AppColors.lightShadow,
       ),
       child: Column(
@@ -248,18 +290,18 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.info_outline, color: AppColors.primaryGreen, size: 20),
-              const SizedBox(width: 8),
+              const Icon(Icons.info_outline, color: AppColors.primaryGreen, size: 16),
+              const SizedBox(width: 6),
               Text(
                 'information'.tr,
                 style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           _buildInfoRow('collection_date'.tr,
               DateFormat('dd/MM/yyyy à HH:mm').format(fiche.dateCollecte)),
           if (fiche.scoreInteret != null)
@@ -268,7 +310,7 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
           if (source != null) _buildInfoRow('source'.tr, source.libelleSource),
           if (fiche.commentaire != null && fiche.commentaire!.isNotEmpty)
             _buildInfoRow('comment'.tr, fiche.commentaire!),
-          const Divider(height: 24),
+          const Divider(height: 16),
           _buildInfoRow('number_of_prospects'.tr, '${prospectsDetails.length}',
               isBold: true),
         ],
@@ -279,20 +321,20 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
   Widget _buildInfoRow(String label, String value,
       {Color? color, bool isBold = false}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
           SizedBox(
-            width: 120,
+            width: 110,
             child: Text(label,
                 style: const TextStyle(
-                    fontSize: 13, color: AppColors.textSecondary)),
+                    fontSize: 12, color: AppColors.textSecondary)),
           ),
           Expanded(
             child: Text(
               value,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: isBold ? FontWeight.w600 : FontWeight.normal,
                 color: color ?? AppColors.textPrimary,
               ),
@@ -306,26 +348,26 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
   Widget _buildProspectsList(List<ProspectDetails> prospectsDetails) {
     if (prospectsDetails.isEmpty) {
       return Container(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: AppColors.lightShadow,
         ),
         child: Center(
           child: Text(
             'no_prospects_in_fiche'.tr,
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
           ),
         ),
       );
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: AppColors.lightShadow,
       ),
       child: Column(
@@ -334,23 +376,31 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
           Row(
             children: [
               const Icon(Icons.people_outline,
-                  color: AppColors.primaryGreen, size: 20),
-              const SizedBox(width: 8),
+                  color: AppColors.primaryGreen, size: 16),
+              const SizedBox(width: 6),
               Text(
                 'prospects_list'.tr,
                 style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary),
               ),
+              const Spacer(),
+              Text(
+                '${prospectsDetails.length}',
+                style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary),
+              ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: prospectsDetails.length,
-            separatorBuilder: (context, index) => const Divider(),
+            separatorBuilder: (context, index) => const Divider(height: 8),
             itemBuilder: (context, index) =>
                 _buildProspectTile(prospectsDetails[index], index + 1),
           ),
@@ -361,34 +411,36 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
 
   Widget _buildProspectTile(ProspectDetails details, int number) {
     final prospect = details.prosp;
-    final interetsText = details.specialities.isEmpty
-        ? 'no_interest'.tr
-        : details.specialities.map((s) => s.libelleSpecialite).join(', ');
 
     return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
       leading: CircleAvatar(
+        radius: 14,
         backgroundColor: AppColors.primaryGreen.withOpacity(0.1),
         child: Text(
           number.toString(),
           style: const TextStyle(
-              color: AppColors.primaryGreen, fontWeight: FontWeight.bold),
+              color: AppColors.primaryGreen, 
+              fontWeight: FontWeight.bold,
+              fontSize: 11),
         ),
       ),
       title: Text(
         prospect.nomComplet,
         style: const TextStyle(
-            fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+            fontWeight: FontWeight.w600, 
+            color: AppColors.textPrimary,
+            fontSize: 14),
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(prospect.telephone, style: const TextStyle(fontSize: 12)),
           Text(
-            'establishment_label'.tr.replaceFirst('{name}', details.etablissement),
-            style: const TextStyle(fontSize: 11, color: AppColors.textTertiary),
+            prospect.telephone, 
+            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)
           ),
           Text(
-            'interests_label'.tr.replaceFirst('{list}', interetsText),
+            details.etablissement,
             style: const TextStyle(fontSize: 11, color: AppColors.textTertiary),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -396,7 +448,7 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
         ],
       ),
       trailing: const Icon(Icons.chevron_right,
-          color: AppColors.textTertiary, size: 20),
+          color: AppColors.textTertiary, size: 18),
       onTap: () => Navigator.push(
         _globalContext,
         MaterialPageRoute(

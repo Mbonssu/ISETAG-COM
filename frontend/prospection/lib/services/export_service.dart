@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: avoid_print, deprecated_member_use
 
 import 'dart:io';
 import 'package:excel/excel.dart';
@@ -316,8 +316,8 @@ class ExportService {
                           prospect.nomComplet,
                           prospect.telephone,
                           prospect.email ?? '',
-                          prospect.typeProspect ?? '',
-                          prospect.niveauEtude ?? '',
+                          prospect.typeProspect,
+                          prospect.niveauEtude,
                         ];
                       }).toList(),
                       headerStyle: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.white),

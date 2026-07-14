@@ -7,7 +7,7 @@ import '../services/translation_service.dart';
 class ProspectDetailScreen extends StatefulWidget {
   final ProspectDetails prospect;
   const ProspectDetailScreen({super.key, required this.prospect});
-  
+
   @override
   State<ProspectDetailScreen> createState() => _DetailState();
 }
@@ -16,7 +16,7 @@ class _DetailState extends State<ProspectDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tc;
   ProspectDetails get prospect => widget.prospect;
-  
+
   @override
   void initState() {
     super.initState();
@@ -90,7 +90,8 @@ class _DetailState extends State<ProspectDetailScreen>
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
                   decoration: BoxDecoration(
                     color: G.white18,
                     borderRadius: BorderRadius.circular(15),
@@ -110,7 +111,8 @@ class _DetailState extends State<ProspectDetailScreen>
                       decoration: BoxDecoration(
                         color: G.yellow.withValues(alpha: 0.30),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: G.yellow.withValues(alpha: 0.45)),
+                        border:
+                            Border.all(color: G.yellow.withValues(alpha: 0.45)),
                       ),
                       child: Center(
                         child: Text(
@@ -119,7 +121,9 @@ class _DetailState extends State<ProspectDetailScreen>
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
                             color: Colors.white,
-                            shadows: [Shadow(blurRadius: 4, color: Colors.black26)],
+                            shadows: [
+                              Shadow(blurRadius: 4, color: Colors.black26)
+                            ],
                           ),
                         ),
                       ),
@@ -145,7 +149,8 @@ class _DetailState extends State<ProspectDetailScreen>
                                 filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 9, vertical: 3,
+                                    horizontal: 9,
+                                    vertical: 3,
                                   ),
                                   decoration: BoxDecoration(
                                     color: G.badgeYellowBg,
@@ -153,7 +158,8 @@ class _DetailState extends State<ProspectDetailScreen>
                                     border: Border.all(color: G.badgeYellowBdr),
                                   ),
                                   child: Text(
-                                    _getStatusTranslation(prospect.prosp.prospectStatus.name),
+                                    _getStatusTranslation(
+                                        prospect.prosp.prospectStatus.name),
                                     style: const TextStyle(
                                       fontSize: 10,
                                       color: G.badgeYellowText,
@@ -165,7 +171,8 @@ class _DetailState extends State<ProspectDetailScreen>
                             ),
                           ]),
                           const SizedBox(height: 6),
-                          _contactRow(Icons.phone_outlined, prospect.prosp.telephone),
+                          _contactRow(
+                              Icons.phone_outlined, prospect.prosp.telephone),
                           const SizedBox(height: 3),
                           _contactRow(
                             Icons.email_outlined,
@@ -239,7 +246,8 @@ class _DetailState extends State<ProspectDetailScreen>
             unselectedLabelColor: G.textLight,
             indicatorColor: G.green,
             indicatorWeight: 2.5,
-            labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+            labelStyle:
+                const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
             unselectedLabelStyle: const TextStyle(fontSize: 13),
             tabs: [
               Tab(text: 'information_tab'.tr),
@@ -254,13 +262,53 @@ class _DetailState extends State<ProspectDetailScreen>
 
   Widget _buildInfoTab() {
     final rows = [
-      (Icons.school_outlined, 'establishment'.tr, prospect.etablissement, false),
-      (Icons.location_on_outlined, 'address'.tr, prospect.prosp.adresse ?? 'no_address'.tr, false),
-      (Icons.people_outline, 'concerned'.tr, prospect.prosp.typeProspect, false),
+      (
+        Icons.sensors_rounded,
+        'source'.tr,
+        prospect.prosp.source_infos,
+        false
+      ),
+      (
+        Icons.school_outlined,
+        'establishment'.tr,
+        prospect.etablissement,
+        false
+      ),
+      (
+        Icons.location_on_outlined,
+        'address'.tr,
+        prospect.prosp.adresse ?? 'no_address'.tr,
+        false
+      ),
+      (
+        Icons.people_outline,
+        'concerned'.tr,
+        prospect.prosp.typeProspect,
+        false
+      ),
       (Icons.man, 'gender'.tr, prospect.prosp.sexe, false),
-      (Icons.edit_outlined, 'comment'.tr, prospect.prosp.commentaireGen ?? 'no_comment'.tr, false),
-      (Icons.calendar_today_outlined, 'proposed_followup_date'.tr, prospect.prosp.date_relance != null ? _formatDate(prospect.prosp.date_relance!) : 'no_date_scheduled'.tr, true),
-      (prospect.prosp.syncState.name == "pending" ? Icons.sync_disabled : Icons.sync, 'sync_status'.tr, _getSyncStatusTranslation(prospect.prosp.syncState.name), true),
+      (
+        Icons.edit_outlined,
+        'comment'.tr,
+        prospect.prosp.commentaireGen ?? 'no_comment'.tr,
+        false
+      ),
+      (
+        Icons.calendar_today_outlined,
+        'proposed_followup_date'.tr,
+        prospect.prosp.date_relance != null
+            ? _formatDate(prospect.prosp.date_relance!)
+            : 'no_date_scheduled'.tr,
+        true
+      ),
+      (
+        prospect.prosp.syncState.name == "pending"
+            ? Icons.sync_disabled
+            : Icons.sync,
+        'sync_status'.tr,
+        _getSyncStatusTranslation(prospect.prosp.syncState.name),
+        true
+      ),
     ];
 
     return SingleChildScrollView(
@@ -275,7 +323,8 @@ class _DetailState extends State<ProspectDetailScreen>
             final r = e.value;
             return Column(children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -285,7 +334,8 @@ class _DetailState extends State<ProspectDetailScreen>
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(9),
-                        border: Border.all(color: Colors.black.withValues(alpha: 0.07)),
+                        border: Border.all(
+                            color: Colors.black.withValues(alpha: 0.07)),
                       ),
                       child: Icon(r.$1, color: G.textMedium, size: 17),
                     ),
@@ -294,13 +344,16 @@ class _DetailState extends State<ProspectDetailScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(r.$2, style: const TextStyle(fontSize: 10, color: G.textLight)),
+                          Text(r.$2,
+                              style: const TextStyle(
+                                  fontSize: 10, color: G.textLight)),
                           const SizedBox(height: 3),
                           Text(
                             r.$3.toString(),
                             style: TextStyle(
                               fontSize: r.$4 ? 14 : 13,
-                              fontWeight: r.$4 ? FontWeight.w800 : FontWeight.w500,
+                              fontWeight:
+                                  r.$4 ? FontWeight.w800 : FontWeight.w500,
                               color: r.$4 ? G.green : G.textDark,
                               height: 1.4,
                             ),
@@ -325,7 +378,8 @@ class _DetailState extends State<ProspectDetailScreen>
   }
 
   String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    final f = 'at'.tr;
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} $f ${date.hour.toString()}:${date.minute}';
   }
 
   String _getSyncStatusTranslation(String status) {
@@ -379,7 +433,8 @@ class _DetailState extends State<ProspectDetailScreen>
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: G.green.withValues(alpha: 0.2)),
               ),
-              child: const Icon(Icons.school_outlined, color: G.green, size: 21),
+              child:
+                  const Icon(Icons.school_outlined, color: G.green, size: 21),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -403,7 +458,7 @@ class _DetailState extends State<ProspectDetailScreen>
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: G.textLight),
+            // const Icon(Icons.chevron_right, color: G.textLight),
           ]),
         ),
       ),
@@ -427,10 +482,14 @@ class _DetailState extends State<ProspectDetailScreen>
             Container(
               width: 12,
               height: 12,
-              decoration: const BoxDecoration(color: G.green, shape: BoxShape.circle),
+              decoration:
+                  const BoxDecoration(color: G.green, shape: BoxShape.circle),
             ),
             if (!isLast)
-              Container(width: 2, height: 62, color: Colors.black.withValues(alpha: 0.08)),
+              Container(
+                  width: 2,
+                  height: 62,
+                  color: Colors.black.withValues(alpha: 0.08)),
           ]),
           const SizedBox(width: 13),
           Expanded(
@@ -446,7 +505,8 @@ class _DetailState extends State<ProspectDetailScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(item.$1,
-                          style: const TextStyle(fontSize: 10, color: G.textLight)),
+                          style: const TextStyle(
+                              fontSize: 10, color: G.textLight)),
                       const SizedBox(height: 3),
                       Text(item.$2,
                           style: const TextStyle(
@@ -455,7 +515,8 @@ class _DetailState extends State<ProspectDetailScreen>
                               color: G.textDark)),
                       const SizedBox(height: 2),
                       Text(item.$3,
-                          style: const TextStyle(fontSize: 11, color: G.textMedium)),
+                          style: const TextStyle(
+                              fontSize: 11, color: G.textMedium)),
                     ],
                   ),
                 ),
@@ -474,7 +535,10 @@ class _DetailState extends State<ProspectDetailScreen>
         child: Container(
           color: G.glassCard,
           padding: EdgeInsets.fromLTRB(
-            14, 11, 14, MediaQuery.of(context).padding.bottom + 11,
+            14,
+            11,
+            14,
+            MediaQuery.of(context).padding.bottom + 11,
           ),
           child: Row(children: [
             Expanded(
@@ -489,7 +553,11 @@ class _DetailState extends State<ProspectDetailScreen>
                   children: [
                     Icon(Icons.phone_outlined, color: G.green, size: 18),
                     SizedBox(width: 7),
-                    Text('call', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: G.green)),
+                    Text('call',
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: G.green)),
                   ],
                 ),
               ),
@@ -512,9 +580,14 @@ class _DetailState extends State<ProspectDetailScreen>
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.chat_bubble_outline, color: Colors.white, size: 18),
+                    Icon(Icons.chat_bubble_outline,
+                        color: Colors.white, size: 18),
                     SizedBox(width: 7),
-                    Text('whatsapp', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
+                    Text('whatsapp',
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white)),
                   ],
                 ),
               ),

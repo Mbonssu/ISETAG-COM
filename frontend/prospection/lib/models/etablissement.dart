@@ -13,7 +13,7 @@ class Etablissement {
   @Index(unique: true)
   String idEtablissement;
 
-  // @Index()
+  @Index()
   String nomEtablissement;
   String? typeEtablissement;
   String? adresse;
@@ -22,51 +22,54 @@ class Etablissement {
   // @Index()
   String? ville;
   String? region;
+  @Index()
   DateTime? createdAt;
+  @Index()
+  DateTime? updatedAt;
 
   /// Relationship
   @Backlink(to: 'ets')
   final classes = IsarLinks<Classe>();
 
   @enumerated
-  SyncState syncState = SyncState.pending;
+  SyncState syncState;
 
-  Etablissement({
-    required this.idEtablissement,
-    required this.nomEtablissement,
-    this.typeEtablissement,
-    this.adresse,
-    this.telephone,
-    this.ville,
-    this.region,
-    this.createdAt,
-  });
+  Etablissement(
+      {required this.idEtablissement,
+      required this.nomEtablissement,
+      this.typeEtablissement,
+      this.adresse,
+      this.telephone,
+      this.ville,
+      this.region,
+      this.createdAt,
+      required this.syncState});
 
   factory Etablissement.fromJson(Map<String, dynamic> json) => Etablissement(
-        idEtablissement: json['idEtablissement'],
-        nomEtablissement: json['nomEtablissement'] ?? '',
-        typeEtablissement: json['typeEtablissement'],
-        adresse: json['adresse'],
-        telephone: json['telephone'],
-        ville: json['ville'],
-        region: json['region'],
-        createdAt: json['createdAt'] != null
-            ? DateTime.tryParse(json['createdAt'])
-            : null,
-      );
+      idEtablissement: json['idEtablissement'],
+      nomEtablissement: json['nomEtablissement'] ?? '',
+      typeEtablissement: json['typeEtablissement'],
+      adresse: json['adresse'],
+      telephone: json['telephone'],
+      ville: json['ville'],
+      region: json['region'],
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'])
+          : null,
+      syncState: json["sync"]);
 
   /// Local/UI display
   Map<String, dynamic> toJson() {
     return {
       'idEtablissement': idEtablissement,
-      'nomEtablissement': nomEtablissement,
-      'typeEtablissement': typeEtablissement,
+      'nom': nomEtablissement,
+      'type': typeEtablissement,
       'adresse': adresse,
       'telephone': telephone,
       'ville': ville,
       'region': region,
       'createdAt': createdAt,
-      'classes': classes.map((e) => e.toJson()).toList(),
+      // 'classes': classes.map((e) => e.toJson()).toList(),
     };
   }
 
@@ -84,6 +87,7 @@ class Etablissement {
 
       // Send only IDs
       'classes': classes.map((e) => e.idClasse).toList(),
+      "syncState": syncState.name
     };
   }
 }

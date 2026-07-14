@@ -15,6 +15,7 @@ import '../screens/home_screen.dart';
 import '../screens/prospects_list_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/splash_screen.dart';
+import '../screens/sync_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -31,6 +32,7 @@ class AppRoutes {
   static const String relances = '/relances';
   static const String preview_fiche = '/preview';
   static const String prospectsList = '/prospects-list';
+  static const String syncRoute = '/sync';
 }
 
 class AppRouter {
@@ -103,6 +105,10 @@ class AppRouter {
           builder: (_) => ProspectsListScreen(allProspects: prospectsList),
         );
 
+      case AppRoutes.syncRoute:
+        return MaterialPageRoute(
+          builder: (_) => const SyncScreen(),
+        );
       // case AppRoutes.fiches:
       //   return MaterialPageRoute(builder: (_) => const FicheListScreen());
 

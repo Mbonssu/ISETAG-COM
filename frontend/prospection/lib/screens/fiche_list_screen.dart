@@ -22,6 +22,7 @@ class _FicheListScreenState extends State<FicheListScreen> {
 
   final Map<String, String> _filterOptions = {
     'all': 'all'.tr,
+    'today': 'today'.tr,
     'week': 'this_week'.tr,
     'month': 'this_month'.tr,
     'year': 'this_year'.tr,
@@ -29,16 +30,22 @@ class _FicheListScreenState extends State<FicheListScreen> {
 
   List<Fiche> _getFilteredFiches(List<Fiche> fiches) {
     final now = DateTime.now();
-    
+
     switch (_selectedFilter) {
+      case 'today':
+        final startOfDay = DateTime(now.year, now.month, now.day);
+        return fiches.where((f) => f.dateCollecte.isAfter(startOfDay)).toList();
       case 'week':
         final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-        return fiches.where((f) => f.dateCollecte.isAfter(startOfWeek)).toList();
+        return fiches
+            .where((f) => f.dateCollecte.isAfter(startOfWeek))
+            .toList();
       case 'month':
-        return fiches.where((f) => 
-          f.dateCollecte.year == now.year && 
-          f.dateCollecte.month == now.month
-        ).toList();
+        return fiches
+            .where((f) =>
+                f.dateCollecte.year == now.year &&
+                f.dateCollecte.month == now.month)
+            .toList();
       case 'year':
         return fiches.where((f) => f.dateCollecte.year == now.year).toList();
       default:
@@ -77,7 +84,8 @@ class _FicheListScreenState extends State<FicheListScreen> {
                   return _buildEmptyState();
                 }
 
-                return _buildFicheList(filteredFiches, totalProspects, isSmallScreen, context);
+                return _buildFicheList(
+                    filteredFiches, totalProspects, isSmallScreen, context);
               },
             ),
           ),
@@ -102,7 +110,8 @@ class _FicheListScreenState extends State<FicheListScreen> {
           children: [
             GestureDetector(
               onTap: () => Navigator.pop(ctx),
-              child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+              child:
+                  const Icon(Icons.arrow_back, color: Colors.white, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -123,7 +132,7 @@ class _FicheListScreenState extends State<FicheListScreen> {
 
   Widget _buildFilterBar(bool isSmallScreen) {
     final filterText = _filterOptions[_selectedFilter] ?? 'all'.tr;
-    
+
     return Container(
       margin: const EdgeInsets.all(16),
       child: Row(
@@ -141,12 +150,14 @@ class _FicheListScreenState extends State<FicheListScreen> {
                 child: Row(
                   children: [
                     const SizedBox(width: 12),
-                    const Icon(Icons.filter_list, color: AppColors.primaryGreen, size: 20),
+                    const Icon(Icons.filter_list,
+                        color: AppColors.primaryGreen, size: 20),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
                         'filter_by'.tr.replaceFirst('{filter}', filterText),
-                        style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+                        style: const TextStyle(
+                            fontSize: 14, color: AppColors.textPrimary),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -204,7 +215,8 @@ class _FicheListScreenState extends State<FicheListScreen> {
     );
   }
 
-  Widget _buildFicheList(List<Fiche> fiches, int totalProspects, bool isSmallScreen, BuildContext context) {
+  Widget _buildFicheList(List<Fiche> fiches, int totalProspects,
+      bool isSmallScreen, BuildContext context) {
     return Column(
       children: [
         _buildStatsHeader(fiches.length, totalProspects, isSmallScreen),
@@ -220,7 +232,8 @@ class _FicheListScreenState extends State<FicheListScreen> {
     );
   }
 
-  Widget _buildStatsHeader(int fichesCount, int prospectsCount, bool isSmallScreen) {
+  Widget _buildStatsHeader(
+      int fichesCount, int prospectsCount, bool isSmallScreen) {
     return Container(
       margin: const EdgeInsets.all(16),
       child: Row(
@@ -252,7 +265,7 @@ class _FicheListScreenState extends State<FicheListScreen> {
     final double fontSize = isSmallScreen ? 18 : 20;
     final double iconSize = isSmallScreen ? 20 : 24;
     final double padding = isSmallScreen ? 8 : 12;
-    
+
     return Expanded(
       child: Container(
         padding: EdgeInsets.symmetric(vertical: padding),
@@ -275,7 +288,8 @@ class _FicheListScreenState extends State<FicheListScreen> {
             ),
             Text(
               label,
-              style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+              style:
+                  const TextStyle(fontSize: 11, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -283,10 +297,11 @@ class _FicheListScreenState extends State<FicheListScreen> {
     );
   }
 
-  Widget _buildFicheCard(Fiche fiche, bool isSmallScreen, BuildContext context) {
+  Widget _buildFicheCard(
+      Fiche fiche, bool isSmallScreen, BuildContext context) {
     final date = DateFormat('dd/MM/yyyy').format(fiche.dateCollecte);
     final time = DateFormat('HH:mm').format(fiche.dateCollecte);
-    
+
     final double avatarSize = isSmallScreen ? 40 : 48;
     final double iconSize = isSmallScreen ? 22 : 28;
     final double titleSize = isSmallScreen ? 14 : 16;
@@ -320,7 +335,8 @@ class _FicheListScreenState extends State<FicheListScreen> {
                     color: AppColors.primaryGreen.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(Icons.folder, color: AppColors.primaryGreen, size: iconSize),
+                  child: Icon(Icons.folder,
+                      color: AppColors.primaryGreen, size: iconSize),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -357,7 +373,8 @@ class _FicheListScreenState extends State<FicheListScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
                     color: AppColors.primaryGreen.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -371,7 +388,8 @@ class _FicheListScreenState extends State<FicheListScreen> {
                     ),
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: AppColors.textTertiary, size: 20),
+                const Icon(Icons.chevron_right,
+                    color: AppColors.textTertiary, size: 20),
               ],
             ),
           ),
@@ -388,7 +406,7 @@ class _FicheListScreenState extends State<FicheListScreen> {
   }) {
     final double iconSize = isSmallScreen ? 12 : 14;
     final double fontSize = isSmallScreen ? 11 : 12;
-    
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -396,7 +414,8 @@ class _FicheListScreenState extends State<FicheListScreen> {
         const SizedBox(width: 4),
         Text(
           text,
-          style: TextStyle(fontSize: fontSize, color: color ?? AppColors.textTertiary),
+          style: TextStyle(
+              fontSize: fontSize, color: color ?? AppColors.textTertiary),
         ),
       ],
     );
@@ -411,7 +430,10 @@ class _FicheListScreenState extends State<FicheListScreen> {
           const SizedBox(height: 16),
           Text(
             'no_records'.tr,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+            style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary),
           ),
           const SizedBox(height: 8),
           Text(

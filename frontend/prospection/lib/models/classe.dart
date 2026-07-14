@@ -17,7 +17,10 @@ class Classe {
 
   @Index()
   String libelleClasse;
+  @Index()
   DateTime? createdAt;
+  @Index()
+  DateTime? updatedAt;
 
   // 1 ets -> N Classes
   final ets = IsarLink<Etablissement>();
@@ -26,23 +29,22 @@ class Classe {
   final prospects = IsarLinks<Prospect>();
 
   @enumerated
-  SyncState syncState = SyncState.pending;
+  SyncState syncState;
 
-  Classe({
-    required this.idClasse,
-    required this.idEts,
-    required this.libelleClasse,
-    this.createdAt,
-  });
+  Classe(
+      {required this.idClasse,
+      required this.idEts,
+      required this.libelleClasse,
+      this.createdAt,
+      required this.syncState});
 
   factory Classe.fromJson(Map<String, dynamic> json) => Classe(
-        idClasse: json['idClasse'],
-        idEts: json['idEts'],
-        libelleClasse: json['libelleClasse'] ?? '',
-        createdAt: json['createdAt'] != null
-            ? DateTime.parse(json['createdAt'])
-            : null,
-      );
+      idClasse: json['idClasse'],
+      idEts: json['idEts'],
+      libelleClasse: json['libelleClasse'] ?? '',
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      syncState: json["sync"]);
 
   /// For UI / local display
   Map<String, dynamic> toJson() {
@@ -61,6 +63,7 @@ class Classe {
       'idEts': idEts,
       'libelleClasse': libelleClasse,
       'createdAt': createdAt?.toIso8601String(),
+      "syncState": syncState.name
     };
   }
 }

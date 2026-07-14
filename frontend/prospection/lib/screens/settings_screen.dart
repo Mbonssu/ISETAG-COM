@@ -1,4 +1,3 @@
-// lib/screens/settings_screen.dart
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
@@ -7,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../services/translation_service.dart';
 import '../services/loading_service.dart';
 import '../utils/themes/app_colors.dart';
+import '../routes/app_router.dart'; // Add this import
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -106,7 +106,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 16),
                   _buildAccountSection(),
                   const SizedBox(height: 16),
-                  _buildLanguageSection(),
+                  _buildSystemSection(),
                   const SizedBox(height: 16),
                   _buildSocialSection(),
                   const SizedBox(height: 16),
@@ -319,7 +319,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildLanguageSection() {
+  // ✅ NEW: System Section
+  Widget _buildSystemSection() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -332,10 +333,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.language, color: AppColors.primaryGreen, size: 24),
+              const Icon(Icons.settings_applications, color: AppColors.primaryGreen, size: 24),
               const SizedBox(width: 8),
               Text(
-                'language'.tr,
+                'system'.tr,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -345,32 +346,92 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
           const SizedBox(height: 12),
+          // ✅ Language option
           ListTile(
-            leading: const Icon(Icons.flag),
-            title: Text('language_french'.tr),
-            trailing: Radio<String>(
-              value: 'fr',
-              groupValue: _selectedLanguage,
-              onChanged: (value) => _changeLanguage(value!),
-              activeColor: AppColors.primaryGreen,
+            leading: const Icon(Icons.language, color: AppColors.primaryGreen),
+            title: Text('language'.tr),
+            subtitle: Text(
+              _selectedLanguage == 'fr' ? 'Français' : 'English',
             ),
-            onTap: () => _changeLanguage('fr'),
+            trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+            onTap: () {
+              _showLanguageDialog();
+            },
           ),
+          const Divider(height: 1, color: Colors.grey),
+          // ✅ Sync option
           ListTile(
-            leading: const Icon(Icons.translate),
-            title: Text('language_english'.tr),
-            trailing: Radio<String>(
-              value: 'en',
-              groupValue: _selectedLanguage,
-              onChanged: (value) => _changeLanguage(value!),
-              activeColor: AppColors.primaryGreen,
-            ),
-            onTap: () => _changeLanguage('en'),
+            leading: const Icon(Icons.sync, color: AppColors.primaryGreen),
+            title: Text('sync_status'.tr),
+            subtitle: Text('view_sync_progress'.tr),
+            trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+            onTap: () {
+              Navigator.pushNamed(context, AppRoutes.syncRoute);
+            },
           ),
         ],
       ),
     );
   }
+
+  // ✅ Language Dialog
+  void _showLanguageDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Text('select_language'.tr),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.flag),
+              title: Text('language_french'.tr),
+              trailing: Radio<String>(
+                value: 'fr',
+                groupValue: _selectedLanguage,
+                onChanged: (value) {
+                  Navigator.pop(context);
+                  _changeLanguage(value!);
+                },
+                activeColor: AppColors.primaryGreen,
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _changeLanguage('fr');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.translate),
+              title: Text('language_english'.tr),
+              trailing: Radio<String>(
+                value: 'en',
+                groupValue: _selectedLanguage,
+                onChanged: (value) {
+                  Navigator.pop(context);
+                  _changeLanguage(value!);
+                },
+                activeColor: AppColors.primaryGreen,
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _changeLanguage('en');
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('cancel'.tr),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   Widget _buildSocialSection() {
     return Container(

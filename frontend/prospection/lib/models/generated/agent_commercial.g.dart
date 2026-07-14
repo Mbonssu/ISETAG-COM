@@ -134,6 +134,32 @@ const AgentCommercialSchema = CollectionSchema(
           caseSensitive: true,
         )
       ],
+    ),
+    r'matriculeAgent': IndexSchema(
+      id: 500781277297875947,
+      name: r'matriculeAgent',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'matriculeAgent',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'dateEmbauche': IndexSchema(
+      id: -8639793053137063976,
+      name: r'dateEmbauche',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'dateEmbauche',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
     )
   },
   links: {
@@ -341,6 +367,15 @@ extension AgentCommercialQueryWhereSort
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
+
+  QueryBuilder<AgentCommercial, AgentCommercial, QAfterWhere>
+      anyDateEmbauche() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'dateEmbauche'),
+      );
+    });
+  }
 }
 
 extension AgentCommercialQueryWhere
@@ -500,6 +535,144 @@ extension AgentCommercialQueryWhere
               includeUpper: false,
             ));
       }
+    });
+  }
+
+  QueryBuilder<AgentCommercial, AgentCommercial, QAfterWhereClause>
+      matriculeAgentEqualTo(String matriculeAgent) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'matriculeAgent',
+        value: [matriculeAgent],
+      ));
+    });
+  }
+
+  QueryBuilder<AgentCommercial, AgentCommercial, QAfterWhereClause>
+      matriculeAgentNotEqualTo(String matriculeAgent) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'matriculeAgent',
+              lower: [],
+              upper: [matriculeAgent],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'matriculeAgent',
+              lower: [matriculeAgent],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'matriculeAgent',
+              lower: [matriculeAgent],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'matriculeAgent',
+              lower: [],
+              upper: [matriculeAgent],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<AgentCommercial, AgentCommercial, QAfterWhereClause>
+      dateEmbaucheEqualTo(DateTime dateEmbauche) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'dateEmbauche',
+        value: [dateEmbauche],
+      ));
+    });
+  }
+
+  QueryBuilder<AgentCommercial, AgentCommercial, QAfterWhereClause>
+      dateEmbaucheNotEqualTo(DateTime dateEmbauche) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'dateEmbauche',
+              lower: [],
+              upper: [dateEmbauche],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'dateEmbauche',
+              lower: [dateEmbauche],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'dateEmbauche',
+              lower: [dateEmbauche],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'dateEmbauche',
+              lower: [],
+              upper: [dateEmbauche],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<AgentCommercial, AgentCommercial, QAfterWhereClause>
+      dateEmbaucheGreaterThan(
+    DateTime dateEmbauche, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'dateEmbauche',
+        lower: [dateEmbauche],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<AgentCommercial, AgentCommercial, QAfterWhereClause>
+      dateEmbaucheLessThan(
+    DateTime dateEmbauche, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'dateEmbauche',
+        lower: [],
+        upper: [dateEmbauche],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<AgentCommercial, AgentCommercial, QAfterWhereClause>
+      dateEmbaucheBetween(
+    DateTime lowerDateEmbauche,
+    DateTime upperDateEmbauche, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'dateEmbauche',
+        lower: [lowerDateEmbauche],
+        includeLower: includeLower,
+        upper: [upperDateEmbauche],
+        includeUpper: includeUpper,
+      ));
     });
   }
 }
