@@ -1,7 +1,7 @@
 from django.shortcuts import render
-# from authentification.permissions import IsAdmin, IsSuperviseur,IsAgent
-# from backend.ISETAG_COM_API.user_api.models import Utilisateur
-# from backend.ISETAG_COM_API.user_api.serializers import UtilisateurSerializer
+from authentification.permissions import IsAdmin, IsSuperviseur,IsAgent
+from user_api.models import Utilisateur
+from user_api.serializers import UtilisateurSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -26,19 +26,19 @@ from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiPara
 class ProspectView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     
-    # def get_permissions(self):
-    #     """
-    #     Permissions différentes selon la méthode HTTP.
-    #     """
-    #     if self.request.method == 'GET':
-    #         return [IsSuperviseur()]   # admins + superviseurs
-    #     elif self.request.method == 'POST':
-    #         return [IsAdmin()]         # admins seulement
-    #     elif self.request.method == 'PUT':
-    #         return [IsAgent()]         # tous les rôles
-    #     elif self.request.method == 'DELETE':
-    #         return [IsAdmin()]         # admins seulement
-    #     return [IsAdmin()]             # fallback sécurisé
+    def get_permissions(self):
+        """
+        Permissions différentes selon la méthode HTTP.
+        """
+        if self.request.method == 'GET':
+            return [IsSuperviseur()]   # admins + superviseurs
+        elif self.request.method == 'POST':
+            return [IsAdmin()]         # admins seulement
+        elif self.request.method == 'PUT':
+            return [IsAgent()]         # tous les rôles
+        elif self.request.method == 'DELETE':
+            return [IsAdmin()]         # admins seulement
+        return [IsAdmin()]             # fallback sécurisé
 
     def get(self, request, pk=None):
         if pk:
@@ -102,19 +102,19 @@ class ProspectView(APIView):
 class RendezVousView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     
-    # def get_permissions(self):
-    #     """
-    #     Permissions différentes selon la méthode HTTP.
-    #     """
-    #     if self.request.method == 'GET':
-    #         return [IsSuperviseur()]   # admins + superviseurs
-    #     elif self.request.method == 'POST':
-    #         return [IsAgent()]         # admins seulement
-    #     elif self.request.method == 'PUT':
-    #         return [IsAgent()]         # tous les rôles
-    #     elif self.request.method == 'DELETE':
-    #         return [IsAdmin()]         # admins seulement
-    #     return [IsAdmin()]             # fallback sécurisé
+    def get_permissions(self):
+        """
+        Permissions différentes selon la méthode HTTP.
+        """
+        if self.request.method == 'GET':
+            return [IsSuperviseur()]   # admins + superviseurs
+        elif self.request.method == 'POST':
+            return [IsAgent()]         # admins seulement
+        elif self.request.method == 'PUT':
+            return [IsAgent()]         # tous les rôles
+        elif self.request.method == 'DELETE':
+            return [IsAdmin()]         # admins seulement
+        return [IsAdmin()]             # fallback sécurisé
 
     def get(self, request, pk=None):
         if pk is None:
@@ -180,19 +180,19 @@ class RendezVousView(APIView):
 class SuiviProspectView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     
-    # def get_permissions(self):
-    #     """
-    #     Permissions différentes selon la méthode HTTP.
-    #     """
-    #     if self.request.method == 'GET':
-    #         return [IsSuperviseur()]   # admins + superviseurs
-    #     elif self.request.method == 'POST':
-    #         return [IsAgent()]         # admins seulement
-    #     elif self.request.method == 'PUT':
-    #         return [IsAgent()]         # tous les rôles
-    #     elif self.request.method == 'DELETE':
-    #         return [IsAdmin()]         # admins seulement
-    #     return [IsAdmin()]             # fallback sécurisé
+    def get_permissions(self):
+        """
+        Permissions différentes selon la méthode HTTP.
+        """
+        if self.request.method == 'GET':
+            return [IsSuperviseur()]   # admins + superviseurs
+        elif self.request.method == 'POST':
+            return [IsAgent()]         # admins seulement
+        elif self.request.method == 'PUT':
+            return [IsAgent()]         # tous les rôles
+        elif self.request.method == 'DELETE':
+            return [IsAdmin()]         # admins seulement
+        return [IsAdmin()]             # fallback sécurisé
 
     def get(self, request, pk=None):
         if pk is None:
@@ -258,19 +258,19 @@ class SuiviProspectView(APIView):
 class RelanceView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     
-    # def get_permissions(self):
-    #     """
-    #     Permissions différentes selon la méthode HTTP.
-    #     """
-    #     if self.request.method == 'GET':
-    #         return [IsSuperviseur()]   # admins + superviseurs
-    #     elif self.request.method == 'POST':
-    #         return [IsAgent()]         # admins seulement
-    #     elif self.request.method == 'PUT':
-    #         return [IsAgent()]         # tous les rôles
-    #     elif self.request.method == 'DELETE':
-    #         return [IsAdmin()]         # admins seulement
-    #     return [IsAdmin()]             # fallback sécurisé
+    def get_permissions(self):
+        """
+        Permissions différentes selon la méthode HTTP.
+        """
+        if self.request.method == 'GET':
+            return [IsSuperviseur()]   # admins + superviseurs
+        elif self.request.method == 'POST':
+            return [IsAgent()]         # admins seulement
+        elif self.request.method == 'PUT':
+            return [IsAgent()]         # tous les rôles
+        elif self.request.method == 'DELETE':
+            return [IsAdmin()]         # admins seulement
+        return [IsAdmin()]             # fallback sécurisé
 
     def get(self, request, pk=None):
         if pk is None:

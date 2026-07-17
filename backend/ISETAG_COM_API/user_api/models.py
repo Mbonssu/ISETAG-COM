@@ -8,7 +8,7 @@ class Utilisateur(AbstractUser):
     nom = models.CharField(max_length=100, null=False, blank=False)
     prenom = models.CharField(max_length=100, null=False, blank=False, default="")
     telephone = models.CharField(max_length=100, null=False, blank=False)
-    email = models.EmailField(max_length=254, null=False, blank=False, default="")
+    email = models.EmailField(max_length=254, null=False, blank=False, unique=True)  # ← unique=True ajouté
     role = models.CharField(max_length=25, null=False, blank=False)
     statut = models.CharField(max_length=25, null=False, blank=False)
     actif = models.BooleanField(default=True)
@@ -16,8 +16,11 @@ class Utilisateur(AbstractUser):
     photoProfil = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
     sortie = models.ManyToManyField('campagne_api.Sortie', through='campagne_api.Participation', related_name='participations', blank=True)
     createdAt = models.DateTimeField(default=timezone.now)
-    
-    class Meta :
+
+    USERNAME_FIELD = 'email'          # ← email devient l'identifiant de connexion
+    REQUIRED_FIELDS = ['username']    # ← username reste requis pour createsuperuser, mais plus pour le login
+
+    class Meta:
         db_table = 'Utilisateur'
 
     def __str__(self):

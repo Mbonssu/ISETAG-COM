@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'drf_spectacular',
-    # 'authentification',   # ← ton app authentication
+    'authentification',   # ← ton app authentication
     ]
 
 MIDDLEWARE = [
@@ -100,9 +100,9 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    # 'DEFAULT_PERMISSION_CLASSES': [
-    #     'rest_framework.permissions.IsAuthenticated',
-    # ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
 }
 
 SPECTACULAR_SETTINGS = {
@@ -120,19 +120,19 @@ SPECTACULAR_SETTINGS = {
     'SORT_OPERATIONS': False,
 }
 
-# SIMPLE_JWT = {
+SIMPLE_JWT = {
     
-#     # Remplace 'utilisateur_id' par le vrai nom de ta PK
-#     'USER_ID_FIELD': 'idUtilisateur',   # ← le nom du champ dans le modèle
-#     'USER_ID_CLAIM': 'user_id',          # ← le nom de la claim dans le token JWT
+    # Remplace 'utilisateur_id' par le vrai nom de ta PK
+    'USER_ID_FIELD': 'idUtilisateur',   # ← le nom du champ dans le modèle
+    'USER_ID_CLAIM': 'user_id',          # ← le nom de la claim dans le token JWT
     
-#     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),   # durée de vie du token d'accès
-#     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),       # durée de vie du refresh token
-#     'ROTATE_REFRESH_TOKENS': True,    # génère un nouveau refresh token à chaque refresh
-#     'BLACKLIST_AFTER_ROTATION': True, # invalide l'ancien refresh token
-#     'AUTH_HEADER_TYPES': ('Bearer',),
-#     'UPDATE_LAST_LOGIN': True,
-# }
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),   # durée de vie du token d'accès
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=30),       # durée de vie du refresh token
+    'ROTATE_REFRESH_TOKENS': True,    # génère un nouveau refresh token à chaque refresh
+    'BLACKLIST_AFTER_ROTATION': True, # invalide l'ancien refresh token
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'UPDATE_LAST_LOGIN': True,
+}
 
 
 AUTH_PASSWORD_VALIDATORS = [

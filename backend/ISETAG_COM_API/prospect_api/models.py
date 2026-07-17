@@ -1,9 +1,10 @@
 from django.db import models
 from user_api.models import Utilisateur
-from campagne_api.models import source
+from campagne_api.models import source, ficheSortie
 
 class Prospect(models.Model):
     idProspect = models.CharField(max_length=25, primary_key=True)
+    idFiche = models.ForeignKey(ficheSortie, on_delete=models.CASCADE, null=True, blank=True)
     nomComplet = models.CharField(max_length=200)
     email = models.EmailField(max_length=254, null = True, blank = True)
     telephone = models.CharField(max_length=20, null = True, blank = True)

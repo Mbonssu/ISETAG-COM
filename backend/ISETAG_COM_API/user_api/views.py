@@ -1,5 +1,5 @@
 from django.shortcuts import render
-# from authentification.permissions import IsAdmin, IsSuperviseur, IsAgent
+from authentification.permissions import IsAdmin, IsSuperviseur, IsAgent
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -37,23 +37,24 @@ from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiPara
         responses={204: None},
     ),
 )
+
 class UtilisateurView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
-    # def get_permissions(self):
+    def get_permissions(self):
         
-    #     """
-    #     Permissions différentes selon la méthode HTTP.
-    #     """
-    #     if self.request.method == 'GET':
-    #         return [IsSuperviseur()]   # admins + superviseurs
-    #     elif self.request.method == 'POST':
-    #         return [IsAdmin()]         # admins seulement
-    #     elif self.request.method == 'PUT':
-    #         return [IsAgent()]         # tous les rôles
-    #     elif self.request.method == 'DELETE':
-    #         return [IsAdmin()]         # admins seulement
-    #     return [IsAdmin()]             # fallback sécurisé
+        """
+        Permissions différentes selon la méthode HTTP.
+        """
+        if self.request.method == 'GET':
+            return [IsSuperviseur()]   # admins + superviseurs
+        elif self.request.method == 'POST':
+            return [IsAdmin()]         # admins seulement
+        elif self.request.method == 'PUT':
+            return [IsAgent()]         # tous les rôles
+        elif self.request.method == 'DELETE':
+            return [IsAdmin()]         # admins seulement
+        return [IsAdmin()]             # fallback sécurisé
 
     def get(self, request, pk=None):
         if pk:

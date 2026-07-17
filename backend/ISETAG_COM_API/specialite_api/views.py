@@ -7,7 +7,7 @@ from .serializers import SpecialiteSerializer, interetSpecialiteSerializer
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from drf_spectacular.utils import extend_schema, extend_schema_view
 # from .ws_utils import notify_service_created, notify_service_updated, notify_service_deleted
-# from authentification.permissions import IsAdmin, IsSuperviseur,IsAgent
+from authentification.permissions import IsAdmin, IsSuperviseur,IsAgent
 
 
 @extend_schema_view(
@@ -19,19 +19,19 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 class SpecialiteView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
-    # def get_permissions(self):
-    #     """
-    #     Permissions différentes selon la méthode HTTP.
-    #     """
-    #     if self.request.method == 'GET':
-    #         return [IsSuperviseur()]   # admins + superviseurs
-    #     elif self.request.method == 'POST':
-    #         return [IsAdmin()]         # admins seulement
-    #     elif self.request.method == 'PUT':
-    #         return [IsAgent()]         # tous les rôles
-    #     elif self.request.method == 'DELETE':
-    #         return [IsAdmin()]         # admins seulement
-    #     return [IsAdmin()]             # fallback sécurisé
+    def get_permissions(self):
+        """
+        Permissions différentes selon la méthode HTTP.
+        """
+        if self.request.method == 'GET':
+            return [IsAgent()]   # admins + superviseurs
+        elif self.request.method == 'POST':
+            return [IsAdmin()]         # admins seulement
+        elif self.request.method == 'PUT':
+            return [IsAgent()]         # tous les rôles
+        elif self.request.method == 'DELETE':
+            return [IsAdmin()]         # admins seulement
+        return [IsAdmin()]             # fallback sécurisé
     
     def get(self, request, pk=None):
         if pk is None:

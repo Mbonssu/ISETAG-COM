@@ -17,6 +17,5 @@ class CustomTokenSerializer(TokenObtainPairSerializer):
         token['telephone']          = user.telephone
         token['actif']              = user.actif
         token['dateEmbauche']       = user.dateEmbauche
-        # token['photoProfil']        = user.photoProfil 
 
         return token

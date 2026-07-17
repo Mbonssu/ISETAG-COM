@@ -73,7 +73,7 @@ class source(models.Model):
 class ficheSortie(models.Model):
     idFiche = models.CharField(max_length=25, primary_key=True)
     idParticipation = models.ForeignKey('campagne_api.Participation', on_delete=models.CASCADE)
-    idProspect = models.ForeignKey('prospect_api.Prospect', on_delete=models.CASCADE)
+    # idProspect = models.ForeignKey('prospect_api.Prospect', on_delete=models.CASCADE)
     idSource = models.ForeignKey('campagne_api.source', on_delete=models.CASCADE)
     dateCollecte = models.DateTimeField()
     commentaire = models.TextField()

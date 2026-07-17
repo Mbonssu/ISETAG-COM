@@ -115,9 +115,9 @@ class ficheSortieSerializer(serializers.ModelSerializer):
         queryset=Participation.objects.all()
     )
     
-    idProspect = serializers.PrimaryKeyRelatedField(
-        queryset=Prospect.objects.all()
-    )
+    # idProspect = serializers.PrimaryKeyRelatedField(
+    #     queryset=Prospect.objects.all()
+    # )
     
     idSource = serializers.PrimaryKeyRelatedField(
         queryset=source.objects.all()
@@ -125,7 +125,7 @@ class ficheSortieSerializer(serializers.ModelSerializer):
     
     #passage des details de la participation, du prospect et de la source dans le serializer pour les inclure dans les réponses API
     participation_detail = ParticipationSerializer(source='idParticipation', read_only=True)
-    prospect_detail = ProspectSerializer(source='idProspect', read_only=True)
+    # prospect_detail = ProspectSerializer(source='idProspect', read_only=True)
     source_detail = SourceSerializer(source='idSource', read_only=True)
 
     class Meta:
@@ -136,4 +136,3 @@ class ficheSortieSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['idFiche'] = f"FICHE-{uuid.uuid4().hex[:8].upper()}"
         return super().create(validated_data)
-    
