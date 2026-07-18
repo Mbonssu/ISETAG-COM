@@ -21,12 +21,12 @@ Future<void> main() async {
     statusBarIconBrightness: Brightness.dark,
   ));
 
-  // ✅ ONLY initialize timezone here (lightweight)
+  //  ONLY initialize timezone here (lightweight)
   tz.initializeTimeZones();
   final location = tz.getLocation('Africa/Lagos');
   tz.setLocalLocation(location);
 
-  // ✅ Run app immediately - splash screen shows quickly
+  //  Run app immediately - splash screen shows quickly
   runApp(const IsetagApp());
 }
 // If you only need to sync once

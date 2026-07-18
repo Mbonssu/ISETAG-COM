@@ -20,40 +20,40 @@ export const filiereService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all filieres:', queryString || 'sans paramètres');
+    ('📡 GET all filieres:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
   getById: (idFiliere) => {
-    console.log('📡 GET filiere by ID:', idFiliere);
+    ('📡 GET filiere by ID:', idFiliere);
     return api.get(`${BASE_URL}${idFiliere}/`);
   },
 
   create: (data) => {
     const payload = { idFiliere: `TEMP-${Date.now()}`, ...data };
-    console.log('📝 CREATE filiere:', payload);
+    ('📝 CREATE filiere:', payload);
     return api.post(BASE_URL, payload);
   },
 
   update: (idFiliere, data) => {
-    console.log('📝 UPDATE filiere:', idFiliere, data);
+    ('📝 UPDATE filiere:', idFiliere, data);
     return api.put(`${BASE_URL}${idFiliere}/`, data);
   },
 
   delete: (idFiliere) => {
-    console.log('🗑️ DELETE filiere:', idFiliere);
+    ('🗑️ DELETE filiere:', idFiliere);
     return api.delete(`${BASE_URL}${idFiliere}/`);
   },
 
   /** GET /filiere_api/ISETAG_COM.filieres/<pk>/specialites/ */
   getSpecialites: (idFiliere) => {
-    console.log('📡 GET specialites for filiere:', idFiliere);
+    ('📡 GET specialites for filiere:', idFiliere);
     return api.get(`${BASE_URL}${idFiliere}/specialites/`);
   },
 
   /** POST /filiere_api/ISETAG_COM.filieres/<pk>/specialites/ */
   addSpecialite: (idFiliere, data) => {
-    console.log('📝 ADD specialite to filiere:', idFiliere, data);
+    ('📝 ADD specialite to filiere:', idFiliere, data);
     return api.post(`${BASE_URL}${idFiliere}/specialites/`, data);
   },
 };

@@ -5,7 +5,7 @@
  *   /campagne_api/ISETAG_COM.fiches-sortie/        (GET liste, POST création)
  *   /campagne_api/ISETAG_COM.fiches-sortie/<id>/   (GET un, PUT, DELETE)
  *
- * ⚠️ Corrigé : l'ancienne URL "/fiche_api/ISETAG_COM.fiches/" n'existe
+ *  Corrigé : l'ancienne URL "/fiche_api/ISETAG_COM.fiches/" n'existe
  * pas dans l'API. La ressource s'appelle "fiches-sortie" et vit sous le
  * préfixe "campagne_api" (pas "fiche_api").
  *
@@ -28,28 +28,28 @@ export const ficheService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all fiches:', queryString || 'sans paramètres');
+    ('📡 GET all fiches:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
   getById: (idFiche) => {
-    console.log('📡 GET fiche by ID:', idFiche);
+    ('📡 GET fiche by ID:', idFiche);
     return api.get(`${BASE_URL}${idFiche}/`);
   },
 
   create: (data) => {
     const payload = { idFiche: `TEMP-${Date.now()}`, ...data };
-    console.log('📝 CREATE fiche:', payload);
+    ('📝 CREATE fiche:', payload);
     return api.post(BASE_URL, payload);
   },
 
   update: (idFiche, data) => {
-    console.log('📝 UPDATE fiche:', idFiche, data);
+    ('📝 UPDATE fiche:', idFiche, data);
     return api.put(`${BASE_URL}${idFiche}/`, data);
   },
 
   delete: (idFiche) => {
-    console.log('🗑️ DELETE fiche:', idFiche);
+    ('🗑️ DELETE fiche:', idFiche);
     return api.delete(`${BASE_URL}${idFiche}/`);
   },
 };

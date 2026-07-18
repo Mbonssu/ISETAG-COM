@@ -54,7 +54,7 @@ export const suiviService = {
     });
 
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all suivis:', queryString || 'sans paramètres');
+    ('📡 GET all suivis:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
@@ -68,7 +68,7 @@ export const suiviService = {
    * const suivi = await suiviService.getById('SUIV-001');
    */
   getById: (idSuivi) => {
-    console.log('📡 GET suivi by ID:', idSuivi);
+    ('📡 GET suivi by ID:', idSuivi);
     return api.get(`${BASE_URL}${idSuivi}/`);
   },
 
@@ -103,7 +103,7 @@ export const suiviService = {
   create: (data) => {
     // Ajouter un ID temporaire si nécessaire (comme pour les autres services)
     const payload = { idSuivi: `TEMP-${Date.now()}`, ...data };
-    console.log('📝 CREATE suivi:', payload);
+    ('📝 CREATE suivi:', payload);
     return api.post(BASE_URL, payload);
   },
 
@@ -133,7 +133,7 @@ export const suiviService = {
    * });
    */
   update: (idSuivi, data) => {
-    console.log('📝 UPDATE suivi:', idSuivi, data);
+    ('📝 UPDATE suivi:', idSuivi, data);
     return api.put(`${BASE_URL}${idSuivi}/`, data);
   },
 
@@ -144,7 +144,7 @@ export const suiviService = {
   /**
    * DELETE /suivi_api/ISETAG_COM.suivis/<pk>/ -> supprimer un suivi
    * 
-   * ⚠️ Cette action est irréversible !
+   *  Cette action est irréversible !
    * 
    * @param {string} idSuivi - L'identifiant du suivi
    * @returns {Promise} - Promesse confirmant la suppression
@@ -153,7 +153,7 @@ export const suiviService = {
    * await suiviService.delete('SUIV-001');
    */
   delete: (idSuivi) => {
-    console.log('🗑️ DELETE suivi:', idSuivi);
+    ('🗑️ DELETE suivi:', idSuivi);
     return api.delete(`${BASE_URL}${idSuivi}/`);
   },
 
@@ -184,7 +184,7 @@ export const suiviService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📊 GET suivis stats:', queryString || 'sans paramètres');
+    ('📊 GET suivis stats:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}stats?${queryString}` : `${BASE_URL}stats`);
   },
 
@@ -214,7 +214,7 @@ export const suiviService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET suivis for prospect:', idProspect, queryString);
+    ('📡 GET suivis for prospect:', idProspect, queryString);
     return api.get(queryString ? `${BASE_URL}prospect/${idProspect}/?${queryString}` : `${BASE_URL}prospect/${idProspect}/`);
   },
 
@@ -244,7 +244,7 @@ export const suiviService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET suivis for agent:', idUtilisateur, queryString);
+    ('📡 GET suivis for agent:', idUtilisateur, queryString);
     return api.get(queryString ? `${BASE_URL}/${idUtilisateur}/?${queryString}` : `${BASE_URL}/${idUtilisateur}/`);
   },
 
@@ -264,7 +264,7 @@ export const suiviService = {
    * await suiviService.export('excel', { agent: 'AGT-001' });
    */
   export: (format = 'excel', params = {}) => {
-    console.log('📤 Export suivis as:', format);
+    ('📤 Export suivis as:', format);
     const cleanParams = { format, ...params };
     Object.keys(cleanParams).forEach(key => {
       if (cleanParams[key] === undefined || cleanParams[key] === null || cleanParams[key] === '') {

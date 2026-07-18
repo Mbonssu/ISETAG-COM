@@ -142,12 +142,12 @@ class _SyncScreenState extends State<SyncScreen> {
   Widget _buildEmptyState() {
     return Column(
       children: [
-        // ✅ Connection Status at the top
+        //  Connection Status at the top
         Padding(
           padding: const EdgeInsets.all(16),
           child: _buildConnectionStatus(),
         ),
-        // ✅ Empty state content centered
+        //  Empty state content centered
         Expanded(
           child: Center(
             child: Padding(

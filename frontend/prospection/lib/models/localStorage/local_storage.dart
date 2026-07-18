@@ -253,7 +253,7 @@ class LocalStorage {
         sources.add(source);
         await saveSource(source);
       }
-      print('✅ ${sources.length} sources created');
+      print(' ${sources.length} sources created');
 
       // 2. Etablissements (15)
       final etablissements = <Etablissement>[];
@@ -291,7 +291,7 @@ class LocalStorage {
         etablissements.add(ets);
         await saveEtablissement(ets);
       }
-      print('✅ ${etablissements.length} etablissements created');
+      print(' ${etablissements.length} etablissements created');
 
       // 3. Classes (25)
       final classes = <Classe>[];
@@ -322,7 +322,7 @@ class LocalStorage {
         classes.add(clse);
         await saveClasse(clse);
       }
-      print('✅ ${classes.length} classes created');
+      print(' ${classes.length} classes created');
 
       // 4. Specialites (25)
       final specialites = <Specialite>[];
@@ -365,7 +365,7 @@ class LocalStorage {
         specialites.add(spec);
         await saveSpecialite(spec);
       }
-      print('✅ ${specialites.length} specialites created');
+      print(' ${specialites.length} specialites created');
 
       // 5. Fiches (15) - Each fiche is associated with a source
       final fiches = <Fiche>[];
@@ -401,7 +401,7 @@ class LocalStorage {
         fiches.add(fiche);
         await saveFiche(fiche);
       }
-      print('✅ ${fiches.length} fiches created');
+      print(' ${fiches.length} fiches created');
 
       // 6. Generate 1500 Prospects with source_infos
       final firstNames = [
@@ -607,7 +607,7 @@ class LocalStorage {
         print('📦 Batch ${(batch / batchSize).toInt() + 1} completed');
       }
 
-      print('✅ Successfully saved $savedCount dummy prospects!');
+      print(' Successfully saved $savedCount dummy prospects!');
       print('📊 Summary:');
       print('   - ${sources.length} Sources');
       print('   - ${etablissements.length} Etablissements');
@@ -616,7 +616,7 @@ class LocalStorage {
       print('   - ${fiches.length} Fiches');
       print('   - $savedCount Prospects with source_infos assigned');
     } catch (e) {
-      print('❌ Error generating dummy data: $e');
+      print(' Error generating dummy data: $e');
       rethrow;
     }
   }
@@ -677,7 +677,7 @@ class LocalStorage {
           await prospect.classe.save();
         }
 
-        // ✅ Save the fiche relationship
+        //  Save the fiche relationship
         if (prospect.fiche.value != null) {
           await prospect.fiche.save();
         }
@@ -1036,7 +1036,7 @@ class LocalStorage {
 
       if (existing != null) {
         print(
-            '⚠️ Establishment already exists: ${etablissement.nomEtablissement}');
+            ' Establishment already exists: ${etablissement.nomEtablissement}');
         return 'establishment_already_exists';
       }
 
@@ -1044,7 +1044,7 @@ class LocalStorage {
         await _isar.etablissements.put(etablissement);
       });
 
-      print('✅ New establishment added: ${etablissement.nomEtablissement}');
+      print(' New establishment added: ${etablissement.nomEtablissement}');
       return 'establishment_added_success';
     } catch (e) {
       print('Error adding etablissement: $e');
@@ -1232,7 +1232,7 @@ class LocalStorage {
       final existing = await getSpecialiteByNom(specialite.libelleSpecialite);
 
       if (existing != null) {
-        print('⚠️ Speciality already exists: ${specialite.libelleSpecialite}');
+        print(' Speciality already exists: ${specialite.libelleSpecialite}');
         return 'specialty_already_exists';
       }
 
@@ -1240,7 +1240,7 @@ class LocalStorage {
         await _isar.specialites.put(specialite);
       });
 
-      print('✅ New speciality added: ${specialite.libelleSpecialite}');
+      print(' New speciality added: ${specialite.libelleSpecialite}');
       return 'specialty_added_success';
     } catch (e) {
       print('Error adding specialite: $e');
@@ -1575,11 +1575,11 @@ class LocalStorage {
       print('📊 Number of prospects: ${prospects.length}');
 
       if (prospects.isEmpty) {
-        print('⚠️ Prospects list is empty, returning empty list');
+        print(' Prospects list is empty, returning empty list');
         return [];
       }
 
-      // ✅ OPTIMIZATION: BATCH LOAD all classes in ONE query (not N queries)
+      //  OPTIMIZATION: BATCH LOAD all classes in ONE query (not N queries)
       print(
           '🔄 Batch loading relationships for ${prospects.length} prospects...');
 
@@ -1589,7 +1589,7 @@ class LocalStorage {
 
       print('📋 Class IDs found: ${classIds.length}');
 
-      // ✅ OPTIMIZATION: ONE query for ALL classes
+      //  OPTIMIZATION: ONE query for ALL classes
       final classes = await isar.classes
           .where()
           .anyOf(classIds, (q, id) => q.idClasseEqualTo(id))
@@ -1600,13 +1600,13 @@ class LocalStorage {
       // Build class map for O(1) lookup
       final classeMap = {for (var c in classes) c.idClasse: c};
 
-      // ✅ OPTIMIZATION: Get all ets IDs in ONE pass
+      //  OPTIMIZATION: Get all ets IDs in ONE pass
       final etsIds =
           classes.where((c) => c.idEts.isNotEmpty).map((c) => c.idEts).toList();
 
       print('📋 Etablissement IDs found: ${etsIds.length}');
 
-      // ✅ OPTIMIZATION: ONE query for ALL etablissements
+      //  OPTIMIZATION: ONE query for ALL etablissements
       final etss = await isar.etablissements
           .where()
           .anyOf(etsIds, (q, id) => q.idEtablissementEqualTo(id))
@@ -1617,7 +1617,7 @@ class LocalStorage {
       // Build ets map for O(1) lookup
       final etsMap = {for (var e in etss) e.idEtablissement: e};
 
-      // ✅ OPTIMIZATION: Get all interests in ONE query
+      //  OPTIMIZATION: Get all interests in ONE query
       final ids = prospects.map((p) => p.idProspect).toList();
 
       final allLinks = await isar.interetFilieres
@@ -1628,7 +1628,7 @@ class LocalStorage {
 
       print('📊 Interests found: ${allLinks.length}');
 
-      // ✅ OPTIMIZATION: Get all specialites in ONE query
+      //  OPTIMIZATION: Get all specialites in ONE query
       if (allLinks.isNotEmpty) {
         final specialiteIds = allLinks
             .where((l) => l.idSpecialite.isNotEmpty)
@@ -1648,7 +1648,7 @@ class LocalStorage {
         }
       }
 
-      // ✅ Build results with O(1) lookups
+      //  Build results with O(1) lookups
       final result = prospects.map((p) {
         final specsP = allLinks
             .where((l) => l.idProspect == p.idProspect)
@@ -1683,11 +1683,11 @@ class LocalStorage {
       print('   - Empty etablissement: $emptyEtablissement/${result.length}');
       print('   - Empty classe: $emptyClasse/${result.length}');
 
-      print('✅ === END _buildProspectDetailsList ===');
+      print(' === END _buildProspectDetailsList ===');
       return result;
     } catch (e) {
-      print('❌ Error building prospect details list: $e');
-      print('❌ Stack trace: ${StackTrace.current}');
+      print(' Error building prospect details list: $e');
+      print(' Stack trace: ${StackTrace.current}');
       return [];
     }
   }

@@ -37,7 +37,7 @@ class FichePdfExportService {
             await rootBundle.load('assets/images/app_icon.png');
         finalLogoBytes = data.buffer.asUint8List();
       } catch (e) {
-        print('⚠️ Logo asset fell back safely to text styling: $e');
+        print(' Logo asset fell back safely to text styling: $e');
       }
     }
 

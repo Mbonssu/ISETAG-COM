@@ -2061,9 +2061,9 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
   //   // Add all data to queue with correct priority
   //   try {
   //     await SyncQueue().syncNow();
-  //     print('✅ All items added to sync queue');
+  //     print(' All items added to sync queue');
   //   } catch (e) {
-  //     print('⚠️ Error adding to queue: $e');
+  //     print(' Error adding to queue: $e');
   //     // Data is already saved locally, will be picked up on next sync
   //   }
   // }
@@ -2254,7 +2254,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
         syncState: SyncState.pending,
       );
 
-      // ✅ Link relationships
+      //  Link relationships
       interet.prospect.value = prospect;
       interet.specialite.value = specialite;
 
@@ -2274,9 +2274,9 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     // Add all data to queue with correct priority
     try {
       await SyncQueue().syncNow();
-      print('✅ All items added to sync queue');
+      print(' All items added to sync queue');
     } catch (e) {
-      print('⚠️ Error adding to queue: $e');
+      print(' Error adding to queue: $e');
     }
   }
 

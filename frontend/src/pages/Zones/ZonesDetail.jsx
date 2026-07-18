@@ -4,7 +4,7 @@ import { ArrowLeft, Edit, MapPin, Building, Globe, Loader, AlertCircle } from 'l
 import { zoneService } from '../../services/zoneService';
 import '../Prospects/Prospects.css';
 
-// ⚠️ CORRIGÉ : cette page était 100% mock (aucun appel API), et affichait
+//  CORRIGÉ : cette page était 100% mock (aucun appel API), et affichait
 // des statistiques + une liste d'agents entièrement inventées. Il n'existe
 // AUCUNE route dans le YAML pour des stats ou des agents liés à une zone
 // (le modèle Zone n'a même pas de champ les référençant) — cette section
@@ -23,13 +23,13 @@ const ZonesDetail = () => {
       setError(null);
       try {
         const data = await zoneService.getById(id);
-        console.log('📥 Zone chargée:', data);
-        // ⚠️ Le backend renvoie parfois un tableau [{...}] au lieu d'un
+        ('📥 Zone chargée:', data);
+        //  Le backend renvoie parfois un tableau [{...}] au lieu d'un
         // objet direct pour getById (bug backend). On gère les deux cas.
         const zoneData = Array.isArray(data) ? data[0] : data;
         setZone(zoneData);
       } catch (err) {
-        console.error('❌ Erreur de chargement:', err);
+        console.error(' Erreur de chargement:', err);
         setError(err.message);
       } finally {
         setLoading(false);

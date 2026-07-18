@@ -108,19 +108,19 @@ class NotificationService {
     }
   }
 
-  // ✅ AJOUTER CETTE MÉTHODE
+  //  AJOUTER CETTE MÉTHODE
   Future<void> showOverdueNotification({
     required String prospectName,
     required String prospectId,
   }) async {
     await showNotification(
-      title: '⚠️ Relance en retard',
+      title: ' Relance en retard',
       body: 'La relance pour $prospectName est en retard',
       payload: 'overdue_$prospectId',
     );
   }
 
-  // ✅ AJOUTER CETTE MÉTHODE
+  //  AJOUTER CETTE MÉTHODE
   Future<void> showReminderNotification({
     required String prospectName,
     required String prospectId,

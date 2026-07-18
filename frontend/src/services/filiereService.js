@@ -17,7 +17,7 @@
 //       }
 //     });
 //     const queryString = new URLSearchParams(cleanParams).toString();
-//     console.log('📡 GET all specialites:', queryString || 'sans paramètres');
+//     ('📡 GET all specialites:', queryString || 'sans paramètres');
 //     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
 //   },
 
@@ -25,7 +25,7 @@
 //   // RÉCUPÉRER UNE SPÉCIALITÉ PAR SON ID
 //   // ============================================================
 //   getById: (idSpecialite) => {
-//     console.log('📡 GET specialite by ID:', idSpecialite);
+//     ('📡 GET specialite by ID:', idSpecialite);
 //     return api.get(`${BASE_URL}${idSpecialite}/`);
 //   },
 
@@ -39,7 +39,7 @@
 //       description: data.description || '',
 //       // updatedAt sera généré automatiquement par le backend
 //     };
-//     console.log('📝 CREATE specialite:', payload);
+//     ('📝 CREATE specialite:', payload);
 //     return api.post(BASE_URL, payload);
 //   },
 
@@ -53,7 +53,7 @@
 //       description: data.description || '',
 //       // updatedAt sera généré automatiquement par le backend
 //     };
-//     console.log('📝 UPDATE specialite:', idSpecialite, payload);
+//     ('📝 UPDATE specialite:', idSpecialite, payload);
 //     return api.put(`${BASE_URL}${idSpecialite}/`, payload);
 //   },
 
@@ -61,7 +61,7 @@
 //   // SUPPRIMER UNE SPÉCIALITÉ
 //   // ============================================================
 //   delete: (idSpecialite) => {
-//     console.log('🗑️ DELETE specialite:', idSpecialite);
+//     ('🗑️ DELETE specialite:', idSpecialite);
 //     return api.delete(`${BASE_URL}${idSpecialite}/`);
 //   },
 // };
@@ -85,7 +85,7 @@ export const specialiteService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all specialites:', queryString || 'sans paramètres');
+    ('📡 GET all specialites:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
@@ -93,7 +93,7 @@ export const specialiteService = {
   // RÉCUPÉRER UNE SPÉCIALITÉ PAR SON ID
   // ============================================================
   getById: (idSpecialite) => {
-    console.log('📡 GET specialite by ID:', idSpecialite);
+    ('📡 GET specialite by ID:', idSpecialite);
     return api.get(`${BASE_URL}${idSpecialite}/`);
   },
 
@@ -107,7 +107,7 @@ export const specialiteService = {
       acronyme: data.acronyme || '',
       description: data.description || '',
     };
-    console.log('📝 CREATE specialite:', payload);
+    ('📝 CREATE specialite:', payload);
     return api.post(BASE_URL, payload);
   },
 
@@ -121,7 +121,7 @@ export const specialiteService = {
       acronyme: data.acronyme || '',
       description: data.description || '',
     };
-    console.log('📝 UPDATE specialite:', idSpecialite, payload);
+    ('📝 UPDATE specialite:', idSpecialite, payload);
     return api.put(`${BASE_URL}${idSpecialite}/`, payload);
   },
 
@@ -129,7 +129,7 @@ export const specialiteService = {
   // SUPPRIMER UNE SPÉCIALITÉ
   // ============================================================
   delete: (idSpecialite) => {
-    console.log('🗑️ DELETE specialite:', idSpecialite);
+    ('🗑️ DELETE specialite:', idSpecialite);
     return api.delete(`${BASE_URL}${idSpecialite}/`);
   },
 };

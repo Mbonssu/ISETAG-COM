@@ -22,7 +22,7 @@ class RelancesScreen extends StatefulWidget {
 }
 
 class _RelancesScreenState extends State<RelancesScreen> {
-  // ✅ Pagination
+  //  Pagination
   static const int _pageSize = 20;
   int _currentPage = 0;
   bool _isLoading = true;
@@ -121,7 +121,7 @@ class _RelancesScreenState extends State<RelancesScreen> {
     final now = DateTime.now();
     final weekFromNow = now.add(const Duration(days: 7));
     
-    // ✅ Get prospects with date_relance in next 7 days
+    //  Get prospects with date_relance in next 7 days
     final prospects = await isar.prospects
         .where()
         .filter()
@@ -134,7 +134,7 @@ class _RelancesScreenState extends State<RelancesScreen> {
     
     if (prospects.isEmpty) return [];
     
-    // ✅ Batch load all relations
+    //  Batch load all relations
     final prospectIds = prospects.map((p) => p.idProspect).toList();
     
     final allInterets = await isar.interetFilieres
@@ -175,7 +175,7 @@ class _RelancesScreenState extends State<RelancesScreen> {
       for (var e in allEts) e.idEtablissement: e
     };
     
-    // ✅ Build details
+    //  Build details
     final detailsList = <ProspectDetails>[];
     for (final prospect in prospects) {
       final interets = allInterets.where((i) => i.idProspect == prospect.idProspect).toList();
@@ -646,7 +646,7 @@ class _RelancesScreenState extends State<RelancesScreen> {
     );
   }
 
-  // ✅ COMPACT PROFESSIONAL RELANCE CARD
+  //  COMPACT PROFESSIONAL RELANCE CARD
   Widget _buildCompactRelanceCard(ProspectDetails prospect, bool isSmallScreen) {
     final dateRelance = prospect.prosp.date_relance!;
     final isOverdue = dateRelance.isBefore(DateTime.now());
@@ -687,7 +687,7 @@ class _RelancesScreenState extends State<RelancesScreen> {
             ),
             child: Row(
               children: [
-                // ✅ Status indicator
+                //  Status indicator
                 Container(
                   width: 4,
                   height: 40,
@@ -698,7 +698,7 @@ class _RelancesScreenState extends State<RelancesScreen> {
                 ),
                 const SizedBox(width: 12),
                 
-                // ✅ Avatar
+                //  Avatar
                 Container(
                   width: 40,
                   height: 40,
@@ -728,7 +728,7 @@ class _RelancesScreenState extends State<RelancesScreen> {
                 ),
                 const SizedBox(width: 12),
                 
-                // ✅ Info
+                //  Info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -746,7 +746,7 @@ class _RelancesScreenState extends State<RelancesScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          // ✅ Overdue badge
+                          //  Overdue badge
                           if (isOverdue)
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -836,7 +836,7 @@ class _RelancesScreenState extends State<RelancesScreen> {
                   ),
                 ),
                 
-                // ✅ Actions
+                //  Actions
                 PopupMenuButton<String>(
                   icon: Icon(
                     Icons.more_vert,

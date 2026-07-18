@@ -319,7 +319,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ✅ NEW: System Section
+  //  NEW: System Section
   Widget _buildSystemSection() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -346,7 +346,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          // ✅ Language option
+          //  Language option
           ListTile(
             leading: const Icon(Icons.language, color: AppColors.primaryGreen),
             title: Text('language'.tr),
@@ -359,7 +359,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           const Divider(height: 1, color: Colors.grey),
-          // ✅ Sync option
+          //  Sync option
           ListTile(
             leading: const Icon(Icons.sync, color: AppColors.primaryGreen),
             title: Text('sync_status'.tr),
@@ -374,7 +374,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ✅ Language Dialog
+  //  Language Dialog
   void _showLanguageDialog() {
     showDialog(
       context: context,

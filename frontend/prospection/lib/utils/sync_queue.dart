@@ -55,7 +55,7 @@ class SyncQueue {
   bool _shouldStopSync = false;
   bool _isPaused = false;
 
-  // ✅ Track current batch
+  //  Track current batch
   String? _currentBatchType;
   int _currentBatchPage = 0;
   int _consecutiveFailures = 0;
@@ -151,7 +151,7 @@ class SyncQueue {
           pendingClasses +
           pendingSources;
     } catch (e) {
-      print('❌ Error getting pending count: $e');
+      print(' Error getting pending count: $e');
       return 0;
     }
   }
@@ -166,7 +166,7 @@ class SyncQueue {
     }
   }
 
-  // ✅ Resume sync after connection restored
+  //  Resume sync after connection restored
   Future<void> resumeSync() async {
     if (_isPaused && _connection.isConnected) {
       print('🔄 Resuming sync...');
@@ -178,7 +178,7 @@ class SyncQueue {
     }
   }
 
-  // ✅ Pause sync
+  //  Pause sync
   Future<void> pauseSync() async {
     if (_isProcessing) {
       print('⏸️ Pausing sync...');
@@ -204,7 +204,7 @@ class SyncQueue {
     }
 
     if (!await hasPendingItems()) {
-      print('✅ No pending items to sync');
+      print(' No pending items to sync');
       _queueStatusController.add(false);
       return;
     }
@@ -223,7 +223,7 @@ class SyncQueue {
       if (!_shouldStopSync) {
         final remaining = await getPendingCount();
         if (remaining == 0) {
-          print('✅ All items synced successfully!');
+          print(' All items synced successfully!');
           _queueStatusController.add(false);
           _progressController.add(1.0);
         } else {
@@ -234,7 +234,7 @@ class SyncQueue {
         print('⏸️ Sync paused due to connection loss');
       }
     } catch (e) {
-      print('❌ Sync error: $e');
+      print(' Sync error: $e');
     } finally {
       _isProcessing = false;
     }
@@ -262,10 +262,10 @@ class SyncQueue {
     await _syncInterets();
   }
 
-  // ✅ Helper: Check connection with immediate stop and retry logic
+  //  Helper: Check connection with immediate stop and retry logic
   Future<bool> _checkConnectionOrStop() async {
     if (_consecutiveFailures >= MAX_RETRIES) {
-      print('⚠️ Too many consecutive failures, pausing sync');
+      print(' Too many consecutive failures, pausing sync');
       _shouldStopSync = true;
       return false;
     }
@@ -308,7 +308,7 @@ class SyncQueue {
             await _storage.isar.writeTxn(() async {
               await _storage.isar.etablissements.put(item);
             });
-            print('✅ Synced: etablissement (${item.idEtablissement})');
+            print(' Synced: etablissement (${item.idEtablissement})');
             _consecutiveFailures = 0; // Reset on success
             _updateProgress();
           } catch (e) {
@@ -318,9 +318,9 @@ class SyncQueue {
               return;
             }
             _consecutiveFailures++;
-            print('❌ Error syncing etablissement ${item.idEtablissement}: $e (attempt $_consecutiveFailures)');
+            print(' Error syncing etablissement ${item.idEtablissement}: $e (attempt $_consecutiveFailures)');
             if (_consecutiveFailures >= MAX_RETRIES) {
-              print('⚠️ Max retries reached, pausing sync');
+              print(' Max retries reached, pausing sync');
               _shouldStopSync = true;
               return;
             }
@@ -337,7 +337,7 @@ class SyncQueue {
         _shouldStopSync = true;
         return;
       }
-      print('❌ Error syncing etablissements: $e');
+      print(' Error syncing etablissements: $e');
     }
   }
 
@@ -369,7 +369,7 @@ class SyncQueue {
             await _storage.isar.writeTxn(() async {
               await _storage.isar.sources.put(item);
             });
-            print('✅ Synced: source (${item.idSource})');
+            print(' Synced: source (${item.idSource})');
             _consecutiveFailures = 0;
             _updateProgress();
           } catch (e) {
@@ -378,7 +378,7 @@ class SyncQueue {
               return;
             }
             _consecutiveFailures++;
-            print('❌ Error syncing source ${item.idSource}: $e');
+            print(' Error syncing source ${item.idSource}: $e');
             if (_consecutiveFailures >= MAX_RETRIES) {
               _shouldStopSync = true;
               return;
@@ -396,7 +396,7 @@ class SyncQueue {
         _shouldStopSync = true;
         return;
       }
-      print('❌ Error syncing sources: $e');
+      print(' Error syncing sources: $e');
     }
   }
 
@@ -429,7 +429,7 @@ class SyncQueue {
               item.syncState = SyncState.synced;
               await _storage.isar.specialites.put(item);
             });
-            print('✅ Synced: specialite (${item.idSpecialite})');
+            print(' Synced: specialite (${item.idSpecialite})');
             _consecutiveFailures = 0;
             _updateProgress();
           } catch (e) {
@@ -438,7 +438,7 @@ class SyncQueue {
               return;
             }
             _consecutiveFailures++;
-            print('❌ Error syncing specialite ${item.idSpecialite}: $e');
+            print(' Error syncing specialite ${item.idSpecialite}: $e');
             if (_consecutiveFailures >= MAX_RETRIES) {
               _shouldStopSync = true;
               return;
@@ -456,7 +456,7 @@ class SyncQueue {
         _shouldStopSync = true;
         return;
       }
-      print('❌ Error syncing specialites: $e');
+      print(' Error syncing specialites: $e');
     }
   }
 
@@ -490,7 +490,7 @@ class SyncQueue {
               item.syncState = SyncState.synced;
               await _storage.isar.prospects.put(item);
             });
-            print('✅ Synced: prospect (${item.idProspect})');
+            print(' Synced: prospect (${item.idProspect})');
             _consecutiveFailures = 0;
             _updateProgress();
           } catch (e) {
@@ -499,7 +499,7 @@ class SyncQueue {
               return;
             }
             _consecutiveFailures++;
-            print('❌ Error syncing prospect ${item.idProspect}: $e');
+            print(' Error syncing prospect ${item.idProspect}: $e');
             if (_consecutiveFailures >= MAX_RETRIES) {
               _shouldStopSync = true;
               return;
@@ -517,7 +517,7 @@ class SyncQueue {
         _shouldStopSync = true;
         return;
       }
-      print('❌ Error syncing prospects: $e');
+      print(' Error syncing prospects: $e');
     }
   }
 
@@ -552,7 +552,7 @@ class SyncQueue {
               item.syncState = SyncState.synced;
               await _storage.isar.interetFilieres.put(item);
             });
-            print('✅ Synced: interet (${item.idInteret})');
+            print(' Synced: interet (${item.idInteret})');
             _consecutiveFailures = 0;
             _updateProgress();
           } catch (e) {
@@ -561,7 +561,7 @@ class SyncQueue {
               return;
             }
             _consecutiveFailures++;
-            print('❌ Error syncing interet ${item.idInteret}: $e');
+            print(' Error syncing interet ${item.idInteret}: $e');
             if (_consecutiveFailures >= MAX_RETRIES) {
               _shouldStopSync = true;
               return;
@@ -579,11 +579,11 @@ class SyncQueue {
         _shouldStopSync = true;
         return;
       }
-      print('❌ Error syncing interets: $e');
+      print(' Error syncing interets: $e');
     }
   }
 
-  // ✅ Helper: Check if error is connection-related
+  //  Helper: Check if error is connection-related
   bool _isConnectionError(dynamic error) {
     final errorString = error.toString().toLowerCase();
     return errorString.contains('connection') ||
@@ -596,7 +596,7 @@ class SyncQueue {
            errorString.contains('clientexception');
   }
 
-  // ✅ Helper: Update progress
+  //  Helper: Update progress
   void _updateProgress() {
     // Simple progress update
   }

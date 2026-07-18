@@ -6,7 +6,7 @@
 // import { prospectService } from '../../services/prospectService';
 // import '../Prospects/Prospects.css';
 
-// // ⚠️ CORRIGÉ : le backend (schéma SuiviProspectRequest) n'a QUE
+// //  CORRIGÉ : le backend (schéma SuiviProspectRequest) n'a QUE
 // // idProspect, libeleSuivi, dateSuivi, commentaire. Les champs
 // // typeSuivi / idAgent / statut / prochainAction ont été retirés :
 // // ils n'existent pas côté serveur et n'étaient jamais sauvegardés.
@@ -44,13 +44,13 @@
 //         setLoadingData(true);
 
 //         const prospectsData = await prospectService.getAll();
-//         console.log('📥 Prospects chargés:', prospectsData);
+//         ('📥 Prospects chargés:', prospectsData);
 //         const prospectsList = Array.isArray(prospectsData) ? prospectsData : (prospectsData?.results ?? []);
 //         setProspects(prospectsList);
 
 //         if (isEdit && id) {
 //           const suiviData = await suiviService.getById(id);
-//           console.log('📥 Suivi à modifier:', suiviData);
+//           ('📥 Suivi à modifier:', suiviData);
 //           setFormData({
 //             idProspect: suiviData.idProspect || '',
 //             libeleSuivi: suiviData.libeleSuivi || '',
@@ -61,7 +61,7 @@
 //           });
 //         }
 //       } catch (error) {
-//         console.error('❌ Erreur de chargement:', error);
+//         console.error(' Erreur de chargement:', error);
 //         addToast('Erreur lors du chargement des données', 'error');
 //       } finally {
 //         setLoadingData(false);
@@ -107,7 +107,7 @@
 //         commentaire: formData.commentaire,
 //       };
 
-//       console.log('📤 Envoi des données:', data);
+//       ('📤 Envoi des données:', data);
 
 //       if (isEdit) {
 //         await suiviService.update(id, { idSuivi: id, ...data });
@@ -119,7 +119,7 @@
 
 //       setTimeout(() => navigate('/suivis'), 1500);
 //     } catch (error) {
-//       console.error('❌ Erreur:', error);
+//       console.error(' Erreur:', error);
 //       addToast(error.message || 'Erreur lors de l\'enregistrement', 'error');
 //     } finally {
 //       setLoading(false);
@@ -260,7 +260,7 @@ import { suiviService } from '../../services/suiviService';
 import { prospectService } from '../../services/prospectService';
 import '../Prospects/Prospects.css';
 
-// ⚠️ CORRIGÉ : le backend (schéma SuiviProspectRequest) n'a QUE
+//  CORRIGÉ : le backend (schéma SuiviProspectRequest) n'a QUE
 // idProspect, libeleSuivi, dateSuivi, commentaire. Les champs
 // typeSuivi / idAgent / statut / prochainAction ont été retirés :
 // ils n'existent pas côté serveur et n'étaient jamais sauvegardés.
@@ -302,13 +302,13 @@ const SuivisForm = () => {
         setLoadingData(true);
 
         const prospectsData = await prospectService.getAll();
-        console.log('📥 Prospects chargés:', prospectsData);
+        ('📥 Prospects chargés:', prospectsData);
         const prospectsList = Array.isArray(prospectsData) ? prospectsData : (prospectsData?.results ?? []);
         setProspects(prospectsList);
 
         if (isEdit && id) {
           const suiviData = await suiviService.getById(id);
-          console.log('📥 Suivi à modifier:', suiviData);
+          ('📥 Suivi à modifier:', suiviData);
           setFormData({
             idProspect: suiviData.idProspect || '',
             libeleSuivi: suiviData.libeleSuivi || '',
@@ -319,7 +319,7 @@ const SuivisForm = () => {
           });
         }
       } catch (error) {
-        console.error('❌ Erreur de chargement:', error);
+        console.error(' Erreur de chargement:', error);
         addToast('Erreur lors du chargement des données', 'error');
       } finally {
         setLoadingData(false);
@@ -365,7 +365,7 @@ const SuivisForm = () => {
         commentaire: formData.commentaire,
       };
 
-      console.log('📤 Envoi des données:', data);
+      ('📤 Envoi des données:', data);
 
       if (isEdit) {
         await suiviService.update(id, { idSuivi: id, ...data });
@@ -377,7 +377,7 @@ const SuivisForm = () => {
 
       setTimeout(() => navigate('/suivis'), 1500);
     } catch (error) {
-      console.error('❌ Erreur:', error);
+      console.error(' Erreur:', error);
       addToast(error.message || 'Erreur lors de l\'enregistrement', 'error');
     } finally {
       setLoading(false);

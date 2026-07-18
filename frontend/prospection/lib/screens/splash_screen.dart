@@ -49,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animationController.forward();
 
-    // ✅ Initialize app in background
+    //  Initialize app in background
     _initializeApp();
   }
 
@@ -183,7 +183,7 @@ class _SplashScreenState extends State<SplashScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // ✅ Image with rounded borders - No orange container
+                      //  Image with rounded borders - No orange container
                       Container(
                         width: 120,
                         height: 120,

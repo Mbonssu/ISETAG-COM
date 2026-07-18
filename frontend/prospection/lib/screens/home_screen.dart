@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _buildNeumorphicBackground(
         child: Column(
           children: [
-            // ✅ SyncProgress in a Container with proper padding
+            //  SyncProgress in a Container with proper padding
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: const SyncProgress(),

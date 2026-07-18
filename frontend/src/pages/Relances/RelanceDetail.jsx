@@ -26,11 +26,11 @@ const RelanceDetail = () => {
     if (id) {
       relanceService.getById(id)
         .then((data) => {
-          console.log('📥 Relance:', data);
+          ('📥 Relance:', data);
           setRelance(data);
         })
         .catch((err) => {
-          console.error('❌ Erreur:', err);
+          console.error(' Erreur:', err);
           setError(err.message);
           addToast(`Erreur: ${err.message}`, 'error');
         })

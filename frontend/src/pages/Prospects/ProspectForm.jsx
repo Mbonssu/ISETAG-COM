@@ -141,16 +141,16 @@
 
 //   // ── Ajouter un intérêt dans la liste locale ─────────────────────────────────
 //   const handleAjouter = () => {
-//     console.log('➕ handleAjouter appelé — newIdSpecialite =', newIdSpecialite, '| newNiveau =', newNiveau);
+//     ('➕ handleAjouter appelé — newIdSpecialite =', newIdSpecialite, '| newNiveau =', newNiveau);
 
 //     if (!newIdSpecialite) {
 //       addToast('Sélectionne une spécialité', 'error');
-//       console.warn('⚠️ handleAjouter annulé : newIdSpecialite est vide');
+//       console.warn(' handleAjouter annulé : newIdSpecialite est vide');
 //       return;
 //     }
 //     if (interets.some(i => i.idFiliere === newIdSpecialite)) {
 //       addToast('Cette spécialité est déjà dans la liste', 'error');
-//       console.warn('⚠️ handleAjouter annulé : spécialité déjà présente dans interets');
+//       console.warn(' handleAjouter annulé : spécialité déjà présente dans interets');
 //       return;
 //     }
 //     const spec = specialites.find(s => s.idSpecialite === newIdSpecialite);
@@ -162,7 +162,7 @@
 //     };
 //     setInterets(prev => {
 //       const next = [...prev, nouvelInteret];
-//       console.log('✅ interets après ajout:', next);
+//       (' interets après ajout:', next);
 //       return next;
 //     });
 //     setNewIdSpecialite('');
@@ -193,7 +193,7 @@
 //     // le souci vient d'un problème de state React (à investiguer plus loin) ;
 //     // s'il est vide parce que tu n'as jamais cliqué "Ajouter", ce n'est pas
 //     // un bug, il faut juste ajouter la spécialité avant de soumettre.
-//     console.log('🔍 DEBUG - interets juste avant handleSubmit:', interets);
+//     ('🔍 DEBUG - interets juste avant handleSubmit:', interets);
 
 //     try {
 //       let prospectId = id;
@@ -207,7 +207,7 @@
 //         prospectId = created.idProspect ?? created.id;
 //       }
 
-//       console.log('📌 ID Prospect final pour les intérêts:', prospectId);
+//       ('📌 ID Prospect final pour les intérêts:', prospectId);
 
 //       // Sync des intérêts via :
 //       //   POST   /specialite_api/ISETAG_COM.interetspecialites/          (nouveaux)
@@ -217,13 +217,13 @@
 //       if (prospectId) {
 //         await interetService.syncInterets(prospectId, interets);
 //       } else {
-//         console.warn('⚠️ Pas de prospectId disponible, syncInterets non appelé');
+//         console.warn(' Pas de prospectId disponible, syncInterets non appelé');
 //       }
 
 //       addToast(isEdit ? 'Prospect modifié avec succès' : 'Prospect créé avec succès');
 //       setTimeout(() => navigate('/prospects'), 1000);
 //     } catch (err) {
-//       console.error('❌ Erreur handleSubmit:', err);
+//       console.error(' Erreur handleSubmit:', err);
 //       addToast(err.message || "Erreur lors de l'enregistrement", 'error');
 //     } finally {
 //       setSaving(false);
@@ -443,7 +443,7 @@
 //           </div>
 
 //           {specialites.length === 0 && (
-//             <p className="form-hint">⚠️ Spécialités non chargées — vérifier /specialite_api/ISETAG_COM.specialites/</p>
+//             <p className="form-hint"> Spécialités non chargées — vérifier /specialite_api/ISETAG_COM.specialites/</p>
 //           )}
 //         </div>
 
@@ -608,16 +608,16 @@ const ProspectForm = () => {
 
   // ── Ajouter un intérêt dans la liste locale ─────────────────────────────────
   const handleAjouter = () => {
-    console.log('➕ handleAjouter appelé — newIdSpecialite =', newIdSpecialite, '| newNiveau =', newNiveau);
+    ('➕ handleAjouter appelé — newIdSpecialite =', newIdSpecialite, '| newNiveau =', newNiveau);
 
     if (!newIdSpecialite) {
       addToast('Sélectionne une spécialité', 'error');
-      console.warn('⚠️ handleAjouter annulé : newIdSpecialite est vide');
+      console.warn(' handleAjouter annulé : newIdSpecialite est vide');
       return;
     }
     if (interets.some(i => i.idFiliere === newIdSpecialite)) {
       addToast('Cette spécialité est déjà dans la liste', 'error');
-      console.warn('⚠️ handleAjouter annulé : spécialité déjà présente dans interets');
+      console.warn(' handleAjouter annulé : spécialité déjà présente dans interets');
       return;
     }
     const spec = specialites.find(s => s.idSpecialite === newIdSpecialite);
@@ -629,7 +629,7 @@ const ProspectForm = () => {
     };
     setInterets(prev => {
       const next = [...prev, nouvelInteret];
-      console.log('✅ interets après ajout:', next);
+      (' interets après ajout:', next);
       return next;
     });
     setNewIdSpecialite('');
@@ -660,14 +660,14 @@ const ProspectForm = () => {
     // le souci vient d'un problème de state React (à investiguer plus loin) ;
     // s'il est vide parce que tu n'as jamais cliqué "Ajouter", ce n'est pas
     // un bug, il faut juste ajouter la spécialité avant de soumettre.
-    console.log('🔍 DEBUG - interets juste avant handleSubmit:', interets);
+    ('🔍 DEBUG - interets juste avant handleSubmit:', interets);
 
     try {
       let prospectId = id;
 
       if (isEdit) {
         // PUT /prospect_api/ISETAG_COM.prospects/{id}/
-        // ⚠️ idProspect est un champ REQUIS dans le corps de la requête
+        //  idProspect est un champ REQUIS dans le corps de la requête
         // (schéma ProspectRequest), même si l'ID est déjà dans l'URL.
         // Sans lui, le backend rejette l'update.
         await prospectService.update(id, { idProspect: id, ...values });
@@ -677,7 +677,7 @@ const ProspectForm = () => {
         prospectId = created.idProspect ?? created.id;
       }
 
-      console.log('📌 ID Prospect final pour les intérêts:', prospectId);
+      ('📌 ID Prospect final pour les intérêts:', prospectId);
 
       // Sync des intérêts via :
       //   POST   /specialite_api/ISETAG_COM.interetspecialites/          (nouveaux)
@@ -687,13 +687,13 @@ const ProspectForm = () => {
       if (prospectId) {
         await interetService.syncInterets(prospectId, interets);
       } else {
-        console.warn('⚠️ Pas de prospectId disponible, syncInterets non appelé');
+        console.warn(' Pas de prospectId disponible, syncInterets non appelé');
       }
 
       addToast(isEdit ? 'Prospect modifié avec succès' : 'Prospect créé avec succès');
       setTimeout(() => navigate('/prospects'), 1000);
     } catch (err) {
-      console.error('❌ Erreur handleSubmit:', err);
+      console.error(' Erreur handleSubmit:', err);
       addToast(err.message || "Erreur lors de l'enregistrement", 'error');
     } finally {
       setSaving(false);
@@ -913,7 +913,7 @@ const ProspectForm = () => {
           </div>
 
           {specialites.length === 0 && (
-            <p className="form-hint">⚠️ Spécialités non chargées — vérifier /specialite_api/ISETAG_COM.specialites/</p>
+            <p className="form-hint"> Spécialités non chargées — vérifier /specialite_api/ISETAG_COM.specialites/</p>
           )}
         </div>
 

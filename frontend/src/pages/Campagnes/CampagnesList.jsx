@@ -8,7 +8,7 @@ import { usePagination } from '../../hooks/usePagination';
 import { campagneService } from '../../services/campagneService';
 import '../Prospects/Prospects.css';
 
-// ⚠️ CORRIGÉ : plus de colonnes "Statut"/"Agent"/"Prospects"/"Taux" —
+//  CORRIGÉ : plus de colonnes "Statut"/"Agent"/"Prospects"/"Taux" —
 // aucun de ces champs n'existe côté backend (schéma CampagneProspection).
 
 const CampagnesList = () => {
@@ -33,10 +33,10 @@ const CampagnesList = () => {
     setError(null);
     try {
       const data = await campagneService.getAll();
-      console.log('📥 Campagnes chargées:', data);
+      ('📥 Campagnes chargées:', data);
       setCampagnes(Array.isArray(data) ? data : (data?.results ?? []));
     } catch (err) {
-      console.error('❌ Erreur de chargement:', err);
+      console.error(' Erreur de chargement:', err);
       setError(err.message);
       addToast('Erreur lors du chargement des campagnes', 'error');
     } finally {

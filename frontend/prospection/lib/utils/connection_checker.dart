@@ -69,7 +69,7 @@ class ConnectionChecker {
       print('📡 API: ${_isApiReachable ? 'REACHABLE' : 'NOT REACHABLE'}');
       
     } catch (e) {
-      print('⚠️ Connection check error: $e');
+      print(' Connection check error: $e');
       _hasConnection = false;
       _isApiReachable = false;
     }
@@ -81,7 +81,7 @@ class ConnectionChecker {
       final result = await _api.healthCheck();
       return result['success'] == true;
     } catch (e) {
-      print('⚠️ API health check failed: $e');
+      print(' API health check failed: $e');
       return false;
     }
   }

@@ -46,7 +46,7 @@ const RelanceForm = () => {
       const data = await prospectService.getAll();
       setProspects(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('❌ Erreur chargement prospects:', err);
+      console.error(' Erreur chargement prospects:', err);
       addToast('Erreur lors du chargement des prospects', 'error');
     } finally {
       setLoadingProspects(false);
@@ -58,7 +58,7 @@ const RelanceForm = () => {
     if (isEdit && id) {
       relanceService.getById(id)
         .then((data) => {
-          console.log('📥 Relance chargée:', data);
+          ('📥 Relance chargée:', data);
           setRelance(data);
           setFormData({
             idProspect: data.idProspect || '',
@@ -68,7 +68,7 @@ const RelanceForm = () => {
           });
         })
         .catch((err) => {
-          console.error('❌ Erreur chargement relance:', err);
+          console.error(' Erreur chargement relance:', err);
           addToast(`Erreur: ${err.message}`, 'error');
         })
         .finally(() => setLoading(false));
@@ -110,7 +110,7 @@ const RelanceForm = () => {
         description: formData.description,
       };
 
-      console.log('📤 Envoi des données:', payload);
+      ('📤 Envoi des données:', payload);
 
       if (isEdit) {
         await relanceService.update(id, payload);
@@ -122,7 +122,7 @@ const RelanceForm = () => {
       
       setTimeout(() => navigate('/relances'), 1500);
     } catch (err) {
-      console.error('❌ Erreur:', err);
+      console.error(' Erreur:', err);
       if (err.response?.data) {
         const errorData = err.response.data;
         let errorMessage = '';

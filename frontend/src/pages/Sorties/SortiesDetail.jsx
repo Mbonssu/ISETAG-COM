@@ -4,7 +4,7 @@ import { ArrowLeft, Edit, Calendar, MapPin, Target, Clock, Building, Loader, Ale
 import { sortieService } from '../../services/sortieService';
 import '../Prospects/Prospects.css';
 
-// ⚠️ CORRIGÉ : cette page était 100% mock (participants/résultats/
+//  CORRIGÉ : cette page était 100% mock (participants/résultats/
 // historique inventés — aucune route de ce type n'existe dans le YAML).
 // Connectée au vrai backend ; affiche zone_detail/campagne_detail/
 // etablissement_detail (renvoyés automatiquement par le backend en
@@ -31,12 +31,12 @@ const SortiesDetail = () => {
       setError(null);
       try {
         const raw = await sortieService.getById(id);
-        console.log('📥 Sortie chargée:', raw);
-        // ⚠️ Comme pour Zone, le backend peut renvoyer un tableau [{...}]
+        ('📥 Sortie chargée:', raw);
+        //  Comme pour Zone, le backend peut renvoyer un tableau [{...}]
         // au lieu d'un objet direct sur certains endpoints "détail".
         setSortie(Array.isArray(raw) ? raw[0] : raw);
       } catch (err) {
-        console.error('❌ Erreur de chargement:', err);
+        console.error(' Erreur de chargement:', err);
         setError(err.message);
       } finally {
         setLoading(false);
