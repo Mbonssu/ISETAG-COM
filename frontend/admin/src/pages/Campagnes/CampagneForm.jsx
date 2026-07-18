@@ -5,10 +5,6 @@ import { ToastContainer } from '../../components/common/Toast';
 import { campagneService } from '../../services/campagneService';
 import '../Prospects/Prospects.css';
 
-// ⚠️ CORRIGÉ : le backend (CampagneProspectionRequest) n'a NI "statut" NI
-// "agent" — ces champs ont été retirés (ils n'existaient pas côté serveur).
-// Champs réels : idCampagne, libele, description, dateDebut, dateFin,
-// objectif (texte libre, pas un nombre), type.
 
 const types = ['Interurbain', 'Urbain'];
 
@@ -36,7 +32,6 @@ const CampagneForm = () => {
     if (isEdit && id) {
       campagneService.getById(id)
         .then((raw) => {
-          console.log('📥 Campagne chargée:', raw);
           const data = Array.isArray(raw) ? raw[0] : raw;
           setFormData({
             libele: data?.libele || '',
@@ -89,7 +84,6 @@ const CampagneForm = () => {
         objectif: formData.objectif,
         description: formData.description,
       };
-      console.log('📤 Envoi des données:', payload);
 
       if (isEdit) {
         await campagneService.update(id, { idCampagne: id, ...payload });
@@ -100,7 +94,7 @@ const CampagneForm = () => {
       }
       setTimeout(() => navigate('/campagnes'), 1500);
     } catch (err) {
-      console.error('❌ Erreur:', err);
+      console.error(' Erreur:', err);
       addToast(err.message || "Erreur lors de l'enregistrement", 'error');
     } finally {
       setSaving(false);

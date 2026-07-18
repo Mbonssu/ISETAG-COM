@@ -1,19 +1,3 @@
-/**
- * Service de gestion des fiches de sortie (ficheSortie).
- *
- * Route réelle confirmée dans ISETAG_COM_API.yaml :
- *   /campagne_api/ISETAG_COM.fiches-sortie/        (GET liste, POST création)
- *   /campagne_api/ISETAG_COM.fiches-sortie/<id>/   (GET un, PUT, DELETE)
- *
- * ⚠️ Corrigé : l'ancienne URL "/fiche_api/ISETAG_COM.fiches/" n'existe
- * pas dans l'API. La ressource s'appelle "fiches-sortie" et vit sous le
- * préfixe "campagne_api" (pas "fiche_api").
- *
- * Champs attendus par le backend (schéma ficheSortieRequest) :
- *   idFiche, idParticipation, idProspect, idSource,
- *   dateCollecte, commentaire, scoreInteret
- */
-
 import { api } from './api';
 
 const BASE_URL = '/campagne_api/ISETAG_COM.fiches-sortie/';
@@ -28,28 +12,34 @@ export const ficheService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all fiches:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
   getById: (idFiche) => {
-    console.log('📡 GET fiche by ID:', idFiche);
     return api.get(`${BASE_URL}${idFiche}/`);
+  },
+
+    // services/ficheService.js - Ajouter cette méthode
+
+  getBySortie: (idSortie, idAgent = null) => {
+    // console.log('📡 GET fiches by sortie:', idSortie, 'agent:', idAgent);
+    let url = `${BASE_URL}?idSortie=${idSortie}`;
+    if (idAgent) {
+      url += `&idAgent=${idAgent}`;
+    }
+    return api.get(url);
   },
 
   create: (data) => {
     const payload = { idFiche: `TEMP-${Date.now()}`, ...data };
-    console.log('📝 CREATE fiche:', payload);
     return api.post(BASE_URL, payload);
   },
 
   update: (idFiche, data) => {
-    console.log('📝 UPDATE fiche:', idFiche, data);
     return api.put(`${BASE_URL}${idFiche}/`, data);
   },
 
   delete: (idFiche) => {
-    console.log('🗑️ DELETE fiche:', idFiche);
     return api.delete(`${BASE_URL}${idFiche}/`);
   },
 };

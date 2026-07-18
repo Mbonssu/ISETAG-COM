@@ -1,14 +1,3 @@
-/**
- * Service de gestion des zones.
- *
- * Route réelle confirmée dans ISETAG_COM_API.yaml :
- *   /campagne_api/ISETAG_COM.zones/        (GET liste, POST création)
- *   /campagne_api/ISETAG_COM.zones/<id>/   (GET un, PUT, DELETE)
- *
- * ⚠️ Corrigé : l'ancienne URL "/zone_api/ISETAG_COM.zones/" n'existe pas
- * dans l'API. Les zones sont exposées sous le préfixe "campagne_api".
- */
-
 import { api } from './api';
 
 const BASE_URL = '/campagne_api/ISETAG_COM.zones/';
@@ -23,28 +12,23 @@ export const zoneService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all zones:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
   getById: (idZone) => {
-    console.log('📡 GET zone by ID:', idZone);
     return api.get(`${BASE_URL}${idZone}/`);
   },
 
   create: (data) => {
     const payload = { idZone: `TEMP-${Date.now()}`, ...data };
-    console.log('📝 CREATE zone:', payload);
     return api.post(BASE_URL, payload);
   },
 
   update: (idZone, data) => {
-    console.log('📝 UPDATE zone:', idZone, data);
     return api.put(`${BASE_URL}${idZone}/`, data);
   },
 
   delete: (idZone) => {
-    console.log('🗑️ DELETE zone:', idZone);
     return api.delete(`${BASE_URL}${idZone}/`);
   },
 };

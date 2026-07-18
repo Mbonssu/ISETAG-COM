@@ -182,7 +182,6 @@ const EtablissementForm = () => {
     if (isEdit && id) {
       etablissementService.getById(id)
         .then((raw) => {
-          console.log('📥 Établissement chargé:', raw);
           const data = Array.isArray(raw) ? raw[0] : raw;
           setFormData({
             nom: data?.nom || '',
@@ -232,7 +231,7 @@ const EtablissementForm = () => {
       }
       setTimeout(() => navigate('/etablissements'), 1500);
     } catch (err) {
-      console.error('❌ Erreur:', err);
+      console.error(' Erreur:', err);
       addToast(err.message || "Erreur lors de l'enregistrement", 'error');
     } finally {
       setSaving(false);

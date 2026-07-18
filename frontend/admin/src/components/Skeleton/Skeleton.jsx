@@ -46,4 +46,20 @@ export const SkeletonTable = ({ rows = 5, columns = 5 }) => (
   </div>
 );
 
+/**
+ * Silhouette d'un graphique (barres de hauteurs variées), pour les zones
+ * qui vont accueillir un vrai graphique Recharts une fois les données
+ * chargées — plus fidèle qu'un simple rectangle plein.
+ */
+export const SkeletonChart = ({ height = 260 }) => {
+  const heights = [55, 80, 45, 90, 65, 40, 75, 50, 85, 60, 70, 48];
+  return (
+    <div className="skeleton-chart" style={{ height }}>
+      {heights.map((h, i) => (
+        <Skeleton key={i} width="100%" height={`${h}%`} radius={4} style={{ alignSelf: 'flex-end' }} />
+      ))}
+    </div>
+  );
+};
+
 export default Skeleton;

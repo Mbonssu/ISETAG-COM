@@ -14,12 +14,10 @@ export const relanceService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all relances:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
   getById: (idRelance) => {
-    console.log('📡 GET relance by ID:', idRelance);
     return api.get(`${BASE_URL}${idRelance}/`);
   },
 
@@ -31,7 +29,6 @@ export const relanceService = {
       sujet: data.sujet || '',
       description: data.description || '',
     };
-    console.log('📝 CREATE relance:', payload);
     return api.post(BASE_URL, payload);
   },
 
@@ -43,12 +40,10 @@ export const relanceService = {
       sujet: data.sujet || '',
       description: data.description || '',
     };
-    console.log('📝 UPDATE relance:', idRelance, payload);
     return api.put(`${BASE_URL}${idRelance}/`, payload);
   },
 
   delete: (idRelance) => {
-    console.log('🗑️ DELETE relance:', idRelance);
     return api.delete(`${BASE_URL}${idRelance}/`);
   },
 };

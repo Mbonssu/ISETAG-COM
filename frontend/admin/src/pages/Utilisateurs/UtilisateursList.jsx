@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit, Trash2, Filter, Download, AlertCircle, User, Shield, Calendar, CheckCircle, XCircle, Mail, Phone, Users } from 'lucide-react';
+import { Plus, Search, Edit, Eye, Trash2, Filter, Download, AlertCircle, User, Shield, Calendar, CheckCircle, XCircle, Mail, Phone, Users } from 'lucide-react';
 import Modal from '../../components/common/Modal';
 import { ToastContainer } from '../../components/common/Toast';
 import Pagination from '../../components/Pagination/Pagination';
 import { usePagination } from '../../hooks/usePagination';
 import { useTranslation } from '../../hooks/useTranslation';
 import { userService } from '../../services/userService';
+import { SkeletonTable } from '../../components/Skeleton/Skeleton';
 import { User as UserModel } from '../../models/User';
 import '../Prospects/Prospects.css';
 import './Utilisateurs.css';
@@ -33,11 +34,9 @@ const UtilisateursList = () => {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-  // Récupérer les utilisateurs depuis l'API.
-  // Important : le backend (UtilisateurView.get) renvoie un TABLEAU JSON
-  // directement, pas un objet enveloppé { data: { items: [...] } }.
   // Il ne supporte aucun filtre côté serveur (search/role/statut) pour
   // l'instant, donc on récupère tout et on filtre côté client.
+  
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
@@ -127,10 +126,7 @@ const UtilisateursList = () => {
   if (loading) {
     return (
       <div className="page-container">
-        <div className="loading-container">
-          <div className="loader-lg"></div>
-          <p>Chargement des utilisateurs...</p>
-        </div>
+        <SkeletonTable rows={6} columns={6} />
       </div>
     );
   }
@@ -236,6 +232,9 @@ const UtilisateursList = () => {
                     </td>
                     <td>
                       <div className="action-buttons">
+                        <button className="action-btn view" onClick={() => navigate(`/utilisateurs/${user.id}`)}>
+                          <Eye size={16} />
+                        </button>
                         <button className="action-btn edit" onClick={() => navigate(`/utilisateurs/edit/${user.id}`)}>
                           <Edit size={16} />
                         </button>

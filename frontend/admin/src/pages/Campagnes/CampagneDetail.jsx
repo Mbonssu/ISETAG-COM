@@ -4,12 +4,6 @@ import { ArrowLeft, Edit, Calendar, Target, Loader, AlertCircle } from 'lucide-r
 import { campagneService } from '../../services/campagneService';
 import '../Prospects/Prospects.css';
 
-// ⚠️ CORRIGÉ : cette page affichait des onglets "Participations" et
-// "Statistiques" 100% inventés. Le modèle Participation ne relie pas
-// idCampagne (il relie idUtilisateur <-> idSortie), et aucune route de
-// stats n'existe pour les campagnes — ces onglets ont donc été retirés
-// plutôt que de garder un affichage trompeur.
-
 const CampagneDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -23,10 +17,9 @@ const CampagneDetail = () => {
       setError(null);
       try {
         const raw = await campagneService.getById(id);
-        console.log('📥 Campagne chargée:', raw);
         setCampagne(Array.isArray(raw) ? raw[0] : raw);
       } catch (err) {
-        console.error('❌ Erreur de chargement:', err);
+        console.error(' Erreur de chargement:', err);
         setError(err.message);
       } finally {
         setLoading(false);

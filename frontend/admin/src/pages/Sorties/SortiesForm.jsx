@@ -8,13 +8,13 @@ import { campagneService } from '../../services/campagneService';
 import { etablissementService } from '../../services/etablissementService';
 import '../Prospects/Prospects.css';
 
-// ⚠️ CORRIGÉ : le backend (schéma SortieRequest) n'a PAS de champ "agent"
+//  CORRIGÉ : le backend (schéma SortieRequest) n'a PAS de champ "agent"
 // (l'agent est lié via la ressource Participation, séparée). "zone" en
 // texte libre remplacé par idZone (vraie relation vers Zone). idCampagne
 // ajouté (requis, absent du mock). idEtablissement ajouté (optionnel).
 
-const typesSortie = ['Prospection', 'Suivi', 'Formation', 'Réunion', 'Autre'];
-const statutsSortie = ['Planifiée', 'En cours', 'Effectuée', 'Annulée', 'Reportée'];
+const typesSortie = ['Prospection', 'Suivi', 'Autre'];
+const statutsSortie = ['planifie', 'en-cours', 'effectuee', 'annulee', 'reportee'];
 
 const SortiesForm = () => {
   const navigate = useNavigate();
@@ -41,7 +41,7 @@ const SortiesForm = () => {
     idEtablissement: '',
     dateSortie: '',
     typeSortie: 'Prospection',
-    statut: 'Planifiée',
+    statut: 'Planifiee',
     objectif: '',
     commentaire: '',
   });
@@ -58,7 +58,6 @@ const SortiesForm = () => {
         setCampagnes(Array.isArray(campagnesData) ? campagnesData : (campagnesData?.results ?? []));
         setEtablissements(Array.isArray(etabsData) ? etabsData : (etabsData?.results ?? []));
       } catch (err) {
-        console.error('❌ Erreur chargement options:', err);
         addToast('Erreur lors du chargement des zones/campagnes', 'error');
       }
     };
@@ -69,9 +68,6 @@ const SortiesForm = () => {
     if (isEdit && id) {
       sortieService.getById(id)
         .then((raw) => {
-          console.log('📥 Sortie chargée:', raw);
-          // ⚠️ Comme pour Zone, le backend peut renvoyer un tableau [{...}]
-          // au lieu d'un objet direct sur certains endpoints "détail".
           const data = Array.isArray(raw) ? raw[0] : raw;
           setFormData({
             idZone: data?.idZone || '',
@@ -85,7 +81,6 @@ const SortiesForm = () => {
           });
         })
         .catch((err) => {
-          console.error('❌ Erreur chargement sortie:', err);
           addToast(`Erreur: ${err.message}`, 'error');
         })
         .finally(() => setLoading(false));
@@ -128,7 +123,6 @@ const SortiesForm = () => {
         objectif: formData.objectif,
         commentaire: formData.commentaire,
       };
-      console.log('📤 Envoi des données:', payload);
 
       if (isEdit) {
         await sortieService.update(id, { idSortie: id, ...payload });
@@ -139,7 +133,6 @@ const SortiesForm = () => {
       }
       setTimeout(() => navigate('/sorties'), 1500);
     } catch (err) {
-      console.error('❌ Erreur:', err);
       addToast(err.message || "Erreur lors de l'enregistrement", 'error');
     } finally {
       setSaving(false);

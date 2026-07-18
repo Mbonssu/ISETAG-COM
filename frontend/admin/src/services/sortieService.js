@@ -5,7 +5,7 @@
  *   /campagne_api/ISETAG_COM.sorties/        (GET liste, POST création)
  *   /campagne_api/ISETAG_COM.sorties/<id>/   (GET un, PUT, DELETE)
  *
- * ⚠️ Corrigé : l'ancienne URL "/sortie_api/ISETAG_COM.sorties/" n'existe
+ *  Corrigé : l'ancienne URL "/sortie_api/ISETAG_COM.sorties/" n'existe
  * pas dans l'API. Les sorties sont exposées sous le préfixe "campagne_api".
  */
 
@@ -23,28 +23,23 @@ export const sortieService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all sorties:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
   getById: (idSortie) => {
-    console.log('📡 GET sortie by ID:', idSortie);
     return api.get(`${BASE_URL}${idSortie}/`);
   },
 
   create: (data) => {
     const payload = { idSortie: `TEMP-${Date.now()}`, ...data };
-    console.log('📝 CREATE sortie:', payload);
     return api.post(BASE_URL, payload);
   },
 
   update: (idSortie, data) => {
-    console.log('📝 UPDATE sortie:', idSortie, data);
     return api.put(`${BASE_URL}${idSortie}/`, data);
   },
 
   delete: (idSortie) => {
-    console.log('🗑️ DELETE sortie:', idSortie);
     return api.delete(`${BASE_URL}${idSortie}/`);
   },
 };

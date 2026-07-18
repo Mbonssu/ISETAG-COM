@@ -1,143 +1,382 @@
-import React, { useState } from 'react';
+// import React, { useState, useEffect } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import { Search, Eye, AlertCircle, Calendar, User, Loader } from 'lucide-react';
+// import Pagination from '../../components/Pagination/Pagination';
+// import { usePagination } from '../../hooks/usePagination';
+// import { ficheService } from '../../services/ficheService';
+// import { SkeletonTable } from '../../components/Skeleton/Skeleton';
+// import EmptyState from '../../components/EmptyState/EmptyState';
+// import ExportButton from '../../components/ExportButton/ExportButton';
+// import { useUrlState } from '../../hooks/useUrlState';
+// import '../Prospects/Prospects.css';
+// import { ToastContainer } from '../../components/common/Toast';
+// import { useTranslation } from '../../hooks/useTranslation';
+// import { getErrorMessage } from '../../utils/errorMessages';
+
+// // ⚠️ IMPORTANT : les fiches de collecte sont créées par les agents sur le
+// // terrain via l'application MOBILE, pas depuis cet espace admin web. Cette
+// // page est donc en LECTURE SEULE : pas de création ni de modification ici,
+// // uniquement consultation + export des fiches déjà remontées du terrain.
+
+// const getScoreColor = (score) => {
+//   if (score >= 80) return '#10b981';
+//   if (score >= 60) return '#f59e0b';
+//   return '#ef4444';
+// };
+
+// const FichesList = () => {
+//   const navigate = useNavigate();
+//   const { t } = useTranslation();
+//   const [searchTerm, setSearchTerm] = useUrlState('q', '');
+//   const [fiches, setFiches] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+//   const [toasts, setToasts] = useState([]);
+
+//   const addToast = (message, type = 'success') => {
+//     const toastId = Date.now();
+//     setToasts((prev) => [...prev, { id: toastId, message, type }]);
+//     setTimeout(() => removeToast(toastId), 3000);
+//   };
+
+//   const removeToast = (toastId) => {
+//     setToasts((prev) => prev.filter((toast) => toast.id !== toastId));
+//   };
+
+//   const fetchFiches = async () => {
+//     setLoading(true);
+//     setError(null);
+//     try {
+//       const raw = await ficheService.getAll();
+//       console.log('📥 Fiches chargées:', raw);
+//       setFiches(Array.isArray(raw) ? raw : (raw?.results ?? []));
+//     } catch (err) {
+//       console.error('❌ Erreur de chargement:', err);
+//       setError(getErrorMessage(err, t));
+//       addToast(getErrorMessage(err, t), 'error');
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => { fetchFiches(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+//   const getNomProspect = (f) => String(f.prospect_detail?.nomComplet || f.idProspect || '-');
+//   const getNomSource = (f) => String(f.source_detail?.libele || f.idSource || '-');
+
+//   const filteredFiches = fiches.filter((f) => {
+//     const term = searchTerm.toLowerCase();
+//     return getNomProspect(f).toLowerCase().includes(term) ||
+//            getNomSource(f).toLowerCase().includes(term) ||
+//            (f.commentaire || '').toLowerCase().includes(term);
+//   });
+
+//   const { currentPage, totalPages, paginatedItems, goToPage, itemsPerPage } = usePagination(filteredFiches, 10);
+
+//   // ExportButton lit directement item[col.key] : on enrichit donc chaque
+//   // fiche avec des champs plats avant de les passer à l'export.
+//   const fichesPourExport = filteredFiches.map((f) => ({
+//     ...f,
+//     _nomProspect: getNomProspect(f),
+//     _nomSource: getNomSource(f),
+//   }));
+
+//   if (loading) {
+//     return (
+//       <div className="page-container">
+//         <ToastContainer toasts={toasts} removeToast={removeToast} />
+//         <SkeletonTable rows={6} columns={5} />
+//       </div>
+//     );
+//   }
+//   if (error) {
+//     return (
+//       <div className="page-container">
+//         <ToastContainer toasts={toasts} removeToast={removeToast} />
+//         <div className="error-container">
+//           <AlertCircle size={48} color="#ef4444" />
+//           <h3>Erreur de chargement</h3>
+//           <p>{error}</p>
+//           <button className="btn-outline" onClick={fetchFiches}>Réessayer</button>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="page-container">
+//       <ToastContainer toasts={toasts} removeToast={removeToast} />
+//       <div className="page-header-actions">
+//         <div>
+//           <h1 className="page-title-h1">Fiches de collecte</h1>
+//           <p className="page-description">
+//             Fiches remontées par les agents depuis le terrain (application mobile). Consultation uniquement.
+//           </p>
+//         </div>
+//         <ExportButton
+//           data={fichesPourExport}
+//           filename="fiches_collecte"
+//           title="Fiches de collecte"
+//           columns={[
+//             { key: '_nomProspect', label: 'Prospect' },
+//             { key: '_nomSource', label: 'Source' },
+//             { key: 'dateCollecte', label: 'Date de collecte' },
+//             { key: 'scoreInteret', label: "Score d'intérêt" },
+//             { key: 'commentaire', label: 'Commentaire' },
+//           ]}
+//         />
+//       </div>
+
+//       <div className="filters-bar">
+//         <div className="search-box">
+//           <Search size={18} />
+//           <input
+//             type="text"
+//             placeholder="Rechercher par prospect, source ou commentaire..."
+//             value={searchTerm}
+//             onChange={(e) => setSearchTerm(e.target.value)}
+//           />
+//         </div>
+//       </div>
+
+//       {filteredFiches.length === 0 ? (
+//         fiches.length === 0 ? (
+//           <EmptyState
+//             variant="empty"
+//             title="Aucune fiche remontée pour le moment"
+//             message="Les fiches apparaîtront ici dès que les agents en créeront depuis l'application mobile sur le terrain."
+//           />
+//         ) : (
+//           <EmptyState variant="search" searchTerm={searchTerm} onClearFilters={() => setSearchTerm('')} />
+//         )
+//       ) : (
+//         <>
+//           <div className="table-container">
+//             <table className="data-table">
+//               <thead>
+//                 <tr><th>Prospect</th><th>Source</th><th>Date de collecte</th><th>Score d'intérêt</th><th>Actions</th></tr>
+//               </thead>
+//               <tbody>
+//                 {paginatedItems.map((fiche) => (
+//                   <tr key={fiche.idFiche}>
+//                     <td><User size={14} /> <strong>{getNomProspect(fiche)}</strong></td>
+//                     <td>{getNomSource(fiche)}</td>
+//                     <td><Calendar size={14} /> {fiche.dateCollecte ? new Date(fiche.dateCollecte).toLocaleDateString('fr-FR') : '-'}</td>
+//                     <td>
+//                       <span style={{ color: getScoreColor(fiche.scoreInteret), fontWeight: 600 }}>
+//                         {fiche.scoreInteret ?? '-'}
+//                       </span>
+//                     </td>
+//                     <td>
+//                       <button className="action-btn view" onClick={() => navigate(`/fiches/${fiche.idFiche}`)}>
+//                         <Eye size={16} />
+//                       </button>
+//                     </td>
+//                   </tr>
+//                 ))}
+//               </tbody>
+//             </table>
+//           </div>
+//           <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={goToPage} itemsPerPage={itemsPerPage} totalItems={filteredFiches.length} />
+//         </>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default FichesList;
+
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit, Trash2, Eye, Filter, Download, AlertCircle, FileText, Calendar, User, Star, TrendingUp } from 'lucide-react';
-import Modal from '../../components/common/Modal';
-import { ToastContainer } from '../../components/common/Toast';
+import { Search, Eye, AlertCircle, Calendar, User, Loader } from 'lucide-react';
 import Pagination from '../../components/Pagination/Pagination';
 import { usePagination } from '../../hooks/usePagination';
+import { ficheService } from '../../services/ficheService';
+import { SkeletonTable } from '../../components/Skeleton/Skeleton';
+import EmptyState from '../../components/EmptyState/EmptyState';
+import ExportButton from '../../components/ExportButton/ExportButton';
+import { useUrlState } from '../../hooks/useUrlState';
 import '../Prospects/Prospects.css';
+import { ToastContainer } from '../../components/common/Toast';
+import { useTranslation } from '../../hooks/useTranslation';
+import { getErrorMessage } from '../../utils/errorMessages';
+
+// ⚠️ IMPORTANT : les fiches de collecte sont créées par les agents sur le
+// terrain via l'application MOBILE, pas depuis cet espace admin web. Cette
+// page est donc en LECTURE SEULE : pas de création ni de modification ici,
+// uniquement consultation + export des fiches déjà remontées du terrain.
+
+const getScoreColor = (score) => {
+  if (score >= 80) return '#10b981';
+  if (score >= 60) return '#f59e0b';
+  return '#ef4444';
+};
 
 const FichesList = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [deleteModal, setDeleteModal] = useState({ isOpen: false, ficheId: null, ficheName: '' });
+  const { t } = useTranslation();
+  const [searchTerm, setSearchTerm] = useUrlState('q', '');
+  const [fiches, setFiches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [toasts, setToasts] = useState([]);
 
   const addToast = (message, type = 'success') => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => removeToast(id), 3000);
+    const toastId = Date.now();
+    setToasts((prev) => [...prev, { id: toastId, message, type }]);
+    setTimeout(() => removeToast(toastId), 3000);
   };
 
-  const removeToast = (id) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
+  const removeToast = (toastId) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== toastId));
   };
 
-  const fiches = [
-    { id: 1, prospect: 'Marie L.', source: 'Lycée', dateCollecte: '25 Mai 2025', scoreInteret: 85, commentaire: 'Très intéressée par la formation', campagne: 'Campagne Mai 2025', agent: 'Jean M.' },
-    { id: 2, prospect: 'David P.', source: 'Terrain', dateCollecte: '24 Mai 2025', scoreInteret: 70, commentaire: 'À suivre de près', campagne: 'Campagne Lycées', agent: 'David P.' },
-    { id: 3, prospect: 'Anne S.', source: 'Passage institut', dateCollecte: '23 Mai 2025', scoreInteret: 95, commentaire: 'Prospect très chaud', campagne: 'Campagne Réseaux Sociaux', agent: 'Sophie A.' },
-    { id: 4, prospect: 'Junior B.', source: 'Lycée', dateCollecte: '22 Mai 2025', scoreInteret: 60, commentaire: 'Intérêt moyen', campagne: 'Campagne Mai 2025', agent: 'Jean M.' },
-    { id: 5, prospect: 'Luc M.', source: 'Terrain', dateCollecte: '21 Mai 2025', scoreInteret: 80, commentaire: 'Bon potentiel', campagne: 'Campagne Filières', agent: 'David P.' },
-    { id: 6, prospect: 'Sophie L.', source: 'Réseaux sociaux', dateCollecte: '20 Mai 2025', scoreInteret: 90, commentaire: 'Très motivée', campagne: 'Campagne Réseaux Sociaux', agent: 'Sophie A.' },
-    { id: 7, prospect: 'Claire N.', source: 'Lycée', dateCollecte: '19 Mai 2025', scoreInteret: 65, commentaire: 'À relancer', campagne: 'Campagne Lycées', agent: 'Jean M.' },
-    { id: 8, prospect: 'Michel D.', source: 'Terrain', dateCollecte: '18 Mai 2025', scoreInteret: 75, commentaire: 'Intéressé', campagne: 'Campagne Mai 2025', agent: 'David P.' },
-  ];
-
-  const getScoreColor = (score) => {
-    if (score >= 80) return '#10b981';
-    if (score >= 60) return '#f59e0b';
-    return '#ef4444';
+  const fetchFiches = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const raw = await ficheService.getAll();
+      console.log('📥 Fiches chargées:', raw);
+      setFiches(Array.isArray(raw) ? raw : (raw?.results ?? []));
+    } catch (err) {
+      console.error('❌ Erreur de chargement:', err);
+      setError(getErrorMessage(err, t));
+      addToast(getErrorMessage(err, t), 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getScoreLabel = (score) => {
-    if (score >= 80) return 'Très intéressé';
-    if (score >= 60) return 'Intéressé';
-    if (score >= 40) return 'Moyennement intéressé';
-    return 'Peu intéressé';
-  };
+  useEffect(() => { fetchFiches(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const filteredFiches = fiches.filter(f => {
-    const matchesSearch = f.prospect.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          f.source.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          f.agent.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
+  // ⚠️ CORRIGÉ : le backend renvoie maintenant "prospects" (tableau —
+  // une fiche peut concerner plusieurs prospects), et non plus un seul
+  // "prospect_detail"/"idProspect".
+  const getProspects = (f) => (Array.isArray(f.prospects) ? f.prospects : []);
+  const getNomsProspects = (f) => getProspects(f).map((p) => p.nomComplet || p.idProspect).filter(Boolean);
+  const getNomProspectAffiche = (f) => {
+    const noms = getNomsProspects(f);
+    if (noms.length === 0) return '—';
+    if (noms.length === 1) return noms[0];
+    return `${noms[0]} +${noms.length - 1}`;
+  };
+  const getNomSource = (f) => String(f.source_detail?.libele || f.idSource || '-');
+
+  const filteredFiches = fiches.filter((f) => {
+    const term = searchTerm.toLowerCase();
+    return getNomsProspects(f).join(' ').toLowerCase().includes(term) ||
+           getNomSource(f).toLowerCase().includes(term) ||
+           (f.commentaire || '').toLowerCase().includes(term);
   });
 
   const { currentPage, totalPages, paginatedItems, goToPage, itemsPerPage } = usePagination(filteredFiches, 10);
 
-  const handleDelete = () => {
-    addToast(`Fiche supprimée avec succès`, 'success');
-    setDeleteModal({ isOpen: false, ficheId: null, ficheName: '' });
-  };
+  // ExportButton lit directement item[col.key] : on enrichit donc chaque
+  // fiche avec des champs plats avant de les passer à l'export.
+  const fichesPourExport = filteredFiches.map((f) => ({
+    ...f,
+    _nomProspect: getNomsProspects(f).join('; ') || '—',
+    _nomSource: getNomSource(f),
+  }));
 
-  const renderNoResults = () => (
-    <div className="no-results">
-      <AlertCircle size={48} />
-      <h3>Aucun résultat trouvé</h3>
-      <p>Aucune fiche ne correspond à votre recherche "{searchTerm}"</p>
-      <button className="btn-outline" onClick={() => setSearchTerm('')}>Effacer les filtres</button>
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="page-container">
+        <ToastContainer toasts={toasts} removeToast={removeToast} />
+        <SkeletonTable rows={6} columns={5} />
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="page-container">
+        <ToastContainer toasts={toasts} removeToast={removeToast} />
+        <div className="error-container">
+          <AlertCircle size={48} color="#ef4444" />
+          <h3>Erreur de chargement</h3>
+          <p>{error}</p>
+          <button className="btn-outline" onClick={fetchFiches}>Réessayer</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-container">
       <ToastContainer toasts={toasts} removeToast={removeToast} />
-      
-      <Modal isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, ficheId: null, ficheName: '' })} onConfirm={handleDelete} title="Confirmer la suppression" message="Êtes-vous sûr de vouloir supprimer cette fiche ?" confirmText="Supprimer" type="warning" />
-
       <div className="page-header-actions">
         <div>
-          <h1 className="page-title-h1">Gestion des Fiches</h1>
-          <p className="page-description">Consultez les fiches de collecte d'informations des prospects.</p>
+          <h1 className="page-title-h1">Fiches de collecte</h1>
+          <p className="page-description">
+            Fiches remontées par les agents depuis le terrain (application mobile). Consultation uniquement.
+          </p>
         </div>
-        <button className="btn-primary" onClick={() => navigate('/fiches/new')}>
-          <Plus size={18} /> Nouvelle fiche
-        </button>
+        <ExportButton
+          data={fichesPourExport}
+          filename="fiches_collecte"
+          title="Fiches de collecte"
+          columns={[
+            { key: '_nomProspect', label: 'Prospect' },
+            { key: '_nomSource', label: 'Source' },
+            { key: 'dateCollecte', label: 'Date de collecte' },
+            { key: 'scoreInteret', label: "Score d'intérêt" },
+            { key: 'commentaire', label: 'Commentaire' },
+          ]}
+        />
       </div>
 
       <div className="filters-bar">
         <div className="search-box">
           <Search size={18} />
-          <input type="text" placeholder="Rechercher par prospect, source ou agent..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+          <input
+            type="text"
+            placeholder="Rechercher par prospect, source ou commentaire..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
       </div>
 
-      {filteredFiches.length === 0 ? renderNoResults() : (
+      {filteredFiches.length === 0 ? (
+        fiches.length === 0 ? (
+          <EmptyState
+            variant="empty"
+            title="Aucune fiche remontée pour le moment"
+            message="Les fiches apparaîtront ici dès que les agents en créeront depuis l'application mobile sur le terrain."
+          />
+        ) : (
+          <EmptyState variant="search" searchTerm={searchTerm} onClearFilters={() => setSearchTerm('')} />
+        )
+      ) : (
         <>
           <div className="table-container">
             <table className="data-table">
               <thead>
-                <tr>
-                  <th>Prospect</th><th>Source</th><th>Date collecte</th><th>Score d'intérêt</th><th>Commentaire</th><th>Campagne</th><th>Agent</th><th>Actions</th>
-                </tr>
+                <tr><th>Prospect</th><th>Source</th><th>Date de collecte</th><th>Score d'intérêt</th><th>Actions</th></tr>
               </thead>
               <tbody>
                 {paginatedItems.map((fiche) => (
-                  <tr key={fiche.id}>
-                    <td><User size={14} /> {fiche.prospect}</td>
-                    <td>{fiche.source}</td>
-                    <td><Calendar size={14} /> {fiche.dateCollecte}</td>
+                  <tr key={fiche.idFiche}>
+                    <td><User size={14} /> <strong>{getNomProspectAffiche(fiche)}</strong></td>
+                    <td>{getNomSource(fiche)}</td>
+                    <td><Calendar size={14} /> {fiche.dateCollecte ? new Date(fiche.dateCollecte).toLocaleDateString('fr-FR') : '-'}</td>
                     <td>
-                      <div className="score-cell">
-                        <div className="score-value" style={{ color: getScoreColor(fiche.scoreInteret) }}>
-                          <Star size={14} /> {fiche.scoreInteret}%
-                        </div>
-                        <small>{getScoreLabel(fiche.scoreInteret)}</small>
-                      </div>
+                      <span style={{ color: getScoreColor(fiche.scoreInteret), fontWeight: 600 }}>
+                        {fiche.scoreInteret ?? '-'}
+                      </span>
                     </td>
-                    <td><div className="commentaire-cell"><small>{fiche.commentaire}</small></div></td>
-                    <td>{fiche.campagne}</td>
-                    <td>{fiche.agent}</td>
                     <td>
-                      <div className="action-buttons">
-                        <button className="action-btn view" onClick={() => navigate(`/fiches/${fiche.id}`)}><Eye size={16} /></button>
-                        <button className="action-btn edit" onClick={() => navigate(`/fiches/edit/${fiche.id}`)}><Edit size={16} /></button>
-                        <button className="action-btn delete" onClick={() => setDeleteModal({ isOpen: true, ficheId: fiche.id, ficheName: fiche.prospect })}><Trash2 size={16} /></button>
-                      </div>
+                      <button className="action-btn view" onClick={() => navigate(`/fiches/${fiche.idFiche}`)}>
+                        <Eye size={16} />
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <Pagination 
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={goToPage}
-            itemsPerPage={itemsPerPage}
-            totalItems={filteredFiches.length}
-          />
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={goToPage} itemsPerPage={itemsPerPage} totalItems={filteredFiches.length} />
         </>
       )}
     </div>

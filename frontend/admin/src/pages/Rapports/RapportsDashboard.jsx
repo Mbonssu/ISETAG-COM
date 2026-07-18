@@ -1,301 +1,266 @@
-import React, { useState } from 'react';
-import { Download, BarChart3, PieChart, TrendingUp, Users, Calendar, FileText, Printer, Filter, ChevronDown } from 'lucide-react';
-import { ToastContainer } from '../../components/common/Toast';
-import '../Prospects/Prospects.css';
+import React from 'react';
+import {
+  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+} from 'recharts';
+import { useReportsStats } from '../../hooks/useReportsStats';
+import ExportButton from '../../components/ExportButton/ExportButton';
+import { SkeletonChart, SkeletonTable, Skeleton } from '../../components/Skeleton/Skeleton';
 import './Rapports.css';
 
+const COLORS = ['#2d7a3a', '#f5c842', '#78909c', '#b0bec5', '#5c9e6a', '#dde3e7', '#8fbc94'];
+
+const Section = ({ title, children, exportButton }) => (
+  <div className="rapport-section card">
+    <div className="rapport-section-header">
+      <h2>{title}</h2>
+      {exportButton}
+    </div>
+    {children}
+  </div>
+);
+
+//  CORRIGÉ : le squelette de chargement affichait juste 2 cartes
+// génériques sans rapport avec la vraie mise en page (4 sections, chacune
+// avec un graphique + un tableau). Il reproduit maintenant fidèlement
+// cette structure : un titre de section, une silhouette de graphique
+// (SkeletonChart) et un tableau (SkeletonTable), répétés 4 fois.
+const RapportsSkeleton = () => (
+  <div className="page-container rapports-page">
+    <div className="page-header-actions">
+      <div>
+        <h1 className="page-title-h1">Statistiques & Rapports</h1>
+        <p className="page-description">Vue d'ensemble de l'activité de prospection.</p>
+      </div>
+    </div>
+    {Array.from({ length: 4 }).map((_, i) => (
+      <div className="rapport-section card" key={i}>
+        <div className="rapport-section-header">
+          <Skeleton width={220} height={18} />
+          <Skeleton width={110} height={34} radius={8} />
+        </div>
+        <SkeletonChart height={240} />
+        <div style={{ marginTop: 18 }}>
+          <SkeletonTable rows={4} columns={i === 1 || i === 3 ? 5 : 3} />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 const RapportsDashboard = () => {
-  const [toasts, setToasts] = useState([]);
-  const [periode, setPeriode] = useState('mois');
-  const [typeRapport, setTypeRapport] = useState('global');
+  const { evolution, performanceAgents, parSource, parSpecialite, loading, error } = useReportsStats();
 
-  const addToast = (message, type = 'success') => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, message, type }]);
-  };
-
-  const removeToast = (id) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  };
-
-  const handleExport = (format) => {
-    addToast(`Export en cours (${format})...`, 'info');
-    setTimeout(() => {
-      addToast(`Rapport exporté avec succès en ${format}`, 'success');
-    }, 1500);
-  };
-
-  const handlePrint = () => {
-    addToast('Préparation de l\'impression...', 'info');
-    setTimeout(() => {
-      addToast('Document envoyé à l\'imprimante', 'success');
-    }, 1000);
-  };
-
-  // Données statistiques
-  const stats = {
-    totalProspects: 1248,
-    evolution: '+18.5%',
-    tauxConversion: 32,
-    agentsActifs: 28,
-    prospectsParAgent: 44.6,
-    satisfaction: 4.2
-  };
-
-  const prospectsParSource = [
-    { name: 'Terrain', value: 562, color: '#FF6B6B' },
-    { name: 'Lycée', value: 374, color: '#4ECDC4' },
-    { name: 'Passage institut', value: 187, color: '#FFE66D' },
-    { name: 'Réseaux sociaux', value: 75, color: '#A78BFA' },
-    { name: 'Référence', value: 50, color: '#F9A26C' }
-  ];
-
-  const performanceAgents = [
-    { name: 'Sophie A.', prospects: 52, convertis: 24, taux: 46 },
-    { name: 'Jean M.', prospects: 45, convertis: 18, taux: 40 },
-    { name: 'Paul K.', prospects: 41, convertis: 15, taux: 37 },
-    { name: 'David P.', prospects: 38, convertis: 12, taux: 32 },
-    { name: 'Marie L.', prospects: 29, convertis: 8, taux: 28 }
-  ];
-
-  const evolutionMensuelle = [
-    { mois: 'Jan', prospects: 890, relances: 120 },
-    { mois: 'Fév', prospects: 930, relances: 140 },
-    { mois: 'Mar', prospects: 1020, relances: 135 },
-    { mois: 'Avr', prospects: 1090, relances: 148 },
-    { mois: 'Mai', prospects: 1248, relances: 162 }
-  ];
+  if (loading) {
+    return <RapportsSkeleton />;
+  }
+  if (error) {
+    return <div className="page-container"><p style={{ color: '#ef4444' }}>Erreur : {error.message}</p></div>;
+  }
 
   return (
-    <div className="page-container">
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
-      
+    <div className="page-container rapports-page">
       <div className="page-header-actions">
         <div>
-          <h1 className="page-title-h1">Rapports & Statistiques</h1>
-          <p className="page-description">Analysez les performances et générez des rapports détaillés.</p>
-        </div>
-        <div className="header-buttons">
-          <button className="btn-outline" onClick={handlePrint}>
-            <Printer size={18} />
-            Imprimer
-          </button>
-          <button className="btn-primary" onClick={() => handleExport('PDF')}>
-            <Download size={18} />
-            Exporter PDF
-          </button>
+          <h1 className="page-title-h1">Statistiques & Rapports</h1>
+          <p className="page-description">Vue d'ensemble de l'activité de prospection.</p>
         </div>
       </div>
 
-      {/* Filtres */}
-      <div className="rapports-filters">
-        <div className="filter-group">
-          <Calendar size={18} />
-          <select value={periode} onChange={(e) => setPeriode(e.target.value)}>
-            <option value="semaine">Cette semaine</option>
-            <option value="mois">Ce mois</option>
-            <option value="trimestre">Ce trimestre</option>
-            <option value="annee">Cette année</option>
-          </select>
-          <ChevronDown size={14} />
+      {/* ============================================================
+          1. ÉVOLUTION DES PROSPECTS
+          ============================================================ */}
+      <Section
+        title="Évolution des prospects (6 derniers mois)"
+        exportButton={
+          <ExportButton
+            data={evolution}
+            filename="evolution_prospects"
+            title="Évolution des prospects"
+            columns={[
+              { key: 'name', label: 'Mois' },
+              { key: 'nouveaux', label: 'Nouveaux prospects' },
+              { key: 'cumul', label: 'Total cumulé' },
+            ]}
+          />
+        }
+      >
+        <div style={{ width: '100%', height: 260 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={evolution} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(200,230,210,0.5)" />
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="cumul" name="Total cumulé" stroke="#2d7a3a" strokeWidth={2.5} dot={{ r: 4 }} isAnimationActive={false} />
+              <Line type="monotone" dataKey="nouveaux" name="Nouveaux ce mois" stroke="#f5c842" strokeWidth={2} dot={{ r: 3 }} isAnimationActive={false} />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
-        <div className="filter-group">
-          <Filter size={18} />
-          <select value={typeRapport} onChange={(e) => setTypeRapport(e.target.value)}>
-            <option value="global">Rapport global</option>
-            <option value="agents">Performance agents</option>
-            <option value="sources">Analyse des sources</option>
-            <option value="filieres">Par filière</option>
-          </select>
-          <ChevronDown size={14} />
-        </div>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="rapports-kpi">
-        <div className="kpi-card-large">
-          <div className="kpi-icon-large">
-            <Users size={28} />
-          </div>
-          <div className="kpi-content">
-            <div className="kpi-value-large">{stats.totalProspects}</div>
-            <div className="kpi-label-large">Total prospects</div>
-            <div className="kpi-trend positive">{stats.evolution}</div>
-          </div>
-        </div>
-        <div className="kpi-card-large">
-          <div className="kpi-icon-large">
-            <TrendingUp size={28} />
-          </div>
-          <div className="kpi-content">
-            <div className="kpi-value-large">{stats.tauxConversion}%</div>
-            <div className="kpi-label-large">Taux de conversion</div>
-            <div className="kpi-trend positive">+5.2%</div>
-          </div>
-        </div>
-        <div className="kpi-card-large">
-          <div className="kpi-icon-large">
-            <Users size={28} />
-          </div>
-          <div className="kpi-content">
-            <div className="kpi-value-large">{stats.agentsActifs}</div>
-            <div className="kpi-label-large">Agents actifs</div>
-            <div className="kpi-trend positive">+2</div>
-          </div>
-        </div>
-        <div className="kpi-card-large">
-          <div className="kpi-icon-large">
-            <BarChart3 size={28} />
-          </div>
-          <div className="kpi-content">
-            <div className="kpi-value-large">{stats.prospectsParAgent}</div>
-            <div className="kpi-label-large">Prospects/agent</div>
-            <div className="kpi-trend positive">+8.3%</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Graphiques */}
-      <div className="rapports-grid">
-        {/* Évolution */}
-        <div className="rapport-card">
-          <div className="card-header">
-            <h3>Évolution des prospects</h3>
-            <FileText size={18} />
-          </div>
-          <div className="evolution-chart">
-            {evolutionMensuelle.map((item, idx) => (
-              <div key={idx} className="chart-bar-container">
-                <div className="chart-label">{item.mois}</div>
-                <div className="chart-bars">
-                  <div className="bar-wrapper">
-                    <div className="bar-label">Prospects</div>
-                    <div className="bar-total" style={{ width: `${(item.prospects / 1500) * 100}%` }}>
-                      <span>{item.prospects}</span>
-                    </div>
-                  </div>
-                  <div className="bar-wrapper">
-                    <div className="bar-label">Relances</div>
-                    <div className="bar-relance" style={{ width: `${(item.relances / 200) * 100}%` }}>
-                      <span>{item.relances}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        <table className="rapport-table">
+          <thead><tr><th>Mois</th><th>Nouveaux prospects</th><th>Total cumulé</th></tr></thead>
+          <tbody>
+            {evolution.map((row, i) => (
+              <tr key={i}><td>{row.name}</td><td>{row.nouveaux}</td><td>{row.cumul}</td></tr>
             ))}
-          </div>
-        </div>
+          </tbody>
+        </table>
+      </Section>
 
-        {/* Performance Agents */}
-        <div className="rapport-card">
-          <div className="card-header">
-            <h3>Performance des agents</h3>
-            <TrendingUp size={18} />
-          </div>
-          <div className="agents-performance">
-            {performanceAgents.map((agent, idx) => (
-              <div key={idx} className="agent-perf-row">
-                <div className="agent-perf-info">
-                  <span className="agent-name">{agent.name}</span>
-                  <div className="agent-stats">
-                    <span>{agent.prospects} prospects</span>
-                    <span>{agent.convertis} convertis</span>
-                  </div>
-                </div>
-                <div className="agent-perf-bar">
-                  <div className="perf-fill" style={{ width: `${agent.taux}%` }}>
-                    <span>{agent.taux}%</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* ============================================================
+          2. PERFORMANCE DES AGENTS
+          ============================================================ */}
+      <Section
+        title="Performance des agents"
+        exportButton={
+          <ExportButton
+            data={performanceAgents}
+            filename="performance_agents"
+            title="Performance des agents"
+            columns={[
+              { key: 'agent', label: 'Agent' },
+              { key: 'totalSorties', label: 'Total sorties' },
+              { key: 'effectuees', label: 'Effectuées' },
+              { key: 'prevues', label: 'Prévues' },
+              { key: 'annulees', label: 'Annulées' },
+              { key: 'tauxReussite', label: 'Taux de réussite (%)' },
+            ]}
+          />
+        }
+      >
+        {performanceAgents.length === 0 ? (
+          <p className="rapport-empty">Aucune participation enregistrée pour le moment</p>
+        ) : (
+          <>
+            <div style={{ width: '100%', height: 280 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={performanceAgents} margin={{ top: 10, right: 16, left: 0, bottom: 40 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(200,230,210,0.5)" />
+                  <XAxis dataKey="agent" tick={{ fontSize: 11 }} angle={-25} textAnchor="end" interval={0} />
+                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="effectuees" name="Effectuées" fill="#2d7a3a" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                  <Bar dataKey="prevues" name="Prévues" fill="#f5c842" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                  <Bar dataKey="annulees" name="Annulées" fill="#dc6a6a" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <table className="rapport-table">
+              <thead><tr><th>Agent</th><th>Total sorties</th><th>Effectuées</th><th>Prévues</th><th>Annulées</th><th>Taux de réussite</th></tr></thead>
+              <tbody>
+                {performanceAgents.map((row, i) => (
+                  <tr key={i}>
+                    <td>{row.agent}</td><td>{row.totalSorties}</td><td>{row.effectuees}</td>
+                    <td>{row.prevues}</td><td>{row.annulees}</td><td>{row.tauxReussite}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+      </Section>
 
-        {/* Sources */}
-        <div className="rapport-card">
-          <div className="card-header">
-            <h3>Prospects par source</h3>
-            <PieChart size={18} />
-          </div>
-          <div className="sources-list">
-            {prospectsParSource.map((source, idx) => (
-              <div key={idx} className="source-row">
-                <div className="source-info">
-                  <div className="source-color" style={{ backgroundColor: source.color }}></div>
-                  <span className="source-name">{source.name}</span>
-                </div>
-                <div className="source-value">
-                  <div className="source-bar" style={{ width: `${(source.value / 1248) * 100}%`, backgroundColor: source.color }}></div>
-                  <span>{source.value} ({Math.round((source.value / 1248) * 100)}%)</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="source-total">
-            Total : <strong>1 248</strong> prospects
-          </div>
-        </div>
+      {/* ============================================================
+          3. PROSPECTS PAR SOURCE
+          ============================================================ */}
+      <Section
+        title="Prospects par source"
+        exportButton={
+          <ExportButton
+            data={parSource}
+            filename="prospects_par_source"
+            title="Prospects par source"
+            columns={[
+              { key: 'name', label: 'Source' },
+              { key: 'value', label: 'Nombre de prospects' },
+              { key: 'percentage', label: 'Pourcentage' },
+            ]}
+          />
+        }
+      >
+        {parSource.length === 0 ? (
+          <p className="rapport-empty">Aucune fiche de collecte enregistrée pour le moment</p>
+        ) : (
+          <>
+            <div style={{ width: '100%', height: 260, display: 'flex', justifyContent: 'center' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={parSource} dataKey="value" nameKey="name" innerRadius={60} outerRadius={95} paddingAngle={1} label={(entry) => `${entry.percentage}%`} isAnimationActive={false}>
+                    {parSource.map((entry, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <table className="rapport-table">
+              <thead><tr><th>Source</th><th>Nombre de prospects</th><th>Pourcentage</th></tr></thead>
+              <tbody>
+                {parSource.map((row, i) => (
+                  <tr key={i}><td>{row.name}</td><td>{row.value}</td><td>{row.percentage}%</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+      </Section>
 
-        {/* Taux de conversion par filière */}
-        <div className="rapport-card">
-          <div className="card-header">
-            <h3>Taux de conversion par filière</h3>
-            <BarChart3 size={18} />
-          </div>
-          <div className="filieres-conversion">
-            <div className="filiere-conversion-row">
-              <span>Génie Logiciel</span>
-              <div className="conversion-bar">
-                <div className="conversion-fill" style={{ width: '38%' }}>38%</div>
-              </div>
+      {/* ============================================================
+          4. PROSPECTS PAR SPÉCIALITÉ CHOISIE + NIVEAU D'INTÉRÊT
+          ============================================================ */}
+      <Section
+        title="Prospects par spécialité et niveau d'intérêt"
+        exportButton={
+          <ExportButton
+            data={parSpecialite}
+            filename="prospects_par_specialite"
+            title="Prospects par spécialité et niveau d'intérêt"
+            columns={[
+              { key: 'specialite', label: 'Spécialité' },
+              { key: 'total', label: 'Total' },
+              { key: 'Faible', label: 'Faible' },
+              { key: 'Moyen', label: 'Moyen' },
+              { key: 'Élevé', label: 'Élevé' },
+              { key: 'Très élevé', label: 'Très élevé' },
+            ]}
+          />
+        }
+      >
+        {parSpecialite.length === 0 ? (
+          <p className="rapport-empty">Aucun intérêt de spécialité enregistré pour le moment</p>
+        ) : (
+          <>
+            <div style={{ width: '100%', height: 280 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={parSpecialite} margin={{ top: 10, right: 16, left: 0, bottom: 40 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(200,230,210,0.5)" />
+                  <XAxis dataKey="specialite" tick={{ fontSize: 11 }} angle={-25} textAnchor="end" interval={0} />
+                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="Faible" stackId="a" fill="#b0bec5" isAnimationActive={false} />
+                  <Bar dataKey="Moyen" stackId="a" fill="#f5c842" isAnimationActive={false} />
+                  <Bar dataKey="Élevé" stackId="a" fill="#8fbc94" isAnimationActive={false} />
+                  <Bar dataKey="Très élevé" stackId="a" fill="#2d7a3a" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-            <div className="filiere-conversion-row">
-              <span>Marketing</span>
-              <div className="conversion-bar">
-                <div className="conversion-fill" style={{ width: '35%' }}>35%</div>
-              </div>
-            </div>
-            <div className="filiere-conversion-row">
-              <span>Génie Civil</span>
-              <div className="conversion-bar">
-                <div className="conversion-fill" style={{ width: '28%' }}>28%</div>
-              </div>
-            </div>
-            <div className="filiere-conversion-row">
-              <span>Réseaux & Télécoms</span>
-              <div className="conversion-bar">
-                <div className="conversion-fill" style={{ width: '32%' }}>32%</div>
-              </div>
-            </div>
-            <div className="filiere-conversion-row">
-              <span>Architecture</span>
-              <div className="conversion-bar">
-                <div className="conversion-fill" style={{ width: '25%' }}>25%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Export Section */}
-      <div className="export-section">
-        <h3>Exporter les rapports</h3>
-        <div className="export-buttons">
-          <button className="export-btn" onClick={() => handleExport('Excel')}>
-            📊 Excel
-          </button>
-          <button className="export-btn" onClick={() => handleExport('PDF')}>
-            📄 PDF
-          </button>
-          <button className="export-btn" onClick={() => handleExport('CSV')}>
-            📈 CSV
-          </button>
-          <button className="export-btn" onClick={() => handleExport('JSON')}>
-            🔧 JSON
-          </button>
-        </div>
-      </div>
+            <table className="rapport-table">
+              <thead><tr><th>Spécialité</th><th>Total</th><th>Faible</th><th>Moyen</th><th>Élevé</th><th>Très élevé</th></tr></thead>
+              <tbody>
+                {parSpecialite.map((row, i) => (
+                  <tr key={i}>
+                    <td>{row.specialite}</td><td>{row.total}</td><td>{row.Faible}</td>
+                    <td>{row.Moyen}</td><td>{row['Élevé']}</td><td>{row['Très élevé']}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+      </Section>
     </div>
   );
 };

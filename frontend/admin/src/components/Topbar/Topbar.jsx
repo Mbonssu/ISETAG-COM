@@ -145,7 +145,7 @@ const Topbar = ({ onMenuClick }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentDateText, setCurrentDateText] = useState('');
 
-  // ⚠️ CORRIGÉ : les notifications venaient d'un tableau codé en dur,
+  //  CORRIGÉ : les notifications venaient d'un tableau codé en dur,
   // déconnecté de tout. Elles viennent maintenant de NotificationContext
   // (relances dues, extensible à d'autres sources plus tard).
 

@@ -29,7 +29,7 @@ import React from 'react';
 import ActivityItem from './ActivityItem';
 import './RecentActivities.css';
 
-// ⚠️ CORRIGÉ : activités 100% codées en dur. Reçoit maintenant les vraies
+//  CORRIGÉ : activités 100% codées en dur. Reçoit maintenant les vraies
 // relances/suivis récents (fusionnés et triés), calculés dans useDashboardStats.
 
 const ICONS = {

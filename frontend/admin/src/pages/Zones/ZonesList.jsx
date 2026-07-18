@@ -6,13 +6,16 @@ import { ToastContainer } from '../../components/common/Toast';
 import Pagination from '../../components/Pagination/Pagination';
 import { usePagination } from '../../hooks/usePagination';
 import { zoneService } from '../../services/zoneService';
+import { useTranslation } from '../../hooks/useTranslation';
+import { SkeletonTable } from '../../components/Skeleton/Skeleton';
 import '../Prospects/Prospects.css';
 
-// ⚠️ CORRIGÉ : cette page était 100% mock (données codées en dur, aucun
+//  CORRIGÉ : cette page était 100% mock (données codées en dur, aucun
 // appel API). Le champ "code" n'existe pas côté backend (schéma Zone) :
 // remplacé par "libele". "lieuFin" renommé "lieuArrivee" (vrai nom du champ).
 
 const ZonesList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterVille, setFilterVille] = useState('all');
@@ -38,10 +41,9 @@ const ZonesList = () => {
     setError(null);
     try {
       const data = await zoneService.getAll();
-      console.log('📥 Zones chargées:', data);
       setZones(Array.isArray(data) ? data : (data?.results ?? []));
     } catch (err) {
-      console.error('❌ Erreur de chargement:', err);
+      console.error(' Erreur de chargement:', err);
       setError(err.message);
       addToast('Erreur lors du chargement des zones', 'error');
     } finally {
@@ -93,10 +95,7 @@ const ZonesList = () => {
   if (loading) {
     return (
       <div className="page-container">
-        <div className="loading-container">
-          <Loader size={48} className="spin" />
-          <p>Chargement des zones...</p>
-        </div>
+        <SkeletonTable rows={6} columns={8} />
       </div>
     );
   }
@@ -122,11 +121,11 @@ const ZonesList = () => {
 
       <div className="page-header-actions">
         <div>
-          <h1 className="page-title-h1">Gestion des Zones</h1>
-          <p className="page-description">Définissez et gérez les zones géographiques d'intervention.</p>
+          <h1 className="page-title-h1">{t('gestionZones')}</h1>
+          <p className="page-description">{t('descZones')}</p>
         </div>
         <button className="btn-primary" onClick={() => navigate('/zones/new')}>
-          <Plus size={18} /> Nouvelle zone
+          <Plus size={18} /> {t('nouvelleZone')}
         </button>
       </div>
 

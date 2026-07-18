@@ -95,7 +95,7 @@ const AffectationForm = () => {
             <div className="input-icon">
               <User size={18} />
               <select name="agent" value={formData.agent} onChange={handleChange} className={errors.agent ? 'error' : ''}>
-                <option value="">Sélectionner un agent</option>
+              <option value="">Sélectionner un agent</option>
                 {agents.map(a => <option key={a} value={a}>{a}</option>)}
               </select>
             </div>

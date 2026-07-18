@@ -6,16 +6,17 @@ import { ToastContainer } from '../../components/common/Toast';
 import Pagination from '../../components/Pagination/Pagination';
 import { usePagination } from '../../hooks/usePagination';
 import { sortieService } from '../../services/sortieService';
+import { SkeletonTable } from '../../components/Skeleton/Skeleton';
+import { useTranslation } from '../../hooks/useTranslation';
 import '../Prospects/Prospects.css';
 
-// ⚠️ CORRIGÉ : plus de colonne "Agent" (n'existe pas côté backend, géré
-// via Participation séparément). Zone affichée via zone_detail (renvoyé
-// automatiquement par le backend), plus de champ zone en texte libre.
+//  tpq-ibmt-fyf
 
 const typesSortie = ['Prospection', 'Suivi', 'Formation', 'Réunion', 'Autre'];
 const statutsSortie = ['Planifiée', 'En cours', 'Effectuée', 'Annulée', 'Reportée'];
 
 const SortiesList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
@@ -38,10 +39,9 @@ const SortiesList = () => {
     setError(null);
     try {
       const data = await sortieService.getAll();
-      console.log('📥 Sorties chargées:', data);
       setSorties(Array.isArray(data) ? data : (data?.results ?? []));
     } catch (err) {
-      console.error('❌ Erreur de chargement:', err);
+      console.error(' Erreur de chargement:', err);
       setError(err.message);
       addToast('Erreur lors du chargement des sorties', 'error');
     } finally {
@@ -94,7 +94,7 @@ const SortiesList = () => {
   );
 
   if (loading) {
-    return <div className="page-container"><div className="loading-container"><Loader size={48} className="spin" /><p>Chargement des sorties...</p></div></div>;
+    return <div className="page-container"><SkeletonTable rows={6} columns={6} /></div>;
   }
   if (error) {
     return (
@@ -112,15 +112,15 @@ const SortiesList = () => {
   return (
     <div className="page-container">
       <ToastContainer toasts={toasts} removeToast={removeToast} />
-      <Modal isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, sortieId: null, sortieName: '' })} onConfirm={handleDelete} title="Confirmer la suppression" message="Êtes-vous sûr de vouloir supprimer cette sortie ?" confirmText="Supprimer" type="warning" />
+      <Modal isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, sortieId: null, sortieName: '' })} onConfirm={handleDelete} title={t('confirmerSuppression')} message="Êtes-vous sûr de vouloir supprimer cette sortie ?" confirmText={t('supprimer')} type="warning" />
 
       <div className="page-header-actions">
         <div>
-          <h1 className="page-title-h1">Gestion des Sorties</h1>
-          <p className="page-description">Planifiez et suivez les sorties terrain.</p>
+          <h1 className="page-title-h1">{t('gestionSorties')}</h1>
+          <p className="page-description">{t('descSorties')}</p>
         </div>
         <button className="btn-primary" onClick={() => navigate('/sorties/new')}>
-          <Plus size={18} /> Nouvelle sortie
+          <Plus size={18} /> {t('nouvelleSortie')}
         </button>
       </div>
 

@@ -6,12 +6,15 @@ import { ToastContainer } from '../../components/common/Toast';
 import Pagination from '../../components/Pagination/Pagination';
 import { usePagination } from '../../hooks/usePagination';
 import { campagneService } from '../../services/campagneService';
+import { useTranslation } from '../../hooks/useTranslation';
+import { SkeletonTable } from '../../components/Skeleton/Skeleton';
 import '../Prospects/Prospects.css';
 
-// ⚠️ CORRIGÉ : plus de colonnes "Statut"/"Agent"/"Prospects"/"Taux" —
+//  CORRIGÉ : plus de colonnes "Statut"/"Agent"/"Prospects"/"Taux" —
 // aucun de ces champs n'existe côté backend (schéma CampagneProspection).
 
 const CampagnesList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
@@ -33,10 +36,9 @@ const CampagnesList = () => {
     setError(null);
     try {
       const data = await campagneService.getAll();
-      console.log('📥 Campagnes chargées:', data);
       setCampagnes(Array.isArray(data) ? data : (data?.results ?? []));
     } catch (err) {
-      console.error('❌ Erreur de chargement:', err);
+      console.error(' Erreur de chargement:', err);
       setError(err.message);
       addToast('Erreur lors du chargement des campagnes', 'error');
     } finally {
@@ -46,14 +48,14 @@ const CampagnesList = () => {
 
   useEffect(() => { fetchCampagnes(); }, []);
 
-  // const getTypeIcon = (type) => {
-  //   switch (type) {
-  //     case 'Email': return <Mail size={16} />;
-  //     case 'SMS': return <Smartphone size={16} />;
-  //     case 'Appel': return <Phone size={16} />;
-  //     default: return <Mail size={16} />;
-  //   }
-  // };
+  const getTypeIcon = (type) => {
+    switch (type) {
+      case 'Email': return <Mail size={16} />;
+      case 'SMS': return <Smartphone size={16} />;
+      case 'Appel': return <Phone size={16} />;
+      default: return <Mail size={16} />;
+    }
+  };
 
   const formatDate = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '-');
 
@@ -86,7 +88,7 @@ const CampagnesList = () => {
   );
 
   if (loading) {
-    return <div className="page-container"><div className="loading-container"><Loader size={48} className="spin" /><p>Chargement des campagnes...</p></div></div>;
+    return <div className="page-container"><SkeletonTable rows={6} columns={5} /></div>;
   }
   if (error) {
     return (
@@ -108,11 +110,11 @@ const CampagnesList = () => {
 
       <div className="page-header-actions">
         <div>
-          <h1 className="page-title-h1">Campagnes de prospection</h1>
-          <p className="page-description">Gérez vos campagnes de prospection.</p>
+          <h1 className="page-title-h1">{t('gestionCampagnes')}</h1>
+          <p className="page-description">{t('descCampagnes')}</p>
         </div>
         <button className="btn-primary" onClick={() => navigate('/campagnes/new')}>
-          <Plus size={18} /> Nouvelle campagne
+          <Plus size={18} /> {t('nouvelleCampagne')}
         </button>
       </div>
 
@@ -140,7 +142,7 @@ const CampagnesList = () => {
                 {paginatedItems.map((campagne) => (
                   <tr key={campagne.idCampagne}>
                     <td><strong>{campagne.libele}</strong></td>
-                    <td><div className="type-badge"><span>{campagne.type}</span></div></td>
+                    <td><div className="type-badge">{getTypeIcon(campagne.type)}<span>{campagne.type}</span></div></td>
                     <td><div className="date-range"><small>{formatDate(campagne.dateDebut)}</small><small>→</small><small>{formatDate(campagne.dateFin)}</small></div></td>
                     <td>{campagne.objectif}</td>
                     <td>

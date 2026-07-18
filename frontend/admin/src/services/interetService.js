@@ -17,7 +17,6 @@ export const interetService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all interets:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
@@ -25,33 +24,15 @@ export const interetService = {
   // RÉCUPÉRER UN NIVEAU D'INTÉRÊT PAR SON ID
   // ============================================================
   getById: (idInteret) => {
-    console.log('📡 GET interet by ID:', idInteret);
     return api.get(`${BASE_URL}${idInteret}/`);
   },
 
-  // ============================================================
-  // RÉCUPÉRER LES NIVEAUX D'INTÉRÊT D'UN PROSPECT
-  //
-  // ⚠️ CORRIGÉ : le YAML expose une vraie route dédiée pour ça
-  //   GET /specialite_api/ISETAG_COM.interetspecialites/prospect/{prospect_id}/
-  // au lieu du filtre par query string "?idProspect=" qui n'est documenté
-  // nulle part dans le schéma OpenAPI.
-  // ============================================================
+ 
   getByProspect: (idProspect) => {
-    console.log('📡 GET interets by prospect:', idProspect);
     return api.get(`${BASE_URL}prospect/${idProspect}/`);
   },
 
-  // ============================================================
-  // RÉCUPÉRER LES NIVEAUX D'INTÉRÊT D'UNE SPÉCIALITÉ
-  //
-  // ⚠️ Aucune route dédiée n'existe pour ça dans le YAML (seule la route
-  // "prospect/{prospect_id}/" est documentée). On garde le filtre par
-  // query string ci-dessous à titre de best-effort, mais rien ne garantit
-  // que le backend le respecte réellement.
-  // ============================================================
   getBySpecialite: (idSpecialite) => {
-    console.log('📡 GET interets by specialite:', idSpecialite);
     return api.get(`${BASE_URL}?idSpecialite=${idSpecialite}`);
   },
 
@@ -65,7 +46,6 @@ export const interetService = {
       idProspect: data.idProspect,
       niveauInteret: data.niveauInteret || '1',
     };
-    console.log('📝 CREATE interet:', payload);
     return api.post(BASE_URL, payload);
   },
 
@@ -79,7 +59,6 @@ export const interetService = {
       idProspect: data.idProspect,
       niveauInteret: data.niveauInteret || '1',
     };
-    console.log('📝 UPDATE interet:', idInteret, payload);
     return api.put(`${BASE_URL}${idInteret}/`, payload);
   },
 
@@ -87,21 +66,10 @@ export const interetService = {
   // SUPPRIMER UN NIVEAU D'INTÉRÊT
   // ============================================================
   delete: (idInteret) => {
-    console.log('🗑️ DELETE interet:', idInteret);
     return api.delete(`${BASE_URL}${idInteret}/`);
   },
 
-  // ============================================================
-  // SUPPRIMER TOUS LES NIVEAUX D'INTÉRÊT D'UN PROSPECT
-  //
-  // ⚠️ CORRIGÉ : il n'existe AUCUNE route de suppression en masse par
-  // query string ("DELETE .../?idProspect=..."). Le seul DELETE documenté
-  // dans le YAML est ".../<id>/" (un intérêt à la fois). On récupère donc
-  // d'abord la liste réelle des intérêts du prospect via la route dédiée
-  // "prospect/{prospect_id}/", puis on supprime chacun individuellement.
-  // ============================================================
   deleteByProspect: async (idProspect) => {
-    console.log('🗑️ DELETE all interets for prospect:', idProspect);
     const interets = await api.get(`${BASE_URL}prospect/${idProspect}/`);
     const list = Array.isArray(interets) ? interets : (interets ? [interets] : []);
     return Promise.all(
@@ -112,30 +80,10 @@ export const interetService = {
     );
   },
 
-  // ============================================================
-  // SYNCHRONISER LES INTÉRÊTS D'UN PROSPECT (utilisé par ProspectForm.jsx)
-  //
-  // Prend la liste LOCALE de ProspectForm, au format :
-  //   [{ idInteret: string|null, idFiliere: string, niveauInteret: string }]
-  // (idInteret === null/undefined => pas encore créé côté backend)
-  //
-  // Calcule le diff avec l'état réel côté serveur (via la vraie route
-  // "prospect/{id}/") puis :
-  //   - POST   pour les nouveaux (idInteret null)
-  //   - PUT    pour ceux dont le niveau ou la spécialité a changé
-  //   - DELETE pour ceux qui existaient côté serveur mais plus dans la liste locale
-  //
-  // Toutes ces trois opérations utilisent des routes réellement
-  // documentées dans le YAML :
-  //   POST   /specialite_api/ISETAG_COM.interetspecialites/
-  //   PUT    /specialite_api/ISETAG_COM.interetspecialites/<id>/
-  //   DELETE /specialite_api/ISETAG_COM.interetspecialites/<id>/
-  // ============================================================
   syncInterets: async (idProspect, localInterets = []) => {
-    console.log('🔄 SYNC interets for prospect:', idProspect, localInterets);
 
     if (!idProspect) {
-      console.warn('⚠️ syncInterets appelé sans idProspect, on annule');
+      console.warn(' syncInterets appelé sans idProspect, on annule');
       return { deleted: 0, updated: 0, added: 0 };
     }
 
@@ -145,7 +93,7 @@ export const interetService = {
       const raw = await api.get(`${BASE_URL}prospect/${idProspect}/`);
       existants = Array.isArray(raw) ? raw : (raw ? [raw] : []);
     } catch (err) {
-      console.warn('⚠️ Impossible de récupérer les intérêts existants, on part de zéro:', err);
+      console.warn('Impossible de récupérer les intérêts existants, on part de zéro:', err);
       existants = [];
     }
     const existantsById = new Map(existants.map((e) => [e.idInteret, e]));
@@ -195,7 +143,6 @@ export const interetService = {
       })
     );
 
-    console.log(`✅ Sync done — deleted: ${deleted}, updated: ${updated}, added: ${added}`);
     return { deleted, updated, added };
   },
 };
