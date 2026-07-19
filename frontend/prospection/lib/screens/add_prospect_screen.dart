@@ -2548,6 +2548,7 @@ import '../services/translation_service.dart';
 import '../services/notification_service.dart';
 import '../utils/idGenerator.dart';
 import '../utils/status.dart';
+import '../utils/sync_queue.dart';
 import '../utils/themes/glass_theme.dart';
 
 class AddProspectScreen extends StatefulWidget {
@@ -4511,16 +4512,10 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     );
   }
 
-  // ─── SAVE PROSPECT ────────────────────────────────────────────────────────
+  
 
   Future<void> _saveProspect() async {
-    if (_isSaving) return;
-    setState(() => _isSaving = true);
-
-    try {
-      if (!mounted) return;
-
-      LoadingService().show(context, message: 'saving_prospect'.tr);
+    LoadingService().show(context, message: 'saving_prospect'.tr);
 
       if (!_formKey.currentState!.validate()) {
         if (mounted) LoadingService().hide();
@@ -4861,8 +4856,9 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
             syncState: SyncState.pending,
           );
 
-          interet.prospect.value = prospect;
-          interet.specialite.value = specialite;
+      // ✅ Link relationships
+      interet.prospect.value = prospect;
+      interet.specialite.value = specialite;
 
           await LocalStorage.instance.saveInteret(interet);
           prospect.interets.add(interet);
@@ -4892,89 +4888,23 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
                   : 'Relance programmée',
             );
 
-            _showSnackBar(
-              '💬 Notification programmée pour le ${_formatDate(_date_relance!)}',
-              const Color(0xFF2E7D32),
-              3,
-            );
-          } catch (e) {
-            print('❌ Erreur notification: $e');
-            _showSnackBar(
-              '⚠️ La notification n\'a pas pu être programmée',
-              Colors.orange,
-              3,
-            );
-          }
-        } else if (_date_relance!.isAfter(nowDateTime)) {
-          final adjustedDate = _date_relance!.add(const Duration(minutes: 1));
-          try {
-            await NotificationService.instance.scheduleReminder(
-              prospectId: prospect.idProspect,
-              prospectName: prospect.nomComplet,
-              date: adjustedDate,
-              comment: _commentaireCtrl.text.trim().isNotEmpty
-                  ? _commentaireCtrl.text.trim()
-                  : 'Relance programmée (décalée)',
-            );
+    _showSnackBar(
+        'prospect_saved'.tr.replaceFirst('{count}', '$savedInteretsCount'),
+        const Color(0xFF2E7D32),
+        3);
 
-            _showSnackBar(
-              '💬 Notification programmée pour le ${_formatDate(adjustedDate)} (décalée)',
-              const Color(0xFF2E7D32),
-              3,
-            );
-          } catch (e) {
-            print('❌ Erreur notification: $e');
-            _showSnackBar(
-              '⚠️ La notification n\'a pas pu être programmée',
-              Colors.orange,
-              3,
-            );
-          }
-        } else {
-          _showSnackBar(
-            '⚠️ La date de relance est déjà passée',
-            Colors.orange,
-            3,
-          );
-        }
-      }
+    _resetForm();
+    LoadingService().hide();
 
-      if (mounted) {
-        LoadingService().hide();
-        _showSnackBar(
-          _isEditing
-              ? 'prospect_updated'
-                  .tr
-                  .replaceFirst('{count}', '${_interetsList.length}')
-              : 'prospect_saved'
-                  .tr
-                  .replaceFirst('{count}', '${_interetsList.length}'),
-          const Color(0xFF2E7D32),
-          3,
-        );
-      }
-
-      _resetForm();
-    } catch (e, stackTrace) {
-      if (mounted) {
-        LoadingService().hide();
-        _showSnackBar('Erreur: $e', Colors.red, 5);
-      }
-      print('❌ Erreur dans _saveProspect: $e');
-      print('📚 Stack trace: $stackTrace');
-    } finally {
-      if (mounted) {
-        setState(() => _isSaving = false);
-      }
+    // Add all data to queue with correct priority
+    try {
+      await SyncQueue().syncNow();
+      print('✅ All items added to sync queue');
+    } catch (e) {
+      print('⚠️ Error adding to queue: $e');
     }
   }
-
-  // ✅ Helper pour formater la date
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year} à ${date.hour}h${date.minute.toString().padLeft(2, '0')}';
   }
-
-  // ─── Reset ────────────────────────────────────────────────────────────────
 
   void _resetForm() {
     _nomCompletCtrl.clear();

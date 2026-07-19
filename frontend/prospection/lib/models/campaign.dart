@@ -6,10 +6,10 @@ part 'generated/campaign.g.dart';
 @collection
 class Campagne {
   Id isarId = Isar.autoIncrement;
-  
+
   @Index(unique: true)
   String idCampagne;
-  
+
   @Index()
   String libele;
   String description;
@@ -17,7 +17,7 @@ class Campagne {
   DateTime dateFin;
   String objectif;
   String type;
-  
+
   @Index()
   DateTime createdAt;
   DateTime? updatedAt;
@@ -44,8 +44,8 @@ class Campagne {
       objectif: json['objectif'] ?? '',
       type: json['type'] ?? '',
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
-      updatedAt: json['updatedAt'] != null 
-          ? DateTime.tryParse(json['updatedAt']) 
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'])
           : null,
     );
   }

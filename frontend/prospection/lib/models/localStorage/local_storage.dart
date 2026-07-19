@@ -155,403 +155,403 @@ class LocalStorage {
   }
 
   /// Generate 1500 dummy prospects with all relationships
-  Future<void> generateDummyProspects() async {
-    try {
-      print('🔄 Generating 1500 dummy prospects...');
-      final now = DateTime.now();
+  // Future<void> generateDummyProspects() async {
+  //   try {
+  //     print('🔄 Generating 1500 dummy prospects...');
+  //     final now = DateTime.now();
 
-      // 1. Sources (10) - These represent the source_infos options
-      final sources = <Source>[];
-      final sourceInfos = [
-        'Réseaux sociaux',
-        'Recommandation',
-        'Site web',
-        'Événement',
-        'Prospection terrain',
-        'Partenariat',
-        'Campagne email',
-        'Publicité',
-        'Salon professionnel',
-        'Bouche à oreille',
-      ];
+  //     // 1. Sources (10) - These represent the source_infos options
+  //     final sources = <Source>[];
+  //     final sourceInfos = [
+  //       'Réseaux sociaux',
+  //       'Recommandation',
+  //       'Site web',
+  //       'Événement',
+  //       'Prospection terrain',
+  //       'Partenariat',
+  //       'Campagne email',
+  //       'Publicité',
+  //       'Salon professionnel',
+  //       'Bouche à oreille',
+  //     ];
 
-      for (int i = 0; i < sourceInfos.length; i++) {
-        final source = Source(
-          idSource: 'src_${i + 1}_${now.millisecondsSinceEpoch}',
-          libelleSource: sourceInfos[i],
-          createdAt: now,
-          syncState: SyncState.pending,
-        );
-        sources.add(source);
-        await saveSource(source);
-      }
-      print('✅ ${sources.length} sources created');
+  //     for (int i = 0; i < sourceInfos.length; i++) {
+  //       final source = Source(
+  //         idSource: 'src_${i + 1}_${now.millisecondsSinceEpoch}',
+  //         libelleSource: sourceInfos[i],
+  //         createdAt: now,
+  //         syncState: SyncState.pending,
+  //       );
+  //       sources.add(source);
+  //       await saveSource(source);
+  //     }
+  //     print('✅ ${sources.length} sources created');
 
-      // 2. Etablissements (15)
-      final etablissements = <Etablissement>[];
-      final etablissementNames = [
-        'Lycée de Biyem-Assi',
-        'Lycée Technique d\'Efouan',
-        'Institut Confucius',
-        'Lycée Général Leclerc',
-        'Collège Vogt',
-        'Lycée de Mvog-Mbi',
-        'Lycée de Nkolndongo',
-        'Lycée de Mendong',
-        'Lycée de Ngoa-Ekelle',
-        'Lycée de Mbalmayo',
-        'Lycée de Soa',
-        'Collège de la Retraite',
-        'Lycée de Nlongkak',
-        'Institut Siantou',
-        'Lycée de Bafoussam',
-      ];
+  //     // 2. Etablissements (15)
+  //     final etablissements = <Etablissement>[];
+  //     final etablissementNames = [
+  //       'Lycée de Biyem-Assi',
+  //       'Lycée Technique d\'Efouan',
+  //       'Institut Confucius',
+  //       'Lycée Général Leclerc',
+  //       'Collège Vogt',
+  //       'Lycée de Mvog-Mbi',
+  //       'Lycée de Nkolndongo',
+  //       'Lycée de Mendong',
+  //       'Lycée de Ngoa-Ekelle',
+  //       'Lycée de Mbalmayo',
+  //       'Lycée de Soa',
+  //       'Collège de la Retraite',
+  //       'Lycée de Nlongkak',
+  //       'Institut Siantou',
+  //       'Lycée de Bafoussam',
+  //     ];
 
-      for (int i = 0; i < etablissementNames.length; i++) {
-        final ets = Etablissement(
-          idEtablissement: 'ets_${i + 1}_${now.millisecondsSinceEpoch}',
-          nomEtablissement: etablissementNames[i],
-          typeEtablissement: ['Secondary', 'University', 'Secondary'][i % 3],
-          adresse: 'Adresse ${i + 1}, Cameroun',
-          telephone:
-              '+237 6${(10000000 + i * 10000).toString().padLeft(7, '0')}',
-          ville: ['Yaoundé', 'Douala', 'Bafoussam', 'Bamenda'][i % 4],
-          region: ['Centre', 'Littoral', 'Ouest', 'Nord-Ouest'][i % 4],
-          createdAt: now,
-          syncState: SyncState.pending,
-        );
-        etablissements.add(ets);
-        await saveEtablissement(ets);
-      }
-      print('✅ ${etablissements.length} etablissements created');
+  //     for (int i = 0; i < etablissementNames.length; i++) {
+  //       final ets = Etablissement(
+  //         idEtablissement: 'ets_${i + 1}_${now.millisecondsSinceEpoch}',
+  //         nomEtablissement: etablissementNames[i],
+  //         typeEtablissement: ['Secondary', 'University', 'Secondary'][i % 3],
+  //         adresse: 'Adresse ${i + 1}, Cameroun',
+  //         telephone:
+  //             '+237 6${(10000000 + i * 10000).toString().padLeft(7, '0')}',
+  //         ville: ['Yaoundé', 'Douala', 'Bafoussam', 'Bamenda'][i % 4],
+  //         region: ['Centre', 'Littoral', 'Ouest', 'Nord-Ouest'][i % 4],
+  //         createdAt: now,
+  //         syncState: SyncState.pending,
+  //       );
+  //       etablissements.add(ets);
+  //       await saveEtablissement(ets);
+  //     }
+  //     print('✅ ${etablissements.length} etablissements created');
 
-      // 3. Classes (25)
-      final classes = <Classe>[];
-      final classNames = [
-        'Terminale C',
-        'Terminale D',
-        'Terminale A4',
-        'Terminale TI',
-        'BTS 1',
-        'BTS 2',
-        'Licence 1',
-        'Licence 2',
-        'Licence 3',
-        'Master 1',
-        'Master 2',
-        'Licence',
-      ];
+  //     // 3. Classes (25)
+  //     final classes = <Classe>[];
+  //     final classNames = [
+  //       'Terminale C',
+  //       'Terminale D',
+  //       'Terminale A4',
+  //       'Terminale TI',
+  //       'BTS 1',
+  //       'BTS 2',
+  //       'Licence 1',
+  //       'Licence 2',
+  //       'Licence 3',
+  //       'Master 1',
+  //       'Master 2',
+  //       'Licence',
+  //     ];
 
-      for (int i = 0; i < classNames.length; i++) {
-        final etsIndex = i % etablissements.length;
-        final clse = Classe(
-          idClasse: 'classe_${i + 1}_${now.millisecondsSinceEpoch}',
-          idEts: etablissements[etsIndex].idEtablissement,
-          libelleClasse: classNames[i],
-          createdAt: now,
-          syncState: SyncState.pending,
-        );
-        classes.add(clse);
-        await saveClasse(clse);
-      }
-      print('✅ ${classes.length} classes created');
+  //     for (int i = 0; i < classNames.length; i++) {
+  //       final etsIndex = i % etablissements.length;
+  //       final clse = Classe(
+  //         idClasse: 'classe_${i + 1}_${now.millisecondsSinceEpoch}',
+  //         idEts: etablissements[etsIndex].idEtablissement,
+  //         libelleClasse: classNames[i],
+  //         createdAt: now,
+  //         syncState: SyncState.pending,
+  //       );
+  //       classes.add(clse);
+  //       await saveClasse(clse);
+  //     }
+  //     print('✅ ${classes.length} classes created');
 
-      // 4. Specialites (25)
-      final specialites = <Specialite>[];
-      final specialiteNames = [
-        'Génie Logiciel',
-        'Génie Civil',
-        'Génie Mécanique',
-        'Marketing',
-        'Finance',
-        'Comptabilité',
-        'Réseaux et Télécoms',
-        'Cybersécurité',
-        'Intelligence Artificielle',
-        'Ressources Humaines',
-        'Logistique',
-        'Communication',
-        'Design UI/UX',
-        'Développement Mobile',
-        'Data Science',
-        'DevOps',
-        'Cloud Computing',
-        'Blockchain',
-        'Énergies Renouvelables',
-        'Biotechnologie',
-        'Robotique',
-        'Aéronautique',
-        'Agronomie',
-        'Architecture',
-        'Médecine',
-      ];
+  //     // 4. Specialites (25)
+  //     final specialites = <Specialite>[];
+  //     final specialiteNames = [
+  //       'Génie Logiciel',
+  //       'Génie Civil',
+  //       'Génie Mécanique',
+  //       'Marketing',
+  //       'Finance',
+  //       'Comptabilité',
+  //       'Réseaux et Télécoms',
+  //       'Cybersécurité',
+  //       'Intelligence Artificielle',
+  //       'Ressources Humaines',
+  //       'Logistique',
+  //       'Communication',
+  //       'Design UI/UX',
+  //       'Développement Mobile',
+  //       'Data Science',
+  //       'DevOps',
+  //       'Cloud Computing',
+  //       'Blockchain',
+  //       'Énergies Renouvelables',
+  //       'Biotechnologie',
+  //       'Robotique',
+  //       'Aéronautique',
+  //       'Agronomie',
+  //       'Architecture',
+  //       'Médecine',
+  //     ];
 
-      for (int i = 0; i < specialiteNames.length; i++) {
-        final spec = Specialite(
-          idSpecialite: 'spec_${i + 1}_${now.millisecondsSinceEpoch}',
-          libelleSpecialite: specialiteNames[i],
-          description: 'Description de ${specialiteNames[i]}',
-          createdAt: now,
-          syncState: SyncState.pending,
-        );
-        specialites.add(spec);
-        await saveSpecialite(spec);
-      }
-      print('✅ ${specialites.length} specialites created');
+  //     for (int i = 0; i < specialiteNames.length; i++) {
+  //       final spec = Specialite(
+  //         idSpecialite: 'spec_${i + 1}_${now.millisecondsSinceEpoch}',
+  //         libelleSpecialite: specialiteNames[i],
+  //         description: 'Description de ${specialiteNames[i]}',
+  //         createdAt: now,
+  //         syncState: SyncState.pending,
+  //       );
+  //       specialites.add(spec);
+  //       await saveSpecialite(spec);
+  //     }
+  //     print('✅ ${specialites.length} specialites created');
 
-      // 5. Fiches (15) - Each fiche is associated with a source
-      final fiches = <Fiche>[];
-      final ficheComments = [
-        'Visite initiale',
-        'Suivi prospect',
-        'Contact établi',
-        'Demande d\'information',
-        'Rendez-vous pris',
-        'Confirmation d\'intérêt',
-        'Relance effectuée',
-        'Nouveau contact',
-        'Prospection active',
-        'Suivi personnalisé',
-        'Prise de contact',
-        'Entretien réalisé',
-        'Offre envoyée',
-        'Négociation',
-        'Signature prochaine',
-      ];
+  //     // 5. Fiches (15) - Each fiche is associated with a source
+  //     final fiches = <Fiche>[];
+  //     final ficheComments = [
+  //       'Visite initiale',
+  //       'Suivi prospect',
+  //       'Contact établi',
+  //       'Demande d\'information',
+  //       'Rendez-vous pris',
+  //       'Confirmation d\'intérêt',
+  //       'Relance effectuée',
+  //       'Nouveau contact',
+  //       'Prospection active',
+  //       'Suivi personnalisé',
+  //       'Prise de contact',
+  //       'Entretien réalisé',
+  //       'Offre envoyée',
+  //       'Négociation',
+  //       'Signature prochaine',
+  //     ];
 
-      for (int i = 0; i < sources.length; i++) {
-        final fiche = Fiche(
-          idFiche: 'fiche_${i + 1}_${now.millisecondsSinceEpoch}',
-          idSrc: sources[i].idSource,
-          dateCollecte: now.subtract(Duration(days: i * 2)),
-          commentaire: ficheComments[i % ficheComments.length],
-          scoreInteret: 3 + (i % 8),
-          createdAt: now,
-          isCurrent: i == 0,
-          syncState: SyncState.pending,
-        );
-        fiches.add(fiche);
-        await saveFiche(fiche);
-      }
-      print('✅ ${fiches.length} fiches created');
+  //     for (int i = 0; i < sources.length; i++) {
+  //       final fiche = Fiche(
+  //         idFiche: 'fiche_${i + 1}_${now.millisecondsSinceEpoch}',
+  //         idSrc: sources[i].idSource,
+  //         dateCollecte: now.subtract(Duration(days: i * 2)),
+  //         commentaire: ficheComments[i % ficheComments.length],
+  //         scoreInteret: 3 + (i % 8),
+  //         createdAt: now,
+  //         isCurrent: i == 0,
+  //         syncState: SyncState.pending,
+  //       );
+  //       fiches.add(fiche);
+  //       await saveFiche(fiche);
+  //     }
+  //     print('✅ ${fiches.length} fiches created');
 
-      // 6. Generate 1500 Prospects with source_infos
-      final firstNames = [
-        'Jean',
-        'Marie',
-        'Paul',
-        'Claire',
-        'David',
-        'Sarah',
-        'Kevin',
-        'Laura',
-        'Thomas',
-        'Julie',
-        'Nicolas',
-        'Emma',
-        'Alexandre',
-        'Léa',
-        'Raphaël',
-        'Manon',
-        'Lucas',
-        'Chloé',
-        'Hugo',
-        'Camille',
-        'Louis',
-        'Alice',
-        'Arnaud',
-        'Céline',
-        'François',
-        'Diane',
-        'Pierre',
-        'Sophie',
-        'Blaise',
-        'Jacqueline',
-        'Romain',
-        'Adeline',
-        'Daniel',
-        'Martine',
-        'Michel',
-        'Suzanne',
-        'André',
-        'Elise',
-        'Philippe',
-        'Isabelle',
-        'Christophe',
-        'Nathalie',
-        'Éric',
-        'Valérie',
-        'Stéphane',
-        'Catherine',
-        'Laurent',
-        'Anne',
-        'Frédéric',
-        'Isabelle',
-      ];
+  //     // 6. Generate 1500 Prospects with source_infos
+  //     final firstNames = [
+  //       'Jean',
+  //       'Marie',
+  //       'Paul',
+  //       'Claire',
+  //       'David',
+  //       'Sarah',
+  //       'Kevin',
+  //       'Laura',
+  //       'Thomas',
+  //       'Julie',
+  //       'Nicolas',
+  //       'Emma',
+  //       'Alexandre',
+  //       'Léa',
+  //       'Raphaël',
+  //       'Manon',
+  //       'Lucas',
+  //       'Chloé',
+  //       'Hugo',
+  //       'Camille',
+  //       'Louis',
+  //       'Alice',
+  //       'Arnaud',
+  //       'Céline',
+  //       'François',
+  //       'Diane',
+  //       'Pierre',
+  //       'Sophie',
+  //       'Blaise',
+  //       'Jacqueline',
+  //       'Romain',
+  //       'Adeline',
+  //       'Daniel',
+  //       'Martine',
+  //       'Michel',
+  //       'Suzanne',
+  //       'André',
+  //       'Elise',
+  //       'Philippe',
+  //       'Isabelle',
+  //       'Christophe',
+  //       'Nathalie',
+  //       'Éric',
+  //       'Valérie',
+  //       'Stéphane',
+  //       'Catherine',
+  //       'Laurent',
+  //       'Anne',
+  //       'Frédéric',
+  //       'Isabelle',
+  //     ];
 
-      final lastNames = [
-        'Dupont',
-        'Martin',
-        'Durand',
-        'Bernard',
-        'Thomas',
-        'Petit',
-        'Robert',
-        'Richard',
-        'Dubois',
-        'Laurent',
-        'Simon',
-        'Michel',
-        'Lefebvre',
-        'Leroy',
-        'Roux',
-        'David',
-        'Bertrand',
-        'Moreau',
-        'Fournier',
-        'Girard',
-        'Bonnet',
-        'François',
-        'Martinez',
-        'Legrand',
-        'Garnier',
-        'Faure',
-        'Rousseau',
-        'Blanc',
-        'Guerin',
-        'Muller',
-        'Henry',
-        'Roussel',
-        'Nicolas',
-        'Perrin',
-        'Morin',
-        'Mathieu',
-        'Clement',
-        'Gauthier',
-        'Dumont',
-        'Lopez',
-        'Fontaine',
-        'Chevalier',
-        'Robin',
-        'Masson',
-        'Sanchez',
-        'Adam',
-        'Garcia',
-      ];
+  //     final lastNames = [
+  //       'Dupont',
+  //       'Martin',
+  //       'Durand',
+  //       'Bernard',
+  //       'Thomas',
+  //       'Petit',
+  //       'Robert',
+  //       'Richard',
+  //       'Dubois',
+  //       'Laurent',
+  //       'Simon',
+  //       'Michel',
+  //       'Lefebvre',
+  //       'Leroy',
+  //       'Roux',
+  //       'David',
+  //       'Bertrand',
+  //       'Moreau',
+  //       'Fournier',
+  //       'Girard',
+  //       'Bonnet',
+  //       'François',
+  //       'Martinez',
+  //       'Legrand',
+  //       'Garnier',
+  //       'Faure',
+  //       'Rousseau',
+  //       'Blanc',
+  //       'Guerin',
+  //       'Muller',
+  //       'Henry',
+  //       'Roussel',
+  //       'Nicolas',
+  //       'Perrin',
+  //       'Morin',
+  //       'Mathieu',
+  //       'Clement',
+  //       'Gauthier',
+  //       'Dumont',
+  //       'Lopez',
+  //       'Fontaine',
+  //       'Chevalier',
+  //       'Robin',
+  //       'Masson',
+  //       'Sanchez',
+  //       'Adam',
+  //       'Garcia',
+  //     ];
 
-      final typeProspects = ['Étudiant', 'Éleve'];
-      final sexes = ['Masculin', 'Féminin'];
-      final niveauEtudes = [
-        'Baccalauréat',
-        'BTS 1',
-        'BTS 2',
-        'Licence',
-        'Master 1',
-        'Master 2',
-        'Doctorat'
-      ];
-      final statuses = [
-        ProspectStatus.relancer,
-        ProspectStatus.nouveau,
-        ProspectStatus.contacte
-      ];
-      final phonePrefix = ['6', '7', '8', '9'];
+  //     final typeProspects = ['Étudiant', 'Éleve'];
+  //     final sexes = ['Masculin', 'Féminin'];
+  //     final niveauEtudes = [
+  //       'Baccalauréat',
+  //       'BTS 1',
+  //       'BTS 2',
+  //       'Licence',
+  //       'Master 1',
+  //       'Master 2',
+  //       'Doctorat'
+  //     ];
+  //     final statuses = [
+  //       ProspectStatus.relancer,
+  //       ProspectStatus.nouveau,
+  //       ProspectStatus.contacte
+  //     ];
+  //     final phonePrefix = ['6', '7', '8', '9'];
 
-      int savedCount = 0;
-      const totalCount = 1500;
-      const batchSize = 50;
+  //     int savedCount = 0;
+  //     const totalCount = 1500;
+  //     const batchSize = 50;
 
-      for (int batch = 0; batch < totalCount; batch += batchSize) {
-        final end =
-            (batch + batchSize < totalCount) ? batch + batchSize : totalCount;
+  //     for (int batch = 0; batch < totalCount; batch += batchSize) {
+  //       final end =
+  //           (batch + batchSize < totalCount) ? batch + batchSize : totalCount;
 
-        for (int i = batch; i < end; i++) {
-          final firstName = firstNames[i % firstNames.length];
-          final lastName = lastNames[i % lastNames.length];
-          final fullName = '$firstName $lastName';
+  //       for (int i = batch; i < end; i++) {
+  //         final firstName = firstNames[i % firstNames.length];
+  //         final lastName = lastNames[i % lastNames.length];
+  //         final fullName = '$firstName $lastName';
 
-          final classe = classes[i % classes.length];
-          final fiche = fiches[i % fiches.length];
-          // Assign source_infos from the source list (ensuring each prospect gets a source)
-          final sourceInfo = sourceInfos[i % sourceInfos.length];
-          final numSpecialites = 1 + (i % 4);
+  //         final classe = classes[i % classes.length];
+  //         final fiche = fiches[i % fiches.length];
+  //         // Assign source_infos from the source list (ensuring each prospect gets a source)
+  //         final sourceInfo = sourceInfos[i % sourceInfos.length];
+  //         final numSpecialites = 1 + (i % 4);
 
-          final prospect = Prospect(
-            idProspect: 'prospect_${i + 1}_${now.millisecondsSinceEpoch}',
-            idfiche: fiche.idFiche,
-            idClass: classe.idClasse,
-            nomComplet: fullName,
-            telephone:
-                '+237 ${phonePrefix[i % phonePrefix.length]}${(10000000 + i * 1000).toString().padLeft(7, '0')}',
-            email:
-                '${firstName.toLowerCase()}.${lastName.toLowerCase()}$i@example.com',
-            niveauEtude: niveauEtudes[i % niveauEtudes.length],
-            adresse: '${100 + i} Rue des Écoles, Cameroun',
-            sexe: sexes[i % 2],
-            typeProspect: typeProspects[i % typeProspects.length],
-            source_infos: sourceInfo, // Assign the source info string
-            commentaireGen: 'Prospect #${i + 1} - $firstName $lastName',
-            concerne: null,
-            date_relance:
-                i % 5 == 0 ? now.add(Duration(days: 5 + (i % 20))) : null,
-            createdAt: now.subtract(Duration(days: i % 30)),
-            // updatedAt: null,
-            syncState: SyncState.pending,
-            prospectStatus: statuses[i % statuses.length],
-          );
+  //         final prospect = Prospect(
+  //           idProspect: 'prospect_${i + 1}_${now.millisecondsSinceEpoch}',
+  //           idfiche: fiche.idFiche,
+  //           idClass: classe.idClasse,
+  //           nomComplet: fullName,
+  //           telephone:
+  //               '+237 ${phonePrefix[i % phonePrefix.length]}${(10000000 + i * 1000).toString().padLeft(7, '0')}',
+  //           email:
+  //               '${firstName.toLowerCase()}.${lastName.toLowerCase()}$i@example.com',
+  //           niveauEtude: niveauEtudes[i % niveauEtudes.length],
+  //           adresse: '${100 + i} Rue des Écoles, Cameroun',
+  //           sexe: sexes[i % 2],
+  //           typeProspect: typeProspects[i % typeProspects.length],
+  //           source_infos: sourceInfo, // Assign the source info string
+  //           commentaireGen: 'Prospect #${i + 1} - $firstName $lastName',
+  //           concerne: null,
+  //           date_relance:
+  //               i % 5 == 0 ? now.add(Duration(days: 5 + (i % 20))) : null,
+  //           createdAt: now.subtract(Duration(days: i % 30)),
+  //           // updatedAt: null,
+  //           syncState: SyncState.pending,
+  //           prospectStatus: statuses[i % statuses.length],
+  //         );
 
-          await saveProspect(prospect);
+  //         await saveProspect(prospect);
 
-          final selectedSpecialites = <Specialite>[];
-          for (int s = 0; s < numSpecialites; s++) {
-            final specIndex = (i + s * 7) % specialites.length;
-            final spec = specialites[specIndex];
+  //         final selectedSpecialites = <Specialite>[];
+  //         for (int s = 0; s < numSpecialites; s++) {
+  //           final specIndex = (i + s * 7) % specialites.length;
+  //           final spec = specialites[specIndex];
 
-            if (!selectedSpecialites.contains(spec)) {
-              selectedSpecialites.add(spec);
+  //           if (!selectedSpecialites.contains(spec)) {
+  //             selectedSpecialites.add(spec);
 
-              final interet = InteretFiliere(
-                idInteret:
-                    'interet_${i + 1}_${s + 1}_${now.millisecondsSinceEpoch}',
-                idProspect: prospect.idProspect,
-                idSpecialite: spec.idSpecialite,
-                ordrePreference: s + 1,
-                niveauInteret: 4 + (i % 7),
-                commentaire: 'Intérêt pour ${spec.libelleSpecialite}',
-                createdAt: now,
-                syncState: SyncState.pending,
-              );
+  //             final interet = InteretFiliere(
+  //               idInteret:
+  //                   'interet_${i + 1}_${s + 1}_${now.millisecondsSinceEpoch}',
+  //               idProspect: prospect.idProspect,
+  //               idSpecialite: spec.idSpecialite,
+  //               ordrePreference: s + 1,
+  //               niveauInteret: 4 + (i % 7),
+  //               commentaire: 'Intérêt pour ${spec.libelleSpecialite}',
+  //               createdAt: now,
+  //               syncState: SyncState.pending,
+  //             );
 
-              interet.prospect.value = prospect;
-              interet.specialite.value = spec;
+  //             interet.prospect.value = prospect;
+  //             interet.specialite.value = spec;
 
-              await saveInteret(interet);
-              prospect.AllSpec.add(spec);
-            }
-          }
+  //             await saveInteret(interet);
+  //             prospect.AllSpec.add(spec);
+  //           }
+  //         }
 
-          savedCount++;
-          if (savedCount % 100 == 0) {
-            print('📊 Progress: $savedCount/$totalCount');
-          }
-        }
+  //         savedCount++;
+  //         if (savedCount % 100 == 0) {
+  //           print('📊 Progress: $savedCount/$totalCount');
+  //         }
+  //       }
 
-        print('📦 Batch ${(batch / batchSize).toInt() + 1} completed');
-      }
+  //       print('📦 Batch ${(batch / batchSize).toInt() + 1} completed');
+  //     }
 
-      print('✅ Successfully saved $savedCount dummy prospects!');
-      print('📊 Summary:');
-      print('   - ${sources.length} Sources');
-      print('   - ${etablissements.length} Etablissements');
-      print('   - ${classes.length} Classes');
-      print('   - ${specialites.length} Specialites');
-      print('   - ${fiches.length} Fiches');
-      print('   - $savedCount Prospects with source_infos assigned');
-    } catch (e) {
-      print('❌ Error generating dummy data: $e');
-      rethrow;
-    }
-  }
+  //     print('✅ Successfully saved $savedCount dummy prospects!');
+  //     print('📊 Summary:');
+  //     print('   - ${sources.length} Sources');
+  //     print('   - ${etablissements.length} Etablissements');
+  //     print('   - ${classes.length} Classes');
+  //     print('   - ${specialites.length} Specialites');
+  //     print('   - ${fiches.length} Fiches');
+  //     print('   - $savedCount Prospects with source_infos assigned');
+  //   } catch (e) {
+  //     print('❌ Error generating dummy data: $e');
+  //     rethrow;
+  //   }
+  // }
 
   // ==================== PROSPECT - OPTIMIZED CHECKERS ====================
 
@@ -1305,24 +1305,32 @@ class LocalStorage {
                   : null;
             })
             .whereType<SpecialityDetail>()
-            .toList()
-          ..sort((a, b) => a.orderPreference.compareTo(b.orderPreference));
+            .toList();
+
+        specialities
+            .sort((a, b) => a.orderPreference.compareTo(b.orderPreference));
 
         final classe = classeMap[prospect.idClass];
         final ets = classe != null ? etsMap[classe.idEts] : null;
 
-  //       return ProspectDetails(
-  //         prosp: p,
-  //         etablissement: ets?.nomEtablissement ?? '',
-  //         classe: classe?.libelleClasse ?? '',
-  //         specialities: specsP,
-  //       );
-  //     }).toList();
-  //   } catch (e) {
-  //     print('Error building prospect details list: $e');
-  //     return [];
-  //   }
-  // }
+        if (classe == null || ets == null) {
+          continue;
+        }
+
+        detailsList.add(ProspectDetails(
+          prosp: prospect,
+          etablissement: ets,
+          classe: classe,
+          specialities: specialities,
+        ));
+      }
+
+      return detailsList;
+    } catch (e) {
+      print('Error building prospect details list: $e');
+      return [];
+    }
+  }
 
   static Future<List<ProspectDetails>> _buildProspectDetailsList(
       Isar isar, List<Prospect> prospects) async {
@@ -1425,8 +1433,8 @@ class LocalStorage {
 
         return ProspectDetails(
           prosp: p,
-          etablissement: ets?.nomEtablissement ?? '',
-          classe: classe?.libelleClasse ?? '',
+          etablissement: ets!,
+          classe: classe!,
           specialities: specsP,
         );
       }).toList();
@@ -1940,81 +1948,6 @@ class LocalStorage {
       return [];
     }
   }
-
-  // ==================== SEED CLASSES ====================
-
-  // Future<void> seedClassesIfEmpty() async {
-  //   try {
-  //     final existing = await getAllClasses();
-  //     if (existing.isNotEmpty) return;
-
-  //     print('Seeding default classes...');
-
-  //     final List<String> classKeys = [
-  //       'class_a1',
-  //       'class_a2',
-  //       'class_a3',
-  //       'class_a4',
-  //       'class_abi',
-  //       'class_c',
-  //       'class_d',
-  //       'class_ti',
-  //       'class_b',
-  //       'class_g1',
-  //       'class_g2',
-  //       'class_g3',
-  //       'class_ses',
-  //       'class_f2',
-  //       'class_f3',
-  //       'class_mav',
-  //       'class_f4',
-  //       'class_is',
-  //       'class_gt',
-  //       'class_f1',
-  //       'class_ma',
-  //       'class_mf_ch',
-  //       'class_f7',
-  //       'class_ci',
-  //       'class_frcl',
-  //       'class_ih',
-  //       'class_esf',
-  //     ];
-
-  //     String generalEtsId;
-  //     final generalEts = await getEtablissementByNom('Lycée Général Leclerc');
-
-  //     if (generalEts != null) {
-  //       generalEtsId = generalEts.idEtablissement;
-  //     } else {
-  //       final now = DateTime.now();
-  //       final newEts = Etablissement(
-  //         idEtablissement: Generator.generateShortId('ets_'),
-  //         nomEtablissement: 'Lycée Général Leclerc',
-  //         typeEtablissement: 'secondaire',
-  //         createdAt: now,
-  //         syncState: SyncState.pending,
-  //       );
-  //       await saveEtablissement(newEts);
-  //       generalEtsId = newEts.idEtablissement;
-  //     }
-
-  //     final now = DateTime.now();
-  //     for (final key in classKeys) {
-  //       final classe = Classe(
-  //         idClasse: Generator.generateShortId('cls_'),
-  //         idEts: generalEtsId,
-  //         libelleClasse: key,
-  //         createdAt: now,
-  //         syncState: SyncState.pending,
-  //       );
-  //       await saveClasse(classe);
-  //     }
-
-  //     print('✅ ${classKeys.length} classes seeded successfully!');
-  //   } catch (e) {
-  //     print('❌ Error seeding classes: $e');
-  //   }
-  // }
 
   Future<void> seedClassesIfEmpty() async {
     try {

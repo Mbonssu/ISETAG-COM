@@ -6,10 +6,10 @@ part 'generated/zone.g.dart';
 @collection
 class Zone {
   Id isarId = Isar.autoIncrement;
-  
+
   @Index(unique: true)
   String idZone;
-  
+
   @Index()
   String libele;
   String description;
@@ -19,7 +19,7 @@ class Zone {
   String region;
   String lieuDepart;
   String lieuArrivee;
-  
+
   @Index()
   DateTime createdAt;
   DateTime? updatedAt;
@@ -50,8 +50,8 @@ class Zone {
       lieuDepart: json['lieuDepart'] ?? '',
       lieuArrivee: json['lieuArrivee'] ?? '',
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
-      updatedAt: json['updatedAt'] != null 
-          ? DateTime.tryParse(json['updatedAt']) 
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'])
           : null,
     );
   }

@@ -112,6 +112,7 @@ class User {
     final name = '$prenom $nom'.trim();
     return name.isNotEmpty ? name : 'Utilisateur';
   }
+
   @ignore
   String get initials {
     // Safe access with fallback
