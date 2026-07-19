@@ -72,40 +72,50 @@ const ProspectSchema = CollectionSchema(
       name: r'nomComplet',
       type: IsarType.string,
     ),
-    r'prospectStatus': PropertySchema(
+    r'nomParent': PropertySchema(
       id: 11,
+      name: r'nomParent',
+      type: IsarType.string,
+    ),
+    r'prospectStatus': PropertySchema(
+      id: 12,
       name: r'prospectStatus',
       type: IsarType.byte,
       enumMap: _ProspectprospectStatusEnumValueMap,
     ),
     r'sexe': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'sexe',
       type: IsarType.string,
     ),
     r'source_infos': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'source_infos',
       type: IsarType.string,
     ),
     r'syncState': PropertySchema(
-      id: 14,
+      id: 15,
       name: r'syncState',
       type: IsarType.byte,
       enumMap: _ProspectsyncStateEnumValueMap,
     ),
     r'telephone': PropertySchema(
-      id: 15,
+      id: 16,
       name: r'telephone',
       type: IsarType.string,
     ),
+    r'telephoneParent': PropertySchema(
+      id: 17,
+      name: r'telephoneParent',
+      type: IsarType.string,
+    ),
     r'typeProspect': PropertySchema(
-      id: 16,
+      id: 18,
       name: r'typeProspect',
       type: IsarType.string,
     ),
     r'updatedAt': PropertySchema(
-      id: 17,
+      id: 19,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -176,6 +186,32 @@ const ProspectSchema = CollectionSchema(
       properties: [
         IndexPropertySchema(
           name: r'telephone',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'nomParent': IndexSchema(
+      id: -5526186215851266586,
+      name: r'nomParent',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'nomParent',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'telephoneParent': IndexSchema(
+      id: 2802626077968717001,
+      name: r'telephoneParent',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'telephoneParent',
           type: IndexType.hash,
           caseSensitive: true,
         )
@@ -285,7 +321,7 @@ const ProspectSchema = CollectionSchema(
   getId: _prospectGetId,
   getLinks: _prospectGetLinks,
   attach: _prospectAttach,
-  version: '3.1.0+1',
+  version: '3.3.2',
 );
 
 int _prospectEstimateSize(
@@ -323,9 +359,11 @@ int _prospectEstimateSize(
   bytesCount += 3 + object.idfiche.length * 3;
   bytesCount += 3 + object.niveauEtude.length * 3;
   bytesCount += 3 + object.nomComplet.length * 3;
+  bytesCount += 3 + object.nomParent.length * 3;
   bytesCount += 3 + object.sexe.length * 3;
   bytesCount += 3 + object.source_infos.length * 3;
   bytesCount += 3 + object.telephone.length * 3;
+  bytesCount += 3 + object.telephoneParent.length * 3;
   bytesCount += 3 + object.typeProspect.length * 3;
   return bytesCount;
 }
@@ -347,13 +385,15 @@ void _prospectSerialize(
   writer.writeString(offsets[8], object.idfiche);
   writer.writeString(offsets[9], object.niveauEtude);
   writer.writeString(offsets[10], object.nomComplet);
-  writer.writeByte(offsets[11], object.prospectStatus.index);
-  writer.writeString(offsets[12], object.sexe);
-  writer.writeString(offsets[13], object.source_infos);
-  writer.writeByte(offsets[14], object.syncState.index);
-  writer.writeString(offsets[15], object.telephone);
-  writer.writeString(offsets[16], object.typeProspect);
-  writer.writeDateTime(offsets[17], object.updatedAt);
+  writer.writeString(offsets[11], object.nomParent);
+  writer.writeByte(offsets[12], object.prospectStatus.index);
+  writer.writeString(offsets[13], object.sexe);
+  writer.writeString(offsets[14], object.source_infos);
+  writer.writeByte(offsets[15], object.syncState.index);
+  writer.writeString(offsets[16], object.telephone);
+  writer.writeString(offsets[17], object.telephoneParent);
+  writer.writeString(offsets[18], object.typeProspect);
+  writer.writeDateTime(offsets[19], object.updatedAt);
 }
 
 Prospect _prospectDeserialize(
@@ -374,19 +414,21 @@ Prospect _prospectDeserialize(
     idfiche: reader.readString(offsets[8]),
     niveauEtude: reader.readString(offsets[9]),
     nomComplet: reader.readString(offsets[10]),
+    nomParent: reader.readString(offsets[11]),
     prospectStatus: _ProspectprospectStatusValueEnumMap[
-            reader.readByteOrNull(offsets[11])] ??
+            reader.readByteOrNull(offsets[12])] ??
         ProspectStatus.relancer,
-    sexe: reader.readString(offsets[12]),
-    source_infos: reader.readString(offsets[13]),
+    sexe: reader.readString(offsets[13]),
+    source_infos: reader.readString(offsets[14]),
     syncState:
-        _ProspectsyncStateValueEnumMap[reader.readByteOrNull(offsets[14])] ??
+        _ProspectsyncStateValueEnumMap[reader.readByteOrNull(offsets[15])] ??
             SyncState.pending,
-    telephone: reader.readString(offsets[15]),
-    typeProspect: reader.readString(offsets[16]),
+    telephone: reader.readString(offsets[16]),
+    telephoneParent: reader.readString(offsets[17]),
+    typeProspect: reader.readString(offsets[18]),
   );
   object.isarId = id;
-  object.updatedAt = reader.readDateTimeOrNull(offsets[17]);
+  object.updatedAt = reader.readDateTimeOrNull(offsets[19]);
   return object;
 }
 
@@ -420,21 +462,25 @@ P _prospectDeserializeProp<P>(
     case 10:
       return (reader.readString(offset)) as P;
     case 11:
+      return (reader.readString(offset)) as P;
+    case 12:
       return (_ProspectprospectStatusValueEnumMap[
               reader.readByteOrNull(offset)] ??
           ProspectStatus.relancer) as P;
-    case 12:
-      return (reader.readString(offset)) as P;
     case 13:
       return (reader.readString(offset)) as P;
     case 14:
+      return (reader.readString(offset)) as P;
+    case 15:
       return (_ProspectsyncStateValueEnumMap[reader.readByteOrNull(offset)] ??
           SyncState.pending) as P;
-    case 15:
-      return (reader.readString(offset)) as P;
     case 16:
       return (reader.readString(offset)) as P;
     case 17:
+      return (reader.readString(offset)) as P;
+    case 18:
+      return (reader.readString(offset)) as P;
+    case 19:
       return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -456,12 +502,14 @@ const _ProspectsyncStateEnumValueMap = {
   'syncing': 1,
   'synced': 2,
   'failed': 3,
+  'toUpdate': 4,
 };
 const _ProspectsyncStateValueEnumMap = {
   0: SyncState.pending,
   1: SyncState.syncing,
   2: SyncState.synced,
   3: SyncState.failed,
+  4: SyncState.toUpdate,
 };
 
 Id _prospectGetId(Prospect object) {
@@ -854,6 +902,96 @@ extension ProspectQueryWhere on QueryBuilder<Prospect, Prospect, QWhereClause> {
               indexName: r'telephone',
               lower: [],
               upper: [telephone],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> nomParentEqualTo(
+      String nomParent) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'nomParent',
+        value: [nomParent],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> nomParentNotEqualTo(
+      String nomParent) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'nomParent',
+              lower: [],
+              upper: [nomParent],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'nomParent',
+              lower: [nomParent],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'nomParent',
+              lower: [nomParent],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'nomParent',
+              lower: [],
+              upper: [nomParent],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> telephoneParentEqualTo(
+      String telephoneParent) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'telephoneParent',
+        value: [telephoneParent],
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterWhereClause> telephoneParentNotEqualTo(
+      String telephoneParent) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'telephoneParent',
+              lower: [],
+              upper: [telephoneParent],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'telephoneParent',
+              lower: [telephoneParent],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'telephoneParent',
+              lower: [telephoneParent],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'telephoneParent',
+              lower: [],
+              upper: [telephoneParent],
               includeUpper: false,
             ));
       }
@@ -2750,6 +2888,137 @@ extension ProspectQueryFilter
     });
   }
 
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> nomParentEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'nomParent',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> nomParentGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'nomParent',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> nomParentLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'nomParent',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> nomParentBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'nomParent',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> nomParentStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'nomParent',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> nomParentEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'nomParent',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> nomParentContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'nomParent',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> nomParentMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'nomParent',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> nomParentIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'nomParent',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      nomParentIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'nomParent',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<Prospect, Prospect, QAfterFilterCondition> prospectStatusEqualTo(
       ProspectStatus value) {
     return QueryBuilder.apply(this, (query) {
@@ -3253,6 +3522,142 @@ extension ProspectQueryFilter
     });
   }
 
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      telephoneParentEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'telephoneParent',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      telephoneParentGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'telephoneParent',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      telephoneParentLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'telephoneParent',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      telephoneParentBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'telephoneParent',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      telephoneParentStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'telephoneParent',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      telephoneParentEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'telephoneParent',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      telephoneParentContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'telephoneParent',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      telephoneParentMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'telephoneParent',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      telephoneParentIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'telephoneParent',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      telephoneParentIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'telephoneParent',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<Prospect, Prospect, QAfterFilterCondition> typeProspectEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -3680,6 +4085,18 @@ extension ProspectQuerySortBy on QueryBuilder<Prospect, Prospect, QSortBy> {
     });
   }
 
+  QueryBuilder<Prospect, Prospect, QAfterSortBy> sortByNomParent() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'nomParent', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterSortBy> sortByNomParentDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'nomParent', Sort.desc);
+    });
+  }
+
   QueryBuilder<Prospect, Prospect, QAfterSortBy> sortByProspectStatus() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'prospectStatus', Sort.asc);
@@ -3737,6 +4154,18 @@ extension ProspectQuerySortBy on QueryBuilder<Prospect, Prospect, QSortBy> {
   QueryBuilder<Prospect, Prospect, QAfterSortBy> sortByTelephoneDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'telephone', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterSortBy> sortByTelephoneParent() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'telephoneParent', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterSortBy> sortByTelephoneParentDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'telephoneParent', Sort.desc);
     });
   }
 
@@ -3911,6 +4340,18 @@ extension ProspectQuerySortThenBy
     });
   }
 
+  QueryBuilder<Prospect, Prospect, QAfterSortBy> thenByNomParent() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'nomParent', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterSortBy> thenByNomParentDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'nomParent', Sort.desc);
+    });
+  }
+
   QueryBuilder<Prospect, Prospect, QAfterSortBy> thenByProspectStatus() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'prospectStatus', Sort.asc);
@@ -3968,6 +4409,18 @@ extension ProspectQuerySortThenBy
   QueryBuilder<Prospect, Prospect, QAfterSortBy> thenByTelephoneDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'telephone', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterSortBy> thenByTelephoneParent() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'telephoneParent', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterSortBy> thenByTelephoneParentDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'telephoneParent', Sort.desc);
     });
   }
 
@@ -4074,6 +4527,13 @@ extension ProspectQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Prospect, Prospect, QDistinct> distinctByNomParent(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'nomParent', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Prospect, Prospect, QDistinct> distinctByProspectStatus() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'prospectStatus');
@@ -4104,6 +4564,14 @@ extension ProspectQueryWhereDistinct
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'telephone', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QDistinct> distinctByTelephoneParent(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'telephoneParent',
+          caseSensitive: caseSensitive);
     });
   }
 
@@ -4195,6 +4663,12 @@ extension ProspectQueryProperty
     });
   }
 
+  QueryBuilder<Prospect, String, QQueryOperations> nomParentProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'nomParent');
+    });
+  }
+
   QueryBuilder<Prospect, ProspectStatus, QQueryOperations>
       prospectStatusProperty() {
     return QueryBuilder.apply(this, (query) {
@@ -4223,6 +4697,12 @@ extension ProspectQueryProperty
   QueryBuilder<Prospect, String, QQueryOperations> telephoneProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'telephone');
+    });
+  }
+
+  QueryBuilder<Prospect, String, QQueryOperations> telephoneParentProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'telephoneParent');
     });
   }
 

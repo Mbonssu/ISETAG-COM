@@ -1,3 +1,5 @@
+import 'package:isetagcom/models/classe.dart';
+import 'package:isetagcom/models/etablissement.dart';
 import 'package:isetagcom/models/pros.dart';
 
 import '../utils/status.dart';
@@ -121,8 +123,8 @@ class ProspectDetails {
   // final String? telephone;
   // final String? email;
   // final String? addresse;
-  final String etablissement;
-  final String classe;
+  final Etablissement etablissement;
+  final Classe classe;
   // final String? commentaire;
   final Prospect prosp;
   final List<SpecialityDetail> specialities;

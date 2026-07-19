@@ -20,7 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final bool useImageLogo = true;
-  final String logoImagePath = 'assets/images/logo.png';
+  final String logoImagePath = 'assets/images/app_icon.png';
 
   @override
   Widget build(BuildContext context) {
@@ -48,10 +48,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
           SafeArea(
             child: SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: const EdgeInsets.symmetric(horizontal: 28).copyWith(bottom: 28),
+              padding: const EdgeInsets.symmetric(horizontal: 28)
+                  .copyWith(bottom: 28),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: screenHeight - MediaQuery.of(context).padding.vertical,
+                  minHeight:
+                      screenHeight - MediaQuery.of(context).padding.vertical,
                 ),
                 child: Form(
                   key: _formKey,
@@ -94,23 +96,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ],
                       ),
-
                       SizedBox(height: screenHeight * 0.05),
-
                       _referralCodeField(),
                       SizedBox(height: screenHeight * 0.02),
-
                       _passwordField(),
                       SizedBox(height: screenHeight * 0.02),
-
                       _confirmPasswordField(),
                       SizedBox(height: screenHeight * 0.03),
-
                       _registerBtn(),
                       SizedBox(height: screenHeight * 0.02),
-
                       _loginRow(),
-
                       SizedBox(height: screenHeight * 0.02),
                     ],
                   ),
@@ -129,10 +124,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         width: size,
         height: size,
         child: ClipRRect(
+          borderRadius: BorderRadius.circular(size / 2),
           child: Image.asset(
             logoImagePath,
-            fit: BoxFit.contain,
+            fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) {
+              print('Erreur de chargement du logo: $error');
               return _buildDefaultLogo(size);
             },
           ),
@@ -195,7 +192,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         decoration: InputDecoration(
           hintText: 'referral_code_hint'.tr,
           hintStyle: const TextStyle(color: Colors.grey, fontSize: 15),
-          prefixIcon: const Icon(Icons.lock_person_outlined, color: Color(0xFFF9A825), size: 22),
+          prefixIcon: const Icon(Icons.lock_person_outlined,
+              color: Color(0xFFF9A825), size: 22),
           filled: true,
           fillColor: Colors.white,
           border: OutlineInputBorder(
@@ -210,7 +208,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: Color(0xFF2E7D32), width: 2),
           ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
         ),
       ),
     );
@@ -235,14 +234,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         decoration: InputDecoration(
           hintText: 'password'.tr,
           hintStyle: const TextStyle(color: Colors.grey, fontSize: 15),
-          prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFF9A825), size: 22),
+          prefixIcon: const Icon(Icons.lock_outline,
+              color: Color(0xFFF9A825), size: 22),
           suffixIcon: IconButton(
             icon: Icon(
-              _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+              _obscurePassword
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
               color: Colors.grey,
               size: 20,
             ),
-            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+            onPressed: () =>
+                setState(() => _obscurePassword = !_obscurePassword),
           ),
           filled: true,
           fillColor: Colors.white,
@@ -258,8 +261,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: Color(0xFF2E7D32), width: 2),
           ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
-          errorStyle: const TextStyle(fontSize: 12, height: 0.8, color: Color(0xFFD32F2F)),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+          errorStyle: const TextStyle(
+              fontSize: 12, height: 0.8, color: Color(0xFFD32F2F)),
         ),
         validator: (value) {
           if (value == null || value.isEmpty) {
@@ -293,14 +298,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         decoration: InputDecoration(
           hintText: 'confirm_password'.tr,
           hintStyle: const TextStyle(color: Colors.grey, fontSize: 15),
-          prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFF9A825), size: 22),
+          prefixIcon: const Icon(Icons.lock_outline,
+              color: Color(0xFFF9A825), size: 22),
           suffixIcon: IconButton(
             icon: Icon(
-              _obscureConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+              _obscureConfirmPassword
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
               color: Colors.grey,
               size: 20,
             ),
-            onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+            onPressed: () => setState(
+                () => _obscureConfirmPassword = !_obscureConfirmPassword),
           ),
           filled: true,
           fillColor: Colors.white,
@@ -316,8 +325,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: Color(0xFF2E7D32), width: 2),
           ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
-          errorStyle: const TextStyle(fontSize: 12, height: 0.8, color: Color(0xFFD32F2F)),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+          errorStyle: const TextStyle(
+              fontSize: 12, height: 0.8, color: Color(0xFFD32F2F)),
         ),
         validator: (value) {
           if (value == null || value.isEmpty) {

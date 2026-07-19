@@ -3,6 +3,7 @@ enum SyncState {
   syncing,
   synced,
   failed,
+  toUpdate,
 }
 
 enum ProspectStatus {

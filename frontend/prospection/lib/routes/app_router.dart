@@ -7,6 +7,7 @@ import 'package:isetagcom/screens/fiche_list_screen.dart';
 import 'package:isetagcom/screens/register_screen.dart';
 import 'package:isetagcom/screens/relances_screen.dart';
 // import '../screens/fiche_detail_screen.dart';
+import 'package:isetagcom/screens/main_screen.dart';
 import '../models/fiche.dart';
 import '../screens/fiche_detail_screen.dart';
 import '../screens/fiche_preview_screen.dart';
@@ -15,12 +16,14 @@ import '../screens/home_screen.dart';
 import '../screens/prospects_list_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/splash_screen.dart';
+import '../screens/OutingsScreen.dart';
 import '../screens/sync_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
   static const String login = '/login';
   static const String home = '/home';
+  static const String main = '/main'; 
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
   static const String prospects = '/prospects';
@@ -33,6 +36,7 @@ class AppRoutes {
   static const String preview_fiche = '/preview';
   static const String prospectsList = '/prospects-list';
   static const String syncRoute = '/sync';
+  static const String outings = '/outings';
 }
 
 class AppRouter {
@@ -41,6 +45,9 @@ class AppRouter {
       case AppRoutes.splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
 
+      case AppRoutes.main:
+        return MaterialPageRoute(builder: (_) => const MainScreen());
+            
       case AppRoutes.login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
 
@@ -64,6 +71,9 @@ class AppRouter {
 
       case AppRoutes.relances:
         return MaterialPageRoute(builder: (_) => const RelancesScreen());
+
+      case AppRoutes.outings:
+        return MaterialPageRoute(builder: (_) => const OutingsScreen());
 
       case AppRoutes.ficheDetail:
         final args = settings.arguments as Map<String, dynamic>;

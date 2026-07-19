@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import '../utils/status.dart';
 import 'classe.dart';
 
@@ -58,36 +58,39 @@ class Etablissement {
           : null,
       syncState: json["sync"]);
 
-  /// Local/UI display
-  Map<String, dynamic> toJson() {
-    return {
-      'idEtablissement': idEtablissement,
-      'nom': nomEtablissement,
-      'type': typeEtablissement,
-      'adresse': adresse,
-      'telephone': telephone,
-      'ville': ville,
-      'region': region,
-      'createdAt': createdAt,
-      // 'classes': classes.map((e) => e.toJson()).toList(),
-    };
-  }
+  /// Pour l'affichage local / UI
+  Map<String, dynamic> toLocalJson() => {
+        'idEtablissement': idEtablissement,
+        'nomEtablissement': nomEtablissement,
+        'typeEtablissement': typeEtablissement,
+        'adresse': adresse,
+        'telephone': telephone,
+        'ville': ville,
+        'region': region,
+        'createdAt': createdAt?.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
+        'classes': classes.map((c) => c.toLocalJson()).toList(),
+        'syncState': syncState.name,
+      };
 
-  /// API payload
-  Map<String, dynamic> toJsonApi() {
-    return {
-      'idEtablissement': idEtablissement,
-      'nomEtablissement': nomEtablissement,
-      'typeEtablissement': typeEtablissement,
-      'adresse': adresse,
-      'telephone': telephone,
-      'ville': ville,
-      'region': region,
-      'createdAt': createdAt?.toIso8601String(),
+  /// Pour l'API
+  Map<String, dynamic> toJsonApi() => {
+        'idEtablissement': idEtablissement,
+        'nom': nomEtablissement,
+        'type': typeEtablissement,
+        // 'adresse': adresse,
+        // 'telephone': telephone,
+        // 'ville': ville,
+        // 'region': region,
 
-      // Send only IDs
-      'classes': classes.map((e) => e.idClasse).toList(),
-      "syncState": syncState.name
-    };
-  }
+        'adresse': "adresse",
+        'telephone': "telephone",
+        'ville': "ville",
+        'region': "region",
+
+        'createdAt': createdAt?.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
+        // 'classesIds': classes.map((c) => c.idClasse).toList(),
+        'syncState': syncState.name,
+      };
 }

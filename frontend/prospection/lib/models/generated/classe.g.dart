@@ -140,7 +140,7 @@ const ClasseSchema = CollectionSchema(
   getId: _classeGetId,
   getLinks: _classeGetLinks,
   attach: _classeAttach,
-  version: '3.1.0+1',
+  version: '3.3.2',
 );
 
 int _classeEstimateSize(
@@ -219,12 +219,14 @@ const _ClassesyncStateEnumValueMap = {
   'syncing': 1,
   'synced': 2,
   'failed': 3,
+  'toUpdate': 4,
 };
 const _ClassesyncStateValueEnumMap = {
   0: SyncState.pending,
   1: SyncState.syncing,
   2: SyncState.synced,
   3: SyncState.failed,
+  4: SyncState.toUpdate,
 };
 
 Id _classeGetId(Classe object) {

@@ -55,6 +55,19 @@ const SpecialiteSchema = CollectionSchema(
   deserializeProp: _specialiteDeserializeProp,
   idName: r'isarId',
   indexes: {
+    r'updatedAt': IndexSchema(
+      id: -6238191080293565125,
+      name: r'updatedAt',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'updatedAt',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    ),
     r'idSpecialite': IndexSchema(
       id: 1402599325489044525,
       name: r'idSpecialite',
@@ -93,19 +106,6 @@ const SpecialiteSchema = CollectionSchema(
           caseSensitive: false,
         )
       ],
-    ),
-    r'updatedAt': IndexSchema(
-      id: -6238191080293565125,
-      name: r'updatedAt',
-      unique: false,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'updatedAt',
-          type: IndexType.value,
-          caseSensitive: false,
-        )
-      ],
     )
   },
   links: {
@@ -121,7 +121,7 @@ const SpecialiteSchema = CollectionSchema(
   getId: _specialiteGetId,
   getLinks: _specialiteGetLinks,
   attach: _specialiteAttach,
-  version: '3.1.0+1',
+  version: '3.3.2',
 );
 
 int _specialiteEstimateSize(
@@ -205,12 +205,14 @@ const _SpecialitesyncStateEnumValueMap = {
   'syncing': 1,
   'synced': 2,
   'failed': 3,
+  'toUpdate': 4,
 };
 const _SpecialitesyncStateValueEnumMap = {
   0: SyncState.pending,
   1: SyncState.syncing,
   2: SyncState.synced,
   3: SyncState.failed,
+  4: SyncState.toUpdate,
 };
 
 Id _specialiteGetId(Specialite object) {
@@ -291,18 +293,18 @@ extension SpecialiteQueryWhereSort
     });
   }
 
-  QueryBuilder<Specialite, Specialite, QAfterWhere> anyCreatedAt() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        const IndexWhereClause.any(indexName: r'createdAt'),
-      );
-    });
-  }
-
   QueryBuilder<Specialite, Specialite, QAfterWhere> anyUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         const IndexWhereClause.any(indexName: r'updatedAt'),
+      );
+    });
+  }
+
+  QueryBuilder<Specialite, Specialite, QAfterWhere> anyCreatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'createdAt'),
       );
     });
   }
@@ -374,6 +376,116 @@ extension SpecialiteQueryWhere
         lower: lowerIsarId,
         includeLower: includeLower,
         upper: upperIsarId,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Specialite, Specialite, QAfterWhereClause> updatedAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'updatedAt',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<Specialite, Specialite, QAfterWhereClause> updatedAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Specialite, Specialite, QAfterWhereClause> updatedAtEqualTo(
+      DateTime? updatedAt) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'updatedAt',
+        value: [updatedAt],
+      ));
+    });
+  }
+
+  QueryBuilder<Specialite, Specialite, QAfterWhereClause> updatedAtNotEqualTo(
+      DateTime? updatedAt) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [],
+              upper: [updatedAt],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [updatedAt],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [updatedAt],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [],
+              upper: [updatedAt],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Specialite, Specialite, QAfterWhereClause> updatedAtGreaterThan(
+    DateTime? updatedAt, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [updatedAt],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Specialite, Specialite, QAfterWhereClause> updatedAtLessThan(
+    DateTime? updatedAt, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [],
+        upper: [updatedAt],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<Specialite, Specialite, QAfterWhereClause> updatedAtBetween(
+    DateTime? lowerUpdatedAt,
+    DateTime? upperUpdatedAt, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [lowerUpdatedAt],
+        includeLower: includeLower,
+        upper: [upperUpdatedAt],
         includeUpper: includeUpper,
       ));
     });
@@ -574,116 +686,6 @@ extension SpecialiteQueryWhere
         lower: [lowerCreatedAt],
         includeLower: includeLower,
         upper: [upperCreatedAt],
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<Specialite, Specialite, QAfterWhereClause> updatedAtIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'updatedAt',
-        value: [null],
-      ));
-    });
-  }
-
-  QueryBuilder<Specialite, Specialite, QAfterWhereClause> updatedAtIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'updatedAt',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
-    });
-  }
-
-  QueryBuilder<Specialite, Specialite, QAfterWhereClause> updatedAtEqualTo(
-      DateTime? updatedAt) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'updatedAt',
-        value: [updatedAt],
-      ));
-    });
-  }
-
-  QueryBuilder<Specialite, Specialite, QAfterWhereClause> updatedAtNotEqualTo(
-      DateTime? updatedAt) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'updatedAt',
-              lower: [],
-              upper: [updatedAt],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'updatedAt',
-              lower: [updatedAt],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'updatedAt',
-              lower: [updatedAt],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'updatedAt',
-              lower: [],
-              upper: [updatedAt],
-              includeUpper: false,
-            ));
-      }
-    });
-  }
-
-  QueryBuilder<Specialite, Specialite, QAfterWhereClause> updatedAtGreaterThan(
-    DateTime? updatedAt, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'updatedAt',
-        lower: [updatedAt],
-        includeLower: include,
-        upper: [],
-      ));
-    });
-  }
-
-  QueryBuilder<Specialite, Specialite, QAfterWhereClause> updatedAtLessThan(
-    DateTime? updatedAt, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'updatedAt',
-        lower: [],
-        upper: [updatedAt],
-        includeUpper: include,
-      ));
-    });
-  }
-
-  QueryBuilder<Specialite, Specialite, QAfterWhereClause> updatedAtBetween(
-    DateTime? lowerUpdatedAt,
-    DateTime? upperUpdatedAt, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'updatedAt',
-        lower: [lowerUpdatedAt],
-        includeLower: includeLower,
-        upper: [upperUpdatedAt],
         includeUpper: includeUpper,
       ));
     });

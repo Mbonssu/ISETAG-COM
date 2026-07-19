@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import '../utils/status.dart';
 import 'fiche.dart';
 
@@ -42,25 +42,48 @@ class Source {
       syncState: json["sync"]);
 
   /// For UI
-  Map<String, dynamic> toLocalJson() {
-    return {
-      'idSource': idSource,
-      'libelleSource': libelleSource,
-      'createdAt': createdAt.toIso8601String(),
-      'fiches': fiches.map((f) => f.toLocalJson()).toList(),
-    };
-  }
+  // Map<String, dynamic> toLocalJson() {
+  //   return {
+  //     'idSource': idSource,
+  //     'libelleSource': libelleSource,
+  //     'createdAt': createdAt.toIso8601String(),
+  //     'fiches': fiches.map((f) => f.toLocalJson()).toList(),
+  //   };
+  // }
 
-  /// For API
-  Map<String, dynamic> toJsonApi() {
-    return {
-      'idSource': idSource,
-      'libelle': libelleSource,
-      'description': 'src1',
-      'createdAt': createdAt.toIso8601String(),
-      'syncState': syncState.name,
-      // Only send IDs
-      // 'fiches': fiches.map((f) => f.idFiche).toList(),
-    };
-  }
+  // /// For API
+  // Map<String, dynamic> toJsonApi() {
+  //   return {
+  //     'idSource': idSource,
+  //     'libelle': libelleSource,
+  //     'description': 'src1',
+  //     'createdAt': createdAt.toIso8601String(),
+  //     'syncState': syncState.name,
+  //     // Only send IDs
+  //     // 'fiches': fiches.map((f) => f.idFiche).toList(),
+  //   };
+  // }
+
+  // lib/models/source.dart
+
+  /// Pour l'affichage local / UI
+  Map<String, dynamic> toLocalJson() => {
+        'idSource': idSource,
+        'libelleSource': libelleSource,
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
+        'fiches': fiches.map((f) => f.toLocalJson()).toList(),
+        'syncState': syncState.name,
+      };
+
+  /// Pour l'API
+  Map<String, dynamic> toJsonApi() => {
+        'idSource': idSource,
+        'libele': libelleSource,
+        'description': "desc_$libelleSource",
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
+        // 'fichesIds': fiches.map((f) => f.idFiche).toList(),
+        'syncState': syncState.name,
+      };
 }

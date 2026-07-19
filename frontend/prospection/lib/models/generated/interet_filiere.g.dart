@@ -47,19 +47,24 @@ const InteretFiliereSchema = CollectionSchema(
       name: r'niveauInteret',
       type: IsarType.long,
     ),
-    r'ordrePreference': PropertySchema(
+    r'niveauInteretLabel': PropertySchema(
       id: 6,
+      name: r'niveauInteretLabel',
+      type: IsarType.string,
+    ),
+    r'ordrePreference': PropertySchema(
+      id: 7,
       name: r'ordrePreference',
       type: IsarType.long,
     ),
     r'syncState': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'syncState',
       type: IsarType.byte,
       enumMap: _InteretFilieresyncStateEnumValueMap,
     ),
     r'updatedAt': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -180,7 +185,7 @@ const InteretFiliereSchema = CollectionSchema(
   getId: _interetFiliereGetId,
   getLinks: _interetFiliereGetLinks,
   attach: _interetFiliereAttach,
-  version: '3.1.0+1',
+  version: '3.3.2',
 );
 
 int _interetFiliereEstimateSize(
@@ -198,6 +203,7 @@ int _interetFiliereEstimateSize(
   bytesCount += 3 + object.idInteret.length * 3;
   bytesCount += 3 + object.idProspect.length * 3;
   bytesCount += 3 + object.idSpecialite.length * 3;
+  bytesCount += 3 + object.niveauInteretLabel.length * 3;
   return bytesCount;
 }
 
@@ -213,9 +219,10 @@ void _interetFiliereSerialize(
   writer.writeString(offsets[3], object.idProspect);
   writer.writeString(offsets[4], object.idSpecialite);
   writer.writeLong(offsets[5], object.niveauInteret);
-  writer.writeLong(offsets[6], object.ordrePreference);
-  writer.writeByte(offsets[7], object.syncState.index);
-  writer.writeDateTime(offsets[8], object.updatedAt);
+  writer.writeString(offsets[6], object.niveauInteretLabel);
+  writer.writeLong(offsets[7], object.ordrePreference);
+  writer.writeByte(offsets[8], object.syncState.index);
+  writer.writeDateTime(offsets[9], object.updatedAt);
 }
 
 InteretFiliere _interetFiliereDeserialize(
@@ -231,13 +238,13 @@ InteretFiliere _interetFiliereDeserialize(
     idProspect: reader.readString(offsets[3]),
     idSpecialite: reader.readString(offsets[4]),
     niveauInteret: reader.readLong(offsets[5]),
-    ordrePreference: reader.readLong(offsets[6]),
+    ordrePreference: reader.readLong(offsets[7]),
     syncState: _InteretFilieresyncStateValueEnumMap[
-            reader.readByteOrNull(offsets[7])] ??
+            reader.readByteOrNull(offsets[8])] ??
         SyncState.pending,
   );
   object.isarId = id;
-  object.updatedAt = reader.readDateTimeOrNull(offsets[8]);
+  object.updatedAt = reader.readDateTimeOrNull(offsets[9]);
   return object;
 }
 
@@ -261,12 +268,14 @@ P _interetFiliereDeserializeProp<P>(
     case 5:
       return (reader.readLong(offset)) as P;
     case 6:
-      return (reader.readLong(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 7:
+      return (reader.readLong(offset)) as P;
+    case 8:
       return (_InteretFilieresyncStateValueEnumMap[
               reader.readByteOrNull(offset)] ??
           SyncState.pending) as P;
-    case 8:
+    case 9:
       return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -278,12 +287,14 @@ const _InteretFilieresyncStateEnumValueMap = {
   'syncing': 1,
   'synced': 2,
   'failed': 3,
+  'toUpdate': 4,
 };
 const _InteretFilieresyncStateValueEnumMap = {
   0: SyncState.pending,
   1: SyncState.syncing,
   2: SyncState.synced,
   3: SyncState.failed,
+  4: SyncState.toUpdate,
 };
 
 Id _interetFiliereGetId(InteretFiliere object) {
@@ -1732,6 +1743,142 @@ extension InteretFiliereQueryFilter
   }
 
   QueryBuilder<InteretFiliere, InteretFiliere, QAfterFilterCondition>
+      niveauInteretLabelEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'niveauInteretLabel',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<InteretFiliere, InteretFiliere, QAfterFilterCondition>
+      niveauInteretLabelGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'niveauInteretLabel',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<InteretFiliere, InteretFiliere, QAfterFilterCondition>
+      niveauInteretLabelLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'niveauInteretLabel',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<InteretFiliere, InteretFiliere, QAfterFilterCondition>
+      niveauInteretLabelBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'niveauInteretLabel',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<InteretFiliere, InteretFiliere, QAfterFilterCondition>
+      niveauInteretLabelStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'niveauInteretLabel',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<InteretFiliere, InteretFiliere, QAfterFilterCondition>
+      niveauInteretLabelEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'niveauInteretLabel',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<InteretFiliere, InteretFiliere, QAfterFilterCondition>
+      niveauInteretLabelContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'niveauInteretLabel',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<InteretFiliere, InteretFiliere, QAfterFilterCondition>
+      niveauInteretLabelMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'niveauInteretLabel',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<InteretFiliere, InteretFiliere, QAfterFilterCondition>
+      niveauInteretLabelIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'niveauInteretLabel',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<InteretFiliere, InteretFiliere, QAfterFilterCondition>
+      niveauInteretLabelIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'niveauInteretLabel',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<InteretFiliere, InteretFiliere, QAfterFilterCondition>
       ordrePreferenceEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -2037,6 +2184,20 @@ extension InteretFiliereQuerySortBy
   }
 
   QueryBuilder<InteretFiliere, InteretFiliere, QAfterSortBy>
+      sortByNiveauInteretLabel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'niveauInteretLabel', Sort.asc);
+    });
+  }
+
+  QueryBuilder<InteretFiliere, InteretFiliere, QAfterSortBy>
+      sortByNiveauInteretLabelDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'niveauInteretLabel', Sort.desc);
+    });
+  }
+
+  QueryBuilder<InteretFiliere, InteretFiliere, QAfterSortBy>
       sortByOrdrePreference() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ordrePreference', Sort.asc);
@@ -2175,6 +2336,20 @@ extension InteretFiliereQuerySortThenBy
   }
 
   QueryBuilder<InteretFiliere, InteretFiliere, QAfterSortBy>
+      thenByNiveauInteretLabel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'niveauInteretLabel', Sort.asc);
+    });
+  }
+
+  QueryBuilder<InteretFiliere, InteretFiliere, QAfterSortBy>
+      thenByNiveauInteretLabelDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'niveauInteretLabel', Sort.desc);
+    });
+  }
+
+  QueryBuilder<InteretFiliere, InteretFiliere, QAfterSortBy>
       thenByOrdrePreference() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ordrePreference', Sort.asc);
@@ -2260,6 +2435,14 @@ extension InteretFiliereQueryWhereDistinct
   }
 
   QueryBuilder<InteretFiliere, InteretFiliere, QDistinct>
+      distinctByNiveauInteretLabel({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'niveauInteretLabel',
+          caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<InteretFiliere, InteretFiliere, QDistinct>
       distinctByOrdrePreference() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'ordrePreference');
@@ -2324,6 +2507,13 @@ extension InteretFiliereQueryProperty
   QueryBuilder<InteretFiliere, int, QQueryOperations> niveauInteretProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'niveauInteret');
+    });
+  }
+
+  QueryBuilder<InteretFiliere, String, QQueryOperations>
+      niveauInteretLabelProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'niveauInteretLabel');
     });
   }
 

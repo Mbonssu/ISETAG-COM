@@ -162,14 +162,14 @@ class FicheExcelExportService {
       TextCellValue(pd.prosp.sexe),
       TextCellValue(pd.prosp.typeProspect),
       TextCellValue(pd.prosp.niveauEtude),
-      TextCellValue(pd.etablissement),
-      TextCellValue(pd.classe),
-      TextCellValue(pd.prosp.source_infos ?? ''),
+      TextCellValue(pd.etablissement.nomEtablissement),
+      TextCellValue(pd.classe.libelleClasse.tr),
+      TextCellValue(pd.prosp.source_infos),
       TextCellValue(pd.prosp.date_relance != null
           ? pd.prosp.date_relance!.toIso8601String().split('T')[0]
           : ''),
       TextCellValue(pd.prosp.commentaireGen ?? ''),
-      TextCellValue(specialitiesFormatted), 
+      TextCellValue(specialitiesFormatted.tr), 
     ];
 
     // Write all columns

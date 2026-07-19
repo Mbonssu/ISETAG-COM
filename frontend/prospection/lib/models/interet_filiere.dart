@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import '../utils/status.dart';
 import 'pros.dart';
 import 'specialite.dart';
@@ -10,7 +10,7 @@ class InteretFiliere {
   Id isarId = Isar.autoIncrement;
 
   @Index(unique: true)
-  final String idInteret;
+  String idInteret;
 
   // final String prospectId;
 
@@ -23,12 +23,12 @@ class InteretFiliere {
   late String idSpecialite;
 
   @Index()
-  final int ordrePreference;
+  int ordrePreference;
 
   @Index()
-  final int niveauInteret;
+  int niveauInteret;
 
-  final String? commentaire;
+  String? commentaire;
 
   @Index()
   DateTime createdAt;
@@ -68,34 +68,51 @@ class InteretFiliere {
         syncState: json['state'],
       );
 
-  /// Local UI
-  Map<String, dynamic> toLocalJson() {
-    return {
-      'idInteret': idInteret,
-      'idProspect': idProspect,
-      'idSpecialite': idSpecialite,
-      'ordrePreference': ordrePreference,
-      'niveauInteret': niveauInteret,
-      'commentaire': commentaire,
-      'createdAt': createdAt.toIso8601String(),
-      'prospect': prospect.value?.toLocalJson(),
-      'specialite': specialite.value?.toLocalJson(),
-    };
+  // lib/models/interet_filiere.dart
+
+  /// Pour l'affichage local / UI
+  Map<String, dynamic> toLocalJson() => {
+        'idInteret': idInteret,
+        'idProspect': prospect.value?.idProspect,
+        'idSpecialite': idSpecialite,
+        'ordrePreference': ordrePreference,
+        'niveauInteret': niveauInteret,
+        'commentaire': commentaire,
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
+        'prospect': prospect.value?.toLocalJson(),
+        'specialite': specialite.value?.toLocalJson(),
+        'syncState': syncState.name,
+      };
+
+  /// Convertit un niveau numérique (1-5) en libellé textuel
+  String get niveauInteretLabel {
+    switch (niveauInteret) {
+      case 1:
+        return 'Faible';
+      case 2:
+        return 'Moyen';
+      case 3:
+        return 'Élevé';
+      case 4:
+        return 'Très élevé';
+      case 5:
+        return 'Excellent';
+      default:
+        return 'Non spécifié';
+    }
   }
 
-  /// API
-  Map<String, dynamic> toApiJson() {
-    return {
-      'idInteret': idInteret,
-      'idProspect': idProspect,
-      'idSpecialite': idSpecialite,
-      'idProspect_isar': prospect.value?.idProspect,
-      'idSpecialite_isar': specialite.value?.idSpecialite,
-      'ordrePreference': ordrePreference,
-      'niveauInteret': niveauInteret,
-      'commentaire': commentaire,
-      'createdAt': createdAt.toIso8601String(),
-      'syncState': syncState.name
-    };
-  }
+  Map<String, dynamic> toJsonApi() => {
+        'idInteret': idInteret,
+        'idProspect': idProspect,
+        'idSpecialite': idSpecialite,
+        'ordrePreference': ordrePreference,
+        'niveauInteret':
+            niveauInteretLabel, // ✅ Envoie le texte (Faible, Moyen, Eleve, Tres eleve, Excellent)
+        'commentaire': commentaire,
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
+        'syncState': syncState.name,
+      };
 }

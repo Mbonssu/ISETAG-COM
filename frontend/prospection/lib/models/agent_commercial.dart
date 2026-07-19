@@ -1,5 +1,5 @@
 // lib/models/agent_commercial.dart
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'user.dart';
 
 part 'generated/agent_commercial.g.dart';
@@ -41,15 +41,25 @@ class AgentCommercial {
         statut: json['statut'] ?? 'Actif',
       );
 
-  Map<String, dynamic> toJson() {
-    return {
-      'idAgent': idAgent,
-      'idUtilisateur': idUtilisateur,
-      'matriculeAgent': matriculeAgent,
-      'dateEmbauche': dateEmbauche.toIso8601String(),
-      'statut': statut,
-    };
-  }
+  /// Pour l'affichage local / UI
+  Map<String, dynamic> toLocalJson() => {
+        'idAgent': idAgent,
+        'idUtilisateur': idUtilisateur,
+        'matriculeAgent': matriculeAgent,
+        'dateEmbauche': dateEmbauche.toIso8601String(),
+        'statut': statut,
+        'user': user.value?.toLocalJson(),
+      };
+
+  /// Pour l'API (avec seulement les données nécessaires)
+  Map<String, dynamic> toJsonApi() => {
+        'idAgent': idAgent,
+        'idUtilisateur': idUtilisateur,
+        'matriculeAgent': matriculeAgent,
+        'dateEmbauche': dateEmbauche.toIso8601String(),
+        'statut': statut,
+        // 'syncState': syncState.name,
+      };
 
   // Helper getters to access user data
   String get fullName => user.value?.fullName ?? '';
@@ -62,6 +72,8 @@ class AgentCommercial {
   String get role => user.value?.role ?? '';
   bool get isAdmin => user.value?.isAdmin ?? false;
   bool get isAgent => user.value?.isAgent ?? false;
-  bool get isUser => user.value?.isUser ?? false;
+  bool get isUser =>
+      user.value?.isUser ??
+      false; // To be removed even in agentCommercial.g.dart
   bool get actif => user.value?.actif ?? false;
 }

@@ -52,7 +52,7 @@ class _ProspectsListScreenState extends State<ProspectsListScreen> {
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((p) {
         return p.prosp.nomComplet.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            p.etablissement.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            p.etablissement.nomEtablissement.toLowerCase().contains(_searchQuery.toLowerCase()) ||
             (p.prosp.email?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
             p.prosp.telephone.contains(_searchQuery);
       }).toList();
@@ -75,9 +75,11 @@ class _ProspectsListScreenState extends State<ProspectsListScreen> {
       }).toList();
     }
 
-    // Filtre par établissement
+    // ✅ CORRECTION: Filtrer par établissement en comparant les noms
     if (_selectedEtablissement != null && _selectedEtablissement!.isNotEmpty) {
-      filtered = filtered.where((p) => p.etablissement == _selectedEtablissement).toList();
+      filtered = filtered.where((p) {
+        return p.etablissement.nomEtablissement == _selectedEtablissement;
+      }).toList();
     }
 
     // Tri
@@ -104,7 +106,7 @@ class _ProspectsListScreenState extends State<ProspectsListScreen> {
   }
 
   List<String> get _uniqueEtablissements {
-    return _allProspects.map((p) => p.etablissement).toSet().toList();
+    return _allProspects.map((p) => p.etablissement.nomEtablissement).toSet().toList();
   }
 
   @override
@@ -497,7 +499,7 @@ class _ProspectsListScreenState extends State<ProspectsListScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        prospectDetail.etablissement,
+                        prospectDetail.etablissement.nomEtablissement,
                         style: const TextStyle(fontSize: 12, color: AppColors.textTertiary),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

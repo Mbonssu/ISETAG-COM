@@ -174,7 +174,7 @@ const AgentCommercialSchema = CollectionSchema(
   getId: _agentCommercialGetId,
   getLinks: _agentCommercialGetLinks,
   attach: _agentCommercialAttach,
-  version: '3.1.0+1',
+  version: '3.3.2',
 );
 
 int _agentCommercialEstimateSize(

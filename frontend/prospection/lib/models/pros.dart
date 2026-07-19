@@ -1,9 +1,10 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:isetagcom/models/classe.dart';
 import 'package:isetagcom/models/fiche.dart';
 import 'package:isetagcom/models/specialite.dart';
+import 'package:isetagcom/services/translation_service.dart';
 import 'package:isetagcom/utils/status.dart';
 import 'interet_filiere.dart';
 
@@ -13,29 +14,33 @@ part 'generated/pros.g.dart';
 class Prospect {
   Id isarId = Isar.autoIncrement;
   @Index(unique: true)
-  final String idProspect;
+  String idProspect;
 
   @Index()
-  final String idClass;
+  String idClass;
   @Index()
-  final String idfiche;
+  String idfiche;
   @Index()
-  final String nomComplet;
+  String nomComplet;
   @Index()
-  final String telephone;
+  String telephone;
   @Index()
-  final String? email;
+  String nomParent;
   @Index()
-  final String niveauEtude;
+  String telephoneParent;
   @Index()
-  final String source_infos;
-  final String? concerne;
-  final String? commentaireGen;
-  final String? adresse;
-  final String sexe;
-  final String typeProspect;
+  String? email;
   @Index()
-  final DateTime createdAt;
+  String niveauEtude;
+  @Index()
+  String source_infos;
+  String? concerne;
+  String? commentaireGen;
+  String? adresse;
+  String sexe;
+  String typeProspect;
+  @Index()
+  DateTime createdAt;
   @Index()
   DateTime? updatedAt;
   @Index()
@@ -65,6 +70,8 @@ class Prospect {
     required this.idProspect,
     required this.nomComplet,
     required this.telephone,
+    required this.nomParent,
+    required this.telephoneParent,
     required this.idClass,
     required this.idfiche,
     this.email,
@@ -89,6 +96,8 @@ class Prospect {
       idfiche: json['idfiche'] ?? '',
       nomComplet: json['nomComplet'] ?? '',
       telephone: json['telephone'] ?? '',
+      nomParent: json['nomParent'] ?? '',
+      telephoneParent: json['telephoneParent'] ?? '',
       email: json['email'],
       niveauEtude: json['niveauEtude'],
       concerne: json['concerne'],
@@ -99,70 +108,132 @@ class Prospect {
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       syncState: json["sync"]);
 
-  Map<String, dynamic> toJsonApi() {
-    return {
-      'idProspect': idProspect,
-      'idClass': idClass,
-      'idfiche': idfiche,
-      'nomComplet': nomComplet,
-      'telephone': telephone,
-      'email': email,
-      'niveauEtude': niveauEtude,
-      'concerne': concerne,
-      'adresse': adresse,
-      'sexe': sexe,
-      "ville": 'ville1',
-      "codePostal": 'cd1',
-      "pays": "CMR",
-      "domaineEtude": 'domaine',
-      'typeProspect': typeProspect,
-      'source_infos': source_infos,
-      'createdAt': createdAt.toIso8601String(),
-      'syncState': syncState.name,
-    };
-  }
-
-  // Map<String, dynamic> toLocalJson() {
+  // Map<String, dynamic> toJsonApi() {
   //   return {
   //     'idProspect': idProspect,
+  //     'idClass': idClass,
+  //     'idfiche': idfiche,
   //     'nomComplet': nomComplet,
   //     'telephone': telephone,
+  //     'nomParent': nomParent,
+  //     'telephoneParent': telephoneParent,
   //     'email': email,
   //     'niveauEtude': niveauEtude,
   //     'concerne': concerne,
   //     'adresse': adresse,
   //     'sexe': sexe,
+  //     "ville": 'ville1',
+  //     "codePostal": 'cd1',
+  //     "pays": "CMR",
+  //     "domaineEtude": 'domaine',
   //     'typeProspect': typeProspect,
+  //     'source_infos': source_infos,
   //     'createdAt': createdAt.toIso8601String(),
-  //     'idClass': idClass,
-  //     'idfiche': idfiche,
   //     'syncState': syncState.name,
-  //     // 'interets': interets.map((e) => e.toJson()).toList(),
   //   };
   // }
 
-  Map<String, dynamic> toLocalJson() {
-    return {
-      'idProspect': idProspect,
-      'idClass': idClass,
-      'idfiche': idfiche,
-      'nomComplet': nomComplet,
-      'telephone': telephone,
-      'email': email,
-      'niveauEtude': niveauEtude,
-      'adresse': adresse,
-      'date_relance': date_relance,
-      'sexe': sexe,
-      'typeProspect': typeProspect,
-      'commentaire': commentaireGen,
-      'createdAt': createdAt.toIso8601String(),
-      'syncState': syncState.name,
-      'pros_state': prospectStatus.name,
-      'chosenSpec': AllSpec.map((cs) => cs.toLocalJson()).toList(),
-      // 'interets': interets.map((interet) => interet.toLocalJson()).toList(),
-    };
-  }
+  // // Map<String, dynamic> toLocalJson() {
+  // //   return {
+  // //     'idProspect': idProspect,
+  // //     'nomComplet': nomComplet,
+  // //     'telephone': telephone,
+  // //     'email': email,
+  // //     'niveauEtude': niveauEtude,
+  // //     'concerne': concerne,
+  // //     'adresse': adresse,
+  // //     'sexe': sexe,
+  // //     'typeProspect': typeProspect,
+  // //     'createdAt': createdAt.toIso8601String(),
+  // //     'idClass': idClass,
+  // //     'idfiche': idfiche,
+  // //     'syncState': syncState.name,
+  // //     // 'interets': interets.map((e) => e.toJson()).toList(),
+  // //   };
+  // // }
 
+  // Map<String, dynamic> toLocalJson() {
+  //   return {
+  //     'idProspect': idProspect,
+  //     'idClass': idClass,
+  //     'idfiche': idfiche,
+  //     'nomComplet': nomComplet,
+  //     'telephone': telephone,
+  //     'nomParent': nomParent,
+  //     'telephoneParent': telephoneParent,
+  //     'email': email,
+  //     'niveauEtude': niveauEtude,
+  //     'adresse': adresse,
+  //     'date_relance': date_relance,
+  //     'sexe': sexe,
+  //     'typeProspect': typeProspect,
+  //     'commentaire': commentaireGen,
+  //     'createdAt': createdAt.toIso8601String(),
+  //     'syncState': syncState.name,
+  //     'pros_state': prospectStatus.name,
+  //     'chosenSpec': AllSpec.map((cs) => cs.toLocalJson()).toList(),
+  //     // 'interets': interets.map((interet) => interet.toLocalJson()).toList(),
+  //   };
+  // }
+
+// lib/models/pros.dart
+
+  /// Pour l'affichage local / UI
+  Map<String, dynamic> toLocalJson() => {
+        'idProspect': idProspect,
+        'idClass': idClass,
+        'idfiche': idfiche,
+        'nomComplet': nomComplet,
+        'telephone': telephone,
+        'nomParent': nomParent,
+        'telephoneParent': telephoneParent,
+        'email': email,
+        'niveauEtude': niveauEtude,
+        'concerne': concerne,
+        'commentaireGen': commentaireGen,
+        'adresse': adresse,
+        'sexe': sexe,
+        'typeProspect': typeProspect,
+        'source_infos': source_infos,
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
+        'date_relance': date_relance?.toIso8601String(),
+        'prospectStatus': prospectStatus.name,
+        'syncState': syncState.name,
+        'classe': classe.value?.toLocalJson(),
+        'fiche': fiche.value?.toLocalJson(),
+        'interets': interets.map((i) => i.toLocalJson()).toList(),
+      };
+
+  /// Pour l'API
+  Map<String, dynamic> toJsonApi() => {
+        'idProspect': idProspect,
+        'idClass': idClass,
+        'idfiche': idfiche,
+        'nomComplet': nomComplet,
+        'telephone': telephone,
+        'domaineEtude': classe.value?.libelleClasse.tr,
+        // 'Ets': classe.value?.ets.value?.nomEtablissement,
+        'nomParent': nomParent,
+        'numeroParent': telephoneParent,
+        'email': email,
+        'niveauEtude': niveauEtude,
+        'concerne': concerne,
+        'commentaireGen': commentaireGen,
+        'adresse': adresse,
+        'sexe': sexe,
+        'typeProspect': typeProspect,
+        'source_infos': source_infos,
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
+        'date_relance': date_relance?.toIso8601String(),
+        'prospectStatus': prospectStatus.name,
+        'syncState': syncState.name,
+        // Envoyer seulement les IDs pour les relations
+        'classeId': classe.value?.idClasse,
+        'ficheId': fiche.value?.idFiche,
+        // 'interetsIds': interets.map((i) => i.idInteret).toList(),
+      };
   // Prospect copyWith({
   //   String? idProspect,
   //   String? nomComplet,

@@ -8,7 +8,7 @@ import Foundation
 import connectivity_plus
 import file_selector_macos
 import flutter_local_notifications
-import isar_flutter_libs
+import isar_community_flutter_libs
 import open_file_mac
 import printing
 import share_plus

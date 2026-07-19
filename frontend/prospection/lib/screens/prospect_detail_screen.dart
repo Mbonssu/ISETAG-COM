@@ -1,8 +1,12 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:url_launcher/url_launcher.dart';
 import '../utils/themes/glass_theme.dart';
 import '../models/prospectData.dart';
 import '../services/translation_service.dart';
+import '../screens/add_prospect_screen.dart';
 
 class ProspectDetailScreen extends StatefulWidget {
   final ProspectDetails prospect;
@@ -16,12 +20,17 @@ class _DetailState extends State<ProspectDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tc;
   ProspectDetails get prospect => widget.prospect;
+  
+  // ✅ Variable pour suivre le numéro sélectionné
+  String? _selectedPhoneNumber;
 
   @override
   void initState() {
     super.initState();
     _tc = TabController(length: 2, vsync: this);
-    // _tc = TabController(length: 3, vsync: this);
+    _test();
+    // ✅ Initialiser avec le numéro du prospect par défaut
+    _selectedPhoneNumber = prospect.prosp.telephone;
   }
 
   @override
@@ -45,11 +54,9 @@ class _DetailState extends State<ProspectDetailScreen>
                 children: [
                   _buildInfoTab(),
                   _buildFiliereTab(),
-                  // _buildHistoriqueTab()
                 ],
               ),
             ),
-            // _buildActionBar(),
           ]),
         ),
       ),
@@ -57,6 +64,34 @@ class _DetailState extends State<ProspectDetailScreen>
   }
 
   Widget _buildHeader() {
+    // ✅ Vérifier si la date de relance est arrivée ou dépassée
+    final bool isRelanceDue = prospect.prosp.date_relance != null &&
+        prospect.prosp.date_relance!.isBefore(DateTime.now());
+
+    // ✅ Récupérer les numéros disponibles
+    final List<Map<String, String>> phoneOptions = [];
+    
+    // Ajouter le numéro du prospect
+    phoneOptions.add({
+      'label': 'Prospect: ${prospect.prosp.telephone}',
+      'number': prospect.prosp.telephone,
+    });
+    
+    // Ajouter le numéro du parent s'il existe et est différent
+    if (prospect.prosp.telephoneParent.isNotEmpty &&
+        prospect.prosp.telephoneParent != prospect.prosp.telephone) {
+      phoneOptions.add({
+        'label': 'Parent: ${prospect.prosp.telephoneParent}',
+        'number': prospect.prosp.telephoneParent,
+      });
+    }
+
+    // ✅ Si le numéro sélectionné n'est plus dans la liste, réinitialiser
+    if (_selectedPhoneNumber != null &&
+        !phoneOptions.any((opt) => opt['number'] == _selectedPhoneNumber)) {
+      _selectedPhoneNumber = phoneOptions.isNotEmpty ? phoneOptions[0]['number'] : null;
+    }
+
     return ClipRRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
@@ -82,7 +117,8 @@ class _DetailState extends State<ProspectDetailScreen>
                   ),
                 ),
               ),
-              _headerIconBtn(Icons.more_vert),
+              _headerIconBtn(Icons.edit_outlined,
+                  onTap: () => _navigateToEditScreen()),
             ]),
             const SizedBox(height: 12),
             ClipRRect(
@@ -178,6 +214,11 @@ class _DetailState extends State<ProspectDetailScreen>
                             Icons.email_outlined,
                             prospect.prosp.email ?? 'no_email'.tr,
                           ),
+                          // ✅ Ajout du dropdown et du bouton d'appel si la relance est due
+                          if (isRelanceDue) ...[
+                            const SizedBox(height: 8),
+                            _buildCallSection(phoneOptions),
+                          ],
                         ],
                       ),
                     ),
@@ -189,6 +230,159 @@ class _DetailState extends State<ProspectDetailScreen>
         ),
       ),
     );
+  }
+
+  // ✅ Section d'appel avec dropdown
+  Widget _buildCallSection(List<Map<String, String>> phoneOptions) {
+    return Row(
+      children: [
+        // ✅ Dropdown pour choisir le numéro
+        Expanded(
+          flex: 2,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withOpacity(0.3)),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedPhoneNumber,
+                dropdownColor: const Color(0xFF1A1A2E),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+                icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                isExpanded: true,
+                items: phoneOptions.map((option) {
+                  return DropdownMenuItem<String>(
+                    value: option['number'],
+                    child: Text(
+                      option['label']!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedPhoneNumber = value;
+                  });
+                },
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        // ✅ Bouton d'appel
+        Expanded(
+          flex: 1,
+          child: GestureDetector(
+            onTap: () => _makePhoneCall(_selectedPhoneNumber ?? prospect.prosp.telephone),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.green.withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.phone_rounded, color: Colors.white, size: 16),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Appeler'.tr,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ✅ Méthode pour lancer un appel téléphonique
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    if (phoneNumber.isEmpty) {
+      _showSnackBar('Aucun numéro de téléphone disponible', Colors.orange);
+      return;
+    }
+
+    // Nettoyer le numéro de téléphone
+    final cleanPhone = phoneNumber.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+    
+    // Formater le numéro
+    String formattedPhone = cleanPhone;
+    if (cleanPhone.startsWith(RegExp(r'^[625]')) && cleanPhone.length == 9) {
+      formattedPhone = '+237$cleanPhone';
+    }
+    
+    final Uri telUri = Uri(scheme: 'tel', path: formattedPhone);
+    
+    try {
+      if (await canLaunchUrl(telUri)) {
+        await launchUrl(telUri);
+      } else {
+        _showSnackBar('Impossible de lancer l\'appel', Colors.red);
+      }
+    } catch (e) {
+      print('❌ Erreur lors de l\'appel: $e');
+      _showSnackBar('Erreur: $e', Colors.red);
+    }
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  // ✅ Navigate to edit screen
+  void _navigateToEditScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AddProspectScreen(
+          prospectToEdit: widget.prospect.prosp,
+          prospectDetails: widget.prospect,
+        ),
+      ),
+    ).then((result) {
+      if (result == true) {
+        setState(() {});
+      }
+    });
   }
 
   String _getStatusTranslation(String status) {
@@ -252,7 +446,6 @@ class _DetailState extends State<ProspectDetailScreen>
             tabs: [
               Tab(text: 'information_tab'.tr),
               Tab(text: 'specialties_tab'.tr),
-              // Tab(text: 'history_tab'.tr),
             ],
           ),
         ),
@@ -262,16 +455,19 @@ class _DetailState extends State<ProspectDetailScreen>
 
   Widget _buildInfoTab() {
     final rows = [
-      (
-        Icons.sensors_rounded,
-        'source'.tr,
-        prospect.prosp.source_infos,
-        false
-      ),
+      (Icons.sensors_rounded, 'source'.tr, prospect.prosp.source_infos, false),
       (
         Icons.school_outlined,
         'establishment'.tr,
-        prospect.etablissement,
+        prospect.etablissement.nomEtablissement,
+        false
+      ),
+      (
+        Icons.class_outlined,
+        'current_study_level'.tr,
+        prospect.prosp.niveauEtude == 'Baccalauréat'
+            ? prospect.classe.libelleClasse.tr
+            : prospect.prosp.niveauEtude,
         false
       ),
       (
@@ -287,6 +483,13 @@ class _DetailState extends State<ProspectDetailScreen>
         false
       ),
       (Icons.man, 'gender'.tr, prospect.prosp.sexe, false),
+      (Icons.man, 'name_par'.tr, prospect.prosp.nomParent, false),
+      (
+        Icons.phone_in_talk_outlined,
+        'phone_par'.tr,
+        prospect.prosp.telephoneParent,
+        false
+      ),
       (
         Icons.edit_outlined,
         'comment'.tr,
@@ -304,7 +507,9 @@ class _DetailState extends State<ProspectDetailScreen>
       (
         prospect.prosp.syncState.name == "pending"
             ? Icons.sync_disabled
-            : Icons.sync,
+            : prospect.prosp.syncState.name == "toUpdate"
+                ? Icons.sync_problem_rounded
+                : Icons.sync,
         'sync_status'.tr,
         _getSyncStatusTranslation(prospect.prosp.syncState.name),
         true
@@ -390,7 +595,12 @@ class _DetailState extends State<ProspectDetailScreen>
         return 'sync_pending'.tr;
       case 'failed':
         return 'sync_failed'.tr;
+      case 'toupdate':
+      case 'toUpdate':
+        print("Debug: Sync status is 'toUpdate'");
+        return 'sync_to_update'.tr;
       default:
+        print('⚠️ Unknown sync status: "$status"');
         return status;
     }
   }
@@ -441,7 +651,7 @@ class _DetailState extends State<ProspectDetailScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name,
+                  Text(name.tr,
                       style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -458,143 +668,20 @@ class _DetailState extends State<ProspectDetailScreen>
                 ],
               ),
             ),
-            // const Icon(Icons.chevron_right, color: G.textLight),
           ]),
         ),
       ),
     );
   }
 
-  Widget _buildHistoriqueTab() {
-    final items = [
-      ('15 Jan 2025', 'first_contact'.tr, 'phone_call'.tr),
-      ('20 Jan 2025', 'visit_done'.tr, 'visit_location'.tr),
-      ('25 Jan 2025', 'followup_scheduled'.tr, 'followup_reason'.tr),
-    ];
-    return ListView.builder(
-      padding: const EdgeInsets.all(14),
-      itemCount: items.length,
-      itemBuilder: (_, i) {
-        final item = items[i];
-        final isLast = i == items.length - 1;
-        return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Column(children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration:
-                  const BoxDecoration(color: G.green, shape: BoxShape.circle),
-            ),
-            if (!isLast)
-              Container(
-                  width: 2,
-                  height: 62,
-                  color: Colors.black.withValues(alpha: 0.08)),
-          ]),
-          const SizedBox(width: 13),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 14),
-              child: GlassBox(
-                borderRadius: 12,
-                bgColor: G.glassCard,
-                borderColor: G.glassBorder,
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(item.$1,
-                          style: const TextStyle(
-                              fontSize: 10, color: G.textLight)),
-                      const SizedBox(height: 3),
-                      Text(item.$2,
-                          style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: G.textDark)),
-                      const SizedBox(height: 2),
-                      Text(item.$3,
-                          style: const TextStyle(
-                              fontSize: 11, color: G.textMedium)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ]);
-      },
-    );
-  }
+  void _test() {
+    print('🔍 Prospect ID: ${prospect.prosp.idProspect}');
+    print('🔍 Prospect Name: ${prospect.prosp.nomComplet}');
+    print('🔍 SyncState name: ${prospect.prosp.syncState.name}');
+    print('🔍 Number of interests: ${prospect.specialities.length}');
 
-  Widget _buildActionBar() {
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: Container(
-          color: G.glassCard,
-          padding: EdgeInsets.fromLTRB(
-            14,
-            11,
-            14,
-            MediaQuery.of(context).padding.bottom + 11,
-          ),
-          child: Row(children: [
-            Expanded(
-              child: GlassBox(
-                height: 48,
-                borderRadius: 13,
-                bgColor: G.green.withValues(alpha: 0.10),
-                borderColor: G.btnOutlineBorder,
-                onTap: () {},
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.phone_outlined, color: G.green, size: 18),
-                    SizedBox(width: 7),
-                    Text('call',
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: G.green)),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 11),
-            Expanded(
-              child: GlassBox(
-                height: 48,
-                borderRadius: 13,
-                bgColor: G.btnPrimaryBg,
-                borderColor: G.btnPrimaryBorder,
-                shadows: [
-                  BoxShadow(
-                    color: G.green.withValues(alpha: 0.38),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-                onTap: () {},
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.chat_bubble_outline,
-                        color: Colors.white, size: 18),
-                    SizedBox(width: 7),
-                    Text('whatsapp',
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white)),
-                  ],
-                ),
-              ),
-            ),
-          ]),
-        ),
-      ),
-    );
+    for (var spec in prospect.specialities) {
+      print('   - ${spec.libelleSpecialite} (ordre: ${spec.orderPreference})');
+    }
   }
 }

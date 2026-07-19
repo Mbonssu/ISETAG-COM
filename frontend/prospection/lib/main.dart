@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:isetagcom/services/translation_service.dart';
+import 'package:provider/provider.dart';
 import 'config/app_config.dart';
+import 'provider/auth_provider.dart';
 import 'routes/app_router.dart';
 import 'screens/splash_screen.dart';
-import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
-import 'models/localStorage/local_storage.dart';
-import 'services/auto_sync_service.dart';
-import 'services/sync_service.dart';
+// import 'package:timezone/timezone.dart' as tz;
+// import 'package:timezone/data/latest.dart' as tz;
 
-
+import 'services/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,14 +18,28 @@ Future<void> main() async {
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,
   ));
-
+  // print("Calling healtcheck");
+  // final ApiService _api = ApiService();
+  // await _api.healthCheck();
   // ✅ ONLY initialize timezone here (lightweight)
-  tz.initializeTimeZones();
-  final location = tz.getLocation('Africa/Lagos');
-  tz.setLocalLocation(location);
-
+  // tz.initializeTimeZones();
+  // final location = tz.getLocation('Africa/Lagos');
+  // tz.setLocalLocation(location);
+  await NotificationService.instance.initialize();
+  final authProvider = AuthProvider();
+  await authProvider.init();
+  //print("Generating tests data....");
+  // ✅ Générer les données de test
+  // await TestDataGenerator.generate500Prospects();
   // ✅ Run app immediately - splash screen shows quickly
-  runApp(const IsetagApp());
+  runApp( MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AuthProvider>.value(
+          value: authProvider,
+        ),
+      ],
+      child: const IsetagApp(),
+    ),);
 }
 // If you only need to sync once
 

@@ -6,7 +6,6 @@ import 'package:printing/printing.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import 'dart:typed_data';
 import '../models/fiche.dart';
 import '../models/prospectData.dart';
 import '../services/fiche_excel_export_service.dart';

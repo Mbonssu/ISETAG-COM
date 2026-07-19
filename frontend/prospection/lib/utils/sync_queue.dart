@@ -1,64 +1,45 @@
 // lib/utils/sync_queue.dart
-import 'dart:async';
-import 'package:isar/isar.dart';
-import 'package:isetagcom/models/pros.dart';
-import 'package:isetagcom/models/fiche.dart';
-import 'package:isetagcom/models/interet_filiere.dart';
-import 'package:isetagcom/models/localStorage/local_storage.dart';
-import 'package:isetagcom/models/etablissement.dart';
-import 'package:isetagcom/models/classe.dart';
-import 'package:isetagcom/models/specialite.dart';
-import 'package:isetagcom/models/source.dart';
 
+// ignore_for_file: avoid_print
+import 'dart:async';
+import 'dart:math';
+
+import 'package:isar_community/isar.dart';
+
+import '../models/etablissement.dart';
+import '../models/fiche.dart';
+import '../models/interet_filiere.dart';
+import '../models/localStorage/local_storage.dart';
+import '../models/pros.dart';
+import '../models/source.dart';
+import '../models/specialite.dart';
+import '../services/translation_service.dart';
+import '../utils/status.dart';
 import '../services/api_service.dart';
 import 'connection_checker.dart';
-import 'status.dart';
 
-enum QueueItemType {
-  etablissement,
-  source,
-  classe,
-  specialite,
-  fiche,
-  prospect,
-  interet,
-}
-
-class QueueItem {
-  final String id;
-  final QueueItemType type;
-  final Map<String, dynamic> data;
-  final DateTime createdAt;
-  final int priority;
-
-  QueueItem({
-    required this.id,
-    required this.type,
-    required this.data,
-    required this.createdAt,
-    this.priority = 0,
-  });
-}
-
+/// Moteur de synchronisation hors-ligne -> Django.
 class SyncQueue {
+  static final SyncQueue _instance = SyncQueue._internal();
+  factory SyncQueue() => _instance;
+  SyncQueue._internal();
+
   final LocalStorage _storage = LocalStorage.instance;
   final ApiService _api = ApiService();
   final ConnectionChecker _connection = ConnectionChecker();
 
-  static const int BATCH_SIZE = 25;
-  static const int MAX_RETRIES = 3;
-  static const Duration RETRY_DELAY = Duration(seconds: 2);
+  int batchSize = 10;
+
+  static const int maxRetries = 3;
+  static const Duration retryDelay = Duration(seconds: 2);
 
   bool _isProcessing = false;
-  int _currentPage = 0;
-  int _totalItems = 0;
-  bool _shouldStopSync = false;
   bool _isPaused = false;
+  bool _shouldStopSync = false;
+  StreamSubscription<bool>? _apiReachableSub;
 
-  // ✅ Track current batch
-  String? _currentBatchType;
-  int _currentBatchPage = 0;
-  int _consecutiveFailures = 0;
+  int _totalItemsThisRun = 0;
+  int _syncedItemsThisRun = 0;
 
   final _queueStatusController = StreamController<bool>.broadcast();
   Stream<bool> get queueStatusStream => _queueStatusController.stream;
@@ -69,610 +50,976 @@ class SyncQueue {
   final _pauseStatusController = StreamController<bool>.broadcast();
   Stream<bool> get pauseStatusStream => _pauseStatusController.stream;
 
+  // ✅ Event stream for sync events
+  final _syncEventController = StreamController<SyncEvent>.broadcast();
+  Stream<SyncEvent> get syncEventStream => _syncEventController.stream;
+
+  void setBatchSize(int size) {
+    batchSize = size.clamp(1, 50);
+    print('⚙️ Taille de lot réglée à $batchSize');
+  }
+
+  int get _concurrency => min(5, batchSize);
+
   Future<void> init() async {
     await _connection.init();
 
-    if (await hasPendingItems()) {
-      print('📋 Found pending items on startup');
-      _queueStatusController.add(true);
+    _apiReachableSub ??=
+        _connection.apiReachableStream.listen((reachable) async {
+      if (reachable && !_isProcessing) {
+        if (await hasPendingItems()) {
+          print('🌐 API joignable, reprise automatique...');
+          _resumeInternal();
+          await processPendingItems();
+        }
+      } else if (!reachable && _isProcessing) {
+        print('📴 Connexion/API perdue, mise en pause...');
+        _pauseInternal();
+      }
+    });
 
+    if (await hasPendingItems()) {
+      _queueStatusController.add(true);
       if (_connection.isConnected) {
         await processPendingItems();
       }
     }
-
-    _connection.apiReachableStream.listen((isReachable) {
-      if (isReachable && !_isProcessing) {
-        print('🌐 API reachable, resuming sync...');
-        _isPaused = false;
-        _pauseStatusController.add(false);
-        _shouldStopSync = false;
-        _consecutiveFailures = 0;
-        processPendingItems();
-      } else if (!isReachable && _isProcessing) {
-        print('📴 Connection lost, pausing sync...');
-        _isPaused = true;
-        _pauseStatusController.add(true);
-        _shouldStopSync = true;
-      }
-    });
   }
 
-  // Get pending count from ALL data types
+  // ---------------------------------------------------------------------
+  // Comptages - Updated to include toUpdate
+  // ---------------------------------------------------------------------
+
   Future<int> getPendingCount() async {
+    final byType = await getPendingItemsByType();
+    return byType.values.fold<int>(0, (sum, c) => sum + c);
+  }
+
+  Future<bool> hasPendingItems() async => (await getPendingCount()) > 0;
+
+  Future<Map<String, int>> getPendingItemsByType() async {
     try {
-      final pendingProspects = await _storage.isar.prospects
-          .where()
-          .filter()
-          .syncStateEqualTo(SyncState.pending)
-          .count();
+      final isar = _storage.isar;
+      final results = await Future.wait<int>([
+        // ✅ Count both pending and toUpdate for each type
+        isar.prospects
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .or()
+            .syncStateEqualTo(SyncState.toUpdate)
+            .count(),
+        isar.fiches
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .or()
+            .syncStateEqualTo(SyncState.toUpdate)
+            .count(),
+        isar.interetFilieres
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .or()
+            .syncStateEqualTo(SyncState.toUpdate)
+            .count(),
+        isar.specialites
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .or()
+            .syncStateEqualTo(SyncState.toUpdate)
+            .count(),
+        isar.etablissements
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .or()
+            .syncStateEqualTo(SyncState.toUpdate)
+            .count(),
+        isar.sources
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.pending)
+            .or()
+            .syncStateEqualTo(SyncState.toUpdate)
+            .count(),
+      ]);
 
-      final pendingFiches = await _storage.isar.fiches
-          .where()
-          .filter()
-          .syncStateEqualTo(SyncState.pending)
-          .count();
-
-      final pendingInterets = await _storage.isar.interetFilieres
-          .where()
-          .filter()
-          .syncStateEqualTo(SyncState.pending)
-          .count();
-
-      final pendingSpecialites = await _storage.isar.specialites
-          .where()
-          .filter()
-          .syncStateEqualTo(SyncState.pending)
-          .count();
-
-      final pendingEtablissements = await _storage.isar.etablissements
-          .where()
-          .filter()
-          .syncStateEqualTo(SyncState.pending)
-          .count();
-
-      final pendingClasses = await _storage.isar.classes
-          .where()
-          .filter()
-          .syncStateEqualTo(SyncState.pending)
-          .count();
-
-      final pendingSources = await _storage.isar.sources
-          .where()
-          .filter()
-          .syncStateEqualTo(SyncState.pending)
-          .count();
-
-      return pendingProspects +
-          pendingFiches +
-          pendingInterets +
-          pendingSpecialites +
-          pendingEtablissements +
-          pendingClasses +
-          pendingSources;
+      return {
+        'prospects': results[0],
+        'fiches': results[1],
+        'interets': results[2],
+        'specialites': results[3],
+        'etablissements': results[4],
+        'sources': results[5],
+      };
     } catch (e) {
-      print('❌ Error getting pending count: $e');
-      return 0;
+      print('❌ Erreur getPendingItemsByType: $e');
+      return {};
     }
   }
 
-  // Check if there are pending items
-  Future<bool> hasPendingItems() async {
+  // ✅ Get items that need update (toUpdate status)
+  Future<Map<String, int>> getUpdateItemsByType() async {
     try {
-      final count = await getPendingCount();
-      return count > 0;
+      final isar = _storage.isar;
+      final results = await Future.wait<int>([
+        isar.prospects
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.toUpdate)
+            .count(),
+        isar.fiches
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.toUpdate)
+            .count(),
+        isar.interetFilieres
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.toUpdate)
+            .count(),
+        isar.specialites
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.toUpdate)
+            .count(),
+        isar.etablissements
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.toUpdate)
+            .count(),
+        isar.sources
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.toUpdate)
+            .count(),
+      ]);
+
+      return {
+        'prospects': results[0],
+        'fiches': results[1],
+        'interets': results[2],
+        'specialites': results[3],
+        'etablissements': results[4],
+        'sources': results[5],
+      };
     } catch (e) {
-      return false;
+      print('❌ Erreur getUpdateItemsByType: $e');
+      return {};
     }
   }
 
-  // ✅ Resume sync after connection restored
+  Future<int> getFailedCount() async {
+    final byType = await getFailedItemsByType();
+    return byType.values.fold<int>(0, (sum, c) => sum + c);
+  }
+
+  Future<Map<String, int>> getFailedItemsByType() async {
+    final isar = _storage.isar;
+    final results = await Future.wait<int>([
+      isar.prospects
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.failed)
+          .count(),
+      isar.fiches.where().filter().syncStateEqualTo(SyncState.failed).count(),
+      isar.interetFilieres
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.failed)
+          .count(),
+      isar.specialites
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.failed)
+          .count(),
+      isar.etablissements
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.failed)
+          .count(),
+      isar.sources.where().filter().syncStateEqualTo(SyncState.failed).count(),
+    ]);
+    return {
+      'prospects': results[0],
+      'fiches': results[1],
+      'interets': results[2],
+      'specialites': results[3],
+      'etablissements': results[4],
+      'sources': results[5],
+    };
+  }
+
+  Future<int> getSyncedCount() async {
+    final isar = _storage.isar;
+    final results = await Future.wait<int>([
+      isar.prospects
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.synced)
+          .count(),
+      isar.fiches.where().filter().syncStateEqualTo(SyncState.synced).count(),
+      isar.interetFilieres
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.synced)
+          .count(),
+      isar.specialites
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.synced)
+          .count(),
+      isar.etablissements
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.synced)
+          .count(),
+      isar.sources.where().filter().syncStateEqualTo(SyncState.synced).count(),
+    ]);
+    return results.fold<int>(0, (sum, c) => sum + c);
+  }
+
+  Future<int> getPendingItemsCount() => getPendingCount();
+
+  // ---------------------------------------------------------------------
+  // Contrôle (pause / reprise / relance des échecs)
+  // ---------------------------------------------------------------------
+
+  void _pauseInternal() {
+    _isPaused = true;
+    _shouldStopSync = true;
+    _pauseStatusController.add(true);
+  }
+
+  void _resumeInternal() {
+    _isPaused = false;
+    _shouldStopSync = false;
+    _pauseStatusController.add(false);
+  }
+
+  Future<void> pauseSync() async {
+    if (_isProcessing) {
+      print('⏸️ Pause de la synchro demandée...');
+      _pauseInternal();
+    }
+  }
+
   Future<void> resumeSync() async {
     if (_isPaused && _connection.isConnected) {
-      print('🔄 Resuming sync...');
-      _isPaused = false;
-      _pauseStatusController.add(false);
-      _shouldStopSync = false;
-      _consecutiveFailures = 0;
+      print('▶️ Reprise de la synchro...');
+      _resumeInternal();
       await processPendingItems();
     }
   }
 
-  // ✅ Pause sync
-  Future<void> pauseSync() async {
-    if (_isProcessing) {
-      print('⏸️ Pausing sync...');
-      _isPaused = true;
-      _pauseStatusController.add(true);
-      _shouldStopSync = true;
+  Future<void> togglePause() async {
+    if (_isPaused) {
+      await resumeSync();
+    } else {
+      await pauseSync();
     }
   }
 
-  // Main method: Process ALL pending items with pagination
-  Future<void> processPendingItems() async {
-    _shouldStopSync = false;
-    _consecutiveFailures = 0;
+  Future<int> retryFailedItems() async {
+    final isar = _storage.isar;
+    var count = 0;
 
-    if (_isProcessing) {
-      print('⏳ Sync already in progress');
-      return;
+    await isar.writeTxn(() async {
+      // Reset failed items to pending for retry
+      for (final item in await isar.etablissements
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.failed)
+          .findAll()) {
+        item.syncState = SyncState.pending;
+        await isar.etablissements.put(item);
+        count++;
+      }
+      for (final item in await isar.sources
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.failed)
+          .findAll()) {
+        item.syncState = SyncState.pending;
+        await isar.sources.put(item);
+        count++;
+      }
+      for (final item in await isar.fiches
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.failed)
+          .findAll()) {
+        item.syncState = SyncState.pending;
+        await isar.fiches.put(item);
+        count++;
+      }
+      for (final item in await isar.specialites
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.failed)
+          .findAll()) {
+        item.syncState = SyncState.pending;
+        await isar.specialites.put(item);
+        count++;
+      }
+      for (final item in await isar.prospects
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.failed)
+          .findAll()) {
+        item.syncState = SyncState.pending;
+        await isar.prospects.put(item);
+        count++;
+      }
+      for (final item in await isar.interetFilieres
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.failed)
+          .findAll()) {
+        item.syncState = SyncState.pending;
+        await isar.interetFilieres.put(item);
+        count++;
+      }
+    });
+
+    print('🔁 $count élément(s) remis en attente pour nouvelle tentative');
+
+    if (count > 0 && _connection.isConnected) {
+      await processPendingItems();
     }
+    return count;
+  }
+
+  // ---------------------------------------------------------------------
+  // Boucle principale - Updated to handle toUpdate first
+  // ---------------------------------------------------------------------
+
+  Future<void> syncNow({int? overrideBatchSize}) async {
+    if (overrideBatchSize != null) setBatchSize(overrideBatchSize);
 
     if (!_connection.isConnected) {
-      print('📴 No connection, cannot process pending items');
+      print('📴 Pas de connexion, synchro impossible');
+      throw Exception('No internet connection');
+    }
+    if (_isProcessing) {
+      print('⏳ Synchro déjà en cours');
       return;
     }
+    _resumeInternal();
+    await processPendingItems();
+  }
 
+  Future<void> processPendingItems() async {
+    if (_isProcessing) return;
+    if (!_connection.isConnected) return;
     if (!await hasPendingItems()) {
-      print('✅ No pending items to sync');
       _queueStatusController.add(false);
       return;
     }
 
     _isProcessing = true;
-    _currentPage = 0;
-    _totalItems = await getPendingCount();
-    _currentBatchPage = 0;
-
-    print('🔄 Starting sync: $_totalItems total pending items');
+    _shouldStopSync = false;
+    _totalItemsThisRun = await getPendingCount();
+    _syncedItemsThisRun = 0;
     _queueStatusController.add(true);
+    _progressController.add(0.0);
+
+    // ✅ Emit started event
+    _syncEventController.add(SyncEvent(type: SyncEventType.started));
+
+    print('🔄 Démarrage synchro : $_totalItemsThisRun élément(s) en attente '
+        '(lots de $batchSize, $_concurrency en parallèle)');
+
+    int passCount = 0;
+    const int maxPasses = 10;
+    int previousRemaining = _totalItemsThisRun;
 
     try {
-      await _syncAllTypes();
+      while (!_shouldStopSync && passCount < maxPasses) {
+        passCount++;
+        // ✅ Sync toUpdate items first (priority)
+        await _syncAllTypesInDependencyOrder();
+        if (_shouldStopSync) break;
 
-      if (!_shouldStopSync) {
         final remaining = await getPendingCount();
         if (remaining == 0) {
-          print('✅ All items synced successfully!');
-          _queueStatusController.add(false);
-          _progressController.add(1.0);
-        } else {
-          print('⏳ $remaining items remaining, will retry later');
-          _queueStatusController.add(true);
+          print('✅ Tout est synchronisé !');
+          _syncEventController.add(SyncEvent(type: SyncEventType.completed));
+          break;
         }
-      } else {
-        print('⏸️ Sync paused due to connection loss');
+
+        if (passCount > 1 && remaining == previousRemaining) {
+          print(
+              '⚠️ $remaining élément(s) bloqués (aucune progression) - arrêt');
+          break;
+        }
+
+        print(
+            '⏳ $remaining élément(s) restants, nouvelle passe #$passCount...');
+        previousRemaining = remaining;
+        _totalItemsThisRun = remaining;
+      }
+
+      if (passCount >= maxPasses) {
+        print('⚠️ Nombre maximum de passes atteint ($maxPasses) - arrêt');
       }
     } catch (e) {
-      print('❌ Sync error: $e');
+      print('❌ Erreur fatale de synchro: $e');
+      _syncEventController.add(SyncEvent(
+        type: SyncEventType.error,
+        message: e.toString(),
+      ));
     } finally {
       _isProcessing = false;
     }
+
+    final remaining = await getPendingCount();
+    if (remaining == 0) {
+      _queueStatusController.add(false);
+      _progressController.add(1.0);
+    } else if (!_isPaused) {
+      _queueStatusController.add(true);
+    }
   }
 
-  // Sync all data types in priority order
-  Future<void> _syncAllTypes() async {
-    // 1. Etablissements
+  Future<void> _syncAllTypesInDependencyOrder() async {
+    // ✅ 1. Sync toUpdate items first (priority)
+    await _syncUpdates();
+    if (_shouldStopSync) return;
+
+    // ✅ 2. Then sync pending items
+    await _syncFiches();
+    if (_shouldStopSync) return;
+
     await _syncEtablissements();
     if (_shouldStopSync) return;
 
-    // 2. Sources
-    await _syncSources();
-    if (_shouldStopSync) return;
-
-    // 3. Specialites
-    await _syncSpecialites();
-    if (_shouldStopSync) return;
-
-    // 4. Prospects
     await _syncProspects();
     if (_shouldStopSync) return;
 
-    // 5. Interets
+    await _syncSpecialites();
+    if (_shouldStopSync) return;
+
     await _syncInterets();
   }
 
-  // ✅ Helper: Check connection with immediate stop and retry logic
-  Future<bool> _checkConnectionOrStop() async {
-    if (_consecutiveFailures >= MAX_RETRIES) {
-      print('⚠️ Too many consecutive failures, pausing sync');
-      _shouldStopSync = true;
-      return false;
-    }
-    
-    if (!_connection.isConnected || _shouldStopSync) {
-      _shouldStopSync = true;
-      print('📴 Connection lost - stopping sync');
-      return false;
-    }
-    return true;
+  // ---------------------------------------------------------------------
+  // Sync Updates (toUpdate items - priority)
+  // ---------------------------------------------------------------------
+
+  Future<void> _syncUpdates() async {
+    // ✅ Sync prospects toUpdate first
+    await _syncProspectsUpdates();
+    if (_shouldStopSync) return;
+
+    // ✅ Sync fiches toUpdate
+    await _syncFichesUpdates();
+    if (_shouldStopSync) return;
+
+    // ✅ Sync interets toUpdate
+    await _syncInteretsUpdates();
+    if (_shouldStopSync) return;
   }
 
-  // Sync Etablissements
-  Future<void> _syncEtablissements() async {
-    try {
-      int page = 0;
+  // ---------------------------------------------------------------------
+  // Sync by type - with update support
+  // ---------------------------------------------------------------------
 
-      while (true) {
-        if (!await _checkConnectionOrStop()) break;
-
-        final items = await _storage.isar.etablissements
-            .where()
-            .filter()
-            .syncStateEqualTo(SyncState.pending)
-            .offset(page * BATCH_SIZE)
-            .limit(BATCH_SIZE)
-            .findAll();
-
-        if (items.isEmpty) break;
-
-        print('📦 Syncing ${items.length} etablissements (batch ${page + 1})');
-
-        for (final item in items) {
-          if (!await _checkConnectionOrStop()) {
-            return;
-          }
-
-          try {
-            await _api.createEtablissement(item.toJsonApi());
-            await _storage.isar.writeTxn(() async {
-              await _storage.isar.etablissements.put(item);
-            });
-            print('✅ Synced: etablissement (${item.idEtablissement})');
-            _consecutiveFailures = 0; // Reset on success
-            _updateProgress();
-          } catch (e) {
-            if (_isConnectionError(e)) {
-              print('📴 Connection error detected - pausing sync');
-              _shouldStopSync = true;
-              return;
-            }
-            _consecutiveFailures++;
-            print('❌ Error syncing etablissement ${item.idEtablissement}: $e (attempt $_consecutiveFailures)');
-            if (_consecutiveFailures >= MAX_RETRIES) {
-              print('⚠️ Max retries reached, pausing sync');
-              _shouldStopSync = true;
-              return;
-            }
-            await Future.delayed(RETRY_DELAY);
-          }
-
-          await Future.delayed(const Duration(milliseconds: 100));
-        }
-
-        page++;
-      }
-    } catch (e) {
-      if (_isConnectionError(e)) {
-        _shouldStopSync = true;
-        return;
-      }
-      print('❌ Error syncing etablissements: $e');
-    }
-  }
-
-  // Sync Sources
   Future<void> _syncSources() async {
-    try {
-      int page = 0;
+    while (true) {
+      if (!_connection.isConnected || _shouldStopSync) return;
 
-      while (true) {
-        if (!await _checkConnectionOrStop()) break;
+      final batch = await _storage.isar.sources
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.pending)
+          .limit(batchSize)
+          .findAll();
+      if (batch.isEmpty) return;
 
-        final items = await _storage.isar.sources
-            .where()
-            .filter()
-            .syncStateEqualTo(SyncState.pending)
-            .offset(page * BATCH_SIZE)
-            .limit(BATCH_SIZE)
-            .findAll();
-
-        if (items.isEmpty) break;
-
-        print('📦 Syncing ${items.length} sources (batch ${page + 1})');
-
-        for (final item in items) {
-          if (!await _checkConnectionOrStop()) return;
-
-          try {
-            await _api.createSource(item.toJsonApi());
-            await _storage.isar.writeTxn(() async {
-              await _storage.isar.sources.put(item);
-            });
-            print('✅ Synced: source (${item.idSource})');
-            _consecutiveFailures = 0;
-            _updateProgress();
-          } catch (e) {
-            if (_isConnectionError(e)) {
-              _shouldStopSync = true;
-              return;
-            }
-            _consecutiveFailures++;
-            print('❌ Error syncing source ${item.idSource}: $e');
-            if (_consecutiveFailures >= MAX_RETRIES) {
-              _shouldStopSync = true;
-              return;
-            }
-            await Future.delayed(RETRY_DELAY);
-          }
-
-          await Future.delayed(const Duration(milliseconds: 100));
-        }
-
-        page++;
-      }
-    } catch (e) {
-      if (_isConnectionError(e)) {
-        _shouldStopSync = true;
-        return;
-      }
-      print('❌ Error syncing sources: $e');
-    }
-  }
-
-  // Sync Specialites
-  Future<void> _syncSpecialites() async {
-    try {
-      int page = 0;
-
-      while (true) {
-        if (!await _checkConnectionOrStop()) break;
-
-        final items = await _storage.isar.specialites
-            .where()
-            .filter()
-            .syncStateEqualTo(SyncState.pending)
-            .offset(page * BATCH_SIZE)
-            .limit(BATCH_SIZE)
-            .findAll();
-
-        if (items.isEmpty) break;
-
-        print('📦 Syncing ${items.length} specialites (batch ${page + 1})');
-
-        for (final item in items) {
-          if (!await _checkConnectionOrStop()) return;
-
-          try {
-            await _api.createSpecialite(item.toLocalJson());
+      print('📦 Sources : lot de ${batch.length}');
+      await _runBounded(batch, (item) async {
+        await _syncSingle(
+          label: 'source',
+          idOf: () => item.idSource,
+          send: () => _api.createSource(item.toJsonApi()),
+          markSynced: () async {
             await _storage.isar.writeTxn(() async {
               item.syncState = SyncState.synced;
-              await _storage.isar.specialites.put(item);
+              await _storage.isar.sources.put(item);
             });
-            print('✅ Synced: specialite (${item.idSpecialite})');
-            _consecutiveFailures = 0;
-            _updateProgress();
-          } catch (e) {
-            if (_isConnectionError(e)) {
-              _shouldStopSync = true;
-              return;
-            }
-            _consecutiveFailures++;
-            print('❌ Error syncing specialite ${item.idSpecialite}: $e');
-            if (_consecutiveFailures >= MAX_RETRIES) {
-              _shouldStopSync = true;
-              return;
-            }
-            await Future.delayed(RETRY_DELAY);
-          }
+          },
+          markFailed: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.failed;
+              await _storage.isar.sources.put(item);
+            });
+          },
+        );
+      });
 
-          await Future.delayed(const Duration(milliseconds: 100));
-        }
-
-        page++;
-      }
-    } catch (e) {
-      if (_isConnectionError(e)) {
-        _shouldStopSync = true;
-        return;
-      }
-      print('❌ Error syncing specialites: $e');
+      if (_shouldStopSync) return;
     }
   }
 
-  // Sync Prospects
+  // ✅ Sync fiches pending
+  Future<void> _syncFiches() async {
+    while (true) {
+      if (!_connection.isConnected || _shouldStopSync) return;
+
+      final batch = await _storage.isar.fiches
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.pending)
+          .limit(batchSize)
+          .findAll();
+      if (batch.isEmpty) return;
+
+      print('📦 Fiches : lot de ${batch.length}');
+      await _runBounded(batch, (item) async {
+        await _syncSingle(
+          label: 'fiche',
+          idOf: () => item.idFiche,
+          send: () async {
+            final payload = await item.toJsonApi();
+            payload['idSrc'] = item.idSrc;
+            return _api.createFiche(payload);
+          },
+          markSynced: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.synced;
+              await _storage.isar.fiches.put(item);
+            });
+          },
+          markFailed: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.failed;
+              await _storage.isar.fiches.put(item);
+            });
+          },
+        );
+      });
+
+      if (_shouldStopSync) return;
+    }
+  }
+
+  // ✅ Sync fiches toUpdate (priority)
+  Future<void> _syncFichesUpdates() async {
+    while (true) {
+      if (!_connection.isConnected || _shouldStopSync) return;
+
+      final batch = await _storage.isar.fiches
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.toUpdate)
+          .limit(batchSize)
+          .findAll();
+      if (batch.isEmpty) return;
+
+      print('📦 Fiches à mettre à jour : lot de ${batch.length}');
+      await _runBounded(batch, (item) async {
+        await _syncSingle(
+          label: 'fiche (update)',
+          idOf: () => item.idFiche,
+          send: () async {
+            final payload = await item.toJsonApi();
+            payload['idSrc'] = item.idSrc;
+            return _api.updateFiche(item.idFiche, payload);
+          },
+          markSynced: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.synced;
+              await _storage.isar.fiches.put(item);
+            });
+          },
+          markFailed: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.failed;
+              await _storage.isar.fiches.put(item);
+            });
+          },
+        );
+      });
+
+      if (_shouldStopSync) return;
+    }
+  }
+
+  Future<void> _syncEtablissements() async {
+    while (true) {
+      if (!_connection.isConnected || _shouldStopSync) return;
+
+      final batch = await _storage.isar.etablissements
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.pending)
+          .limit(batchSize)
+          .findAll();
+      if (batch.isEmpty) return;
+
+      print('📦 Étab. : lot de ${batch.length}');
+      await _runBounded(batch, (item) async {
+        await _syncSingle(
+          label: 'etablissement',
+          idOf: () => item.idEtablissement,
+          send: () => _api.createEtablissement(item.toJsonApi()),
+          markSynced: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.synced;
+              await _storage.isar.etablissements.put(item);
+            });
+          },
+          markFailed: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.failed;
+              await _storage.isar.etablissements.put(item);
+            });
+          },
+        );
+      });
+
+      if (_shouldStopSync) return;
+    }
+  }
+
+  // ✅ Sync prospects pending
   Future<void> _syncProspects() async {
-    try {
-      int page = 0;
+    while (true) {
+      if (!_connection.isConnected || _shouldStopSync) return;
 
-      while (true) {
-        if (!await _checkConnectionOrStop()) break;
+      final batch = await _storage.isar.prospects
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.pending)
+          .limit(batchSize)
+          .findAll();
+      if (batch.isEmpty) return;
 
-        final items = await _storage.isar.prospects
-            .where()
-            .filter()
-            .syncStateEqualTo(SyncState.pending)
-            .offset(page * BATCH_SIZE)
-            .limit(BATCH_SIZE)
-            .findAll();
-
-        if (items.isEmpty) break;
-
-        print('📦 Syncing ${items.length} prospects (batch ${page + 1})');
-
-        for (final item in items) {
-          if (!await _checkConnectionOrStop()) return;
-
-          try {
-            await item.interets.load();
-            await _api.createProspect(item.toJsonApi());
+      print('📦 Prospects : lot de ${batch.length}');
+      await _runBounded(batch, (item) async {
+        await item.interets.load();
+        await _syncSingle(
+          label: 'prospect',
+          idOf: () => item.idProspect,
+          send: () => _api.createProspect(item.toJsonApi()),
+          markSynced: () async {
             await _storage.isar.writeTxn(() async {
               item.syncState = SyncState.synced;
               await _storage.isar.prospects.put(item);
             });
-            print('✅ Synced: prospect (${item.idProspect})');
-            _consecutiveFailures = 0;
-            _updateProgress();
-          } catch (e) {
-            if (_isConnectionError(e)) {
-              _shouldStopSync = true;
-              return;
-            }
-            _consecutiveFailures++;
-            print('❌ Error syncing prospect ${item.idProspect}: $e');
-            if (_consecutiveFailures >= MAX_RETRIES) {
-              _shouldStopSync = true;
-              return;
-            }
-            await Future.delayed(RETRY_DELAY);
-          }
+          },
+          markFailed: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.failed;
+              await _storage.isar.prospects.put(item);
+            });
+          },
+        );
+      });
 
-          await Future.delayed(const Duration(milliseconds: 100));
-        }
-
-        page++;
-      }
-    } catch (e) {
-      if (_isConnectionError(e)) {
-        _shouldStopSync = true;
-        return;
-      }
-      print('❌ Error syncing prospects: $e');
+      if (_shouldStopSync) return;
     }
   }
 
-  // Sync Interets
+  // ✅ Sync prospects toUpdate (priority)
+  Future<void> _syncProspectsUpdates() async {
+    while (true) {
+      if (!_connection.isConnected || _shouldStopSync) return;
+
+      final batch = await _storage.isar.prospects
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.toUpdate)
+          .limit(batchSize)
+          .findAll();
+      if (batch.isEmpty) return;
+
+      print('📦 Prospects à mettre à jour : lot de ${batch.length}');
+      await _runBounded(batch, (item) async {
+        await item.interets.load();
+        await _syncSingle(
+          label: 'prospect (update)',
+          idOf: () => item.idProspect,
+          send: () => _api.updateProspect(item.idProspect, item.toJsonApi()),
+          markSynced: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.synced;
+              await _storage.isar.prospects.put(item);
+            });
+          },
+          markFailed: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.failed;
+              await _storage.isar.prospects.put(item);
+            });
+          },
+        );
+      });
+
+      if (_shouldStopSync) return;
+    }
+  }
+
+  Future<void> _syncSpecialites() async {
+    while (true) {
+      if (!_connection.isConnected || _shouldStopSync) return;
+
+      final batch = await _storage.isar.specialites
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.pending)
+          .limit(batchSize)
+          .findAll();
+      if (batch.isEmpty) return;
+
+      print('📦 Spécialités : lot de ${batch.length}');
+      await _runBounded(batch, (item) async {
+        await _syncSingle(
+          label: 'specialite',
+          idOf: () => item.idSpecialite,
+          send: () => _api.createSpecialite(item.toJsonApi()),
+          markSynced: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.synced;
+              await _storage.isar.specialites.put(item);
+            });
+          },
+          markFailed: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.failed;
+              await _storage.isar.specialites.put(item);
+            });
+          },
+        );
+      });
+
+      if (_shouldStopSync) return;
+    }
+  }
+
+  // ✅ Sync interets pending
   Future<void> _syncInterets() async {
-    try {
-      int page = 0;
+    while (true) {
+      if (!_connection.isConnected || _shouldStopSync) return;
 
-      while (true) {
-        if (!await _checkConnectionOrStop()) break;
+      final batch = await _storage.isar.interetFilieres
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.pending)
+          .limit(batchSize)
+          .findAll();
+      if (batch.isEmpty) return;
 
-        final items = await _storage.isar.interetFilieres
-            .where()
-            .filter()
-            .syncStateEqualTo(SyncState.pending)
-            .offset(page * BATCH_SIZE)
-            .limit(BATCH_SIZE)
-            .findAll();
-
-        if (items.isEmpty) break;
-
-        print('📦 Syncing ${items.length} interets (batch ${page + 1})');
-
-        for (final item in items) {
-          if (!await _checkConnectionOrStop()) return;
-
-          try {
-            await item.prospect.load();
-            await item.specialite.load();
-            await _api.createInteret(item.toApiJson());
+      print('📦 Intérêts filière : lot de ${batch.length}');
+      await _runBounded(batch, (item) async {
+        await item.prospect.load();
+        await item.specialite.load();
+        await _syncSingle(
+          label: 'interet',
+          idOf: () => item.idInteret,
+          send: () => _api.createInteret(item.toJsonApi()),
+          markSynced: () async {
             await _storage.isar.writeTxn(() async {
               item.syncState = SyncState.synced;
               await _storage.isar.interetFilieres.put(item);
             });
-            print('✅ Synced: interet (${item.idInteret})');
-            _consecutiveFailures = 0;
-            _updateProgress();
-          } catch (e) {
-            if (_isConnectionError(e)) {
-              _shouldStopSync = true;
-              return;
-            }
-            _consecutiveFailures++;
-            print('❌ Error syncing interet ${item.idInteret}: $e');
-            if (_consecutiveFailures >= MAX_RETRIES) {
-              _shouldStopSync = true;
-              return;
-            }
-            await Future.delayed(RETRY_DELAY);
-          }
+          },
+          markFailed: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.failed;
+              await _storage.isar.interetFilieres.put(item);
+            });
+          },
+        );
+      });
 
-          await Future.delayed(const Duration(milliseconds: 100));
+      if (_shouldStopSync) return;
+    }
+  }
+
+  // ✅ Sync interets toUpdate (priority)
+  Future<void> _syncInteretsUpdates() async {
+    while (true) {
+      if (!_connection.isConnected || _shouldStopSync) return;
+
+      final batch = await _storage.isar.interetFilieres
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.toUpdate)
+          .limit(batchSize)
+          .findAll();
+      if (batch.isEmpty) return;
+
+      print('📦 Intérêts filière à mettre à jour : lot de ${batch.length}');
+      await _runBounded(batch, (item) async {
+        await item.prospect.load();
+        await item.specialite.load();
+        await _syncSingle(
+          label: 'interet (update)',
+          idOf: () => item.idInteret,
+          send: () => _api.updateInteret(item.idInteret, item.toJsonApi()),
+          markSynced: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.synced;
+              await _storage.isar.interetFilieres.put(item);
+            });
+          },
+          markFailed: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.failed;
+              await _storage.isar.interetFilieres.put(item);
+            });
+          },
+        );
+      });
+
+      if (_shouldStopSync) return;
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Primitives partagées
+  // ---------------------------------------------------------------------
+
+  Future<void> _runBounded<T>(
+    List<T> items,
+    Future<void> Function(T item) task,
+  ) async {
+    final iterator = items.iterator;
+
+    Future<void> worker() async {
+      while (iterator.moveNext()) {
+        if (_shouldStopSync) return;
+        await task(iterator.current);
+      }
+    }
+
+    await Future.wait(List.generate(_concurrency, (_) => worker()));
+  }
+
+  Future<void> _syncSingle({
+    required String label,
+    required String Function() idOf,
+    required Future<Map<String, dynamic>> Function() send,
+    required Future<void> Function() markSynced,
+    required Future<void> Function() markFailed,
+  }) async {
+    var attempts = 0;
+
+    while (attempts < maxRetries) {
+      if (!_connection.isConnected || _shouldStopSync) return;
+      attempts++;
+
+      try {
+        final response = await send();
+
+        final isSuccess = response['statusCode'] == 200 ||
+            response['statusCode'] == 201 ||
+            response['statusCode'] == 204 ||
+            response['success'] == true;
+
+        if (isSuccess) {
+          await markSynced();
+          _syncedItemsThisRun++;
+          _updateProgress();
+          print('✅ Synchronisé : $label (${idOf()})');
+          return;
         }
 
-        page++;
-      }
-    } catch (e) {
-      if (_isConnectionError(e)) {
-        _shouldStopSync = true;
+        final statusCode =
+            response['statusCode'] ?? response['code'] ?? 'unknown';
+        final message =
+            response['message'] ?? response['error'] ?? 'Erreur inconnue';
+
+        if (statusCode == 400 || statusCode == 404) {
+          print(
+              '❌ Erreur validation ($statusCode) : $label (${idOf()}) → $message');
+          await markFailed();
+          return;
+        }
+
+        print(
+            '❌ Rejeté par le serveur : $label (${idOf()}) → Code $statusCode : $message');
+        await markFailed();
         return;
+      } catch (e) {
+        if (_isConnectionError(e)) {
+          print('📴 Connexion perdue pendant l\'envoi de $label (${idOf()})');
+          _pauseInternal();
+          _syncEventController.add(SyncEvent(
+            type: SyncEventType.error,
+            message: 'connection_lost_during_sync'.tr,
+          ));
+          return;
+        }
+
+        print(
+            '⚠️ Erreur sur $label (${idOf()}), tentative $attempts/$maxRetries : $e');
+        if (attempts >= maxRetries) {
+          await markFailed();
+          _syncEventController.add(SyncEvent(
+            type: SyncEventType.error,
+            message: e.toString(),
+          ));
+          return;
+        }
+        await Future.delayed(retryDelay * attempts);
       }
-      print('❌ Error syncing interets: $e');
     }
   }
 
-  // ✅ Helper: Check if error is connection-related
   bool _isConnectionError(dynamic error) {
-    final errorString = error.toString().toLowerCase();
-    return errorString.contains('connection') ||
-           errorString.contains('network') ||
-           errorString.contains('unreachable') ||
-           errorString.contains('timeout') ||
-           errorString.contains('socket') ||
-           errorString.contains('host') ||
-           errorString.contains('failed to create') ||
-           errorString.contains('clientexception');
+    final s = error.toString().toLowerCase();
+    return s.contains('connection') ||
+        s.contains('network') ||
+        s.contains('unreachable') ||
+        s.contains('timeout') ||
+        s.contains('socket') ||
+        s.contains('host') ||
+        s.contains('clientexception');
   }
 
-  // ✅ Helper: Update progress
   void _updateProgress() {
-    // Simple progress update
+    if (_totalItemsThisRun == 0) return;
+    _progressController.add(_syncedItemsThisRun / _totalItemsThisRun);
   }
 
-  // Manual sync trigger
-  Future<void> syncNow() async {
-    if (!_connection.isConnected) {
-      print('📴 No connection, cannot sync');
-      throw Exception('No internet connection');
-    }
-
-    if (_isProcessing) {
-      print('⏳ Sync already in progress');
-      return;
-    }
-
-    _isPaused = false;
-    _pauseStatusController.add(false);
-    _shouldStopSync = false;
-    _consecutiveFailures = 0;
-
-    await processPendingItems();
-  }
-
-  // Get pending count from Isar
-  Future<int> getPendingItemsCount() async {
-    return await getPendingCount();
-  }
-
-  // Get all pending items (for debugging)
-  Future<Map<String, int>> getPendingItemsByType() async {
-    try {
-      return {
-        'prospects': await _storage.isar.prospects
-            .where()
-            .filter()
-            .syncStateEqualTo(SyncState.pending)
-            .count(),
-        'fiches': await _storage.isar.fiches
-            .where()
-            .filter()
-            .syncStateEqualTo(SyncState.pending)
-            .count(),
-        'interets': await _storage.isar.interetFilieres
-            .where()
-            .filter()
-            .syncStateEqualTo(SyncState.pending)
-            .count(),
-        'specialites': await _storage.isar.specialites
-            .where()
-            .filter()
-            .syncStateEqualTo(SyncState.pending)
-            .count(),
-        'etablissements': await _storage.isar.etablissements
-            .where()
-            .filter()
-            .syncStateEqualTo(SyncState.pending)
-            .count(),
-        'classes': await _storage.isar.classes
-            .where()
-            .filter()
-            .syncStateEqualTo(SyncState.pending)
-            .count(),
-        'sources': await _storage.isar.sources
-            .where()
-            .filter()
-            .syncStateEqualTo(SyncState.pending)
-            .count(),
-      };
-    } catch (e) {
-      return {};
-    }
-  }
-
+  // ---------------------------------------------------------------------
   // Getters
+  // ---------------------------------------------------------------------
+
   bool get isProcessing => _isProcessing;
   bool get isConnected => _connection.isConnected;
   bool get isPaused => _isPaused;
+  int get totalItemsThisRun => _totalItemsThisRun;
+  int get syncedItemsThisRun => _syncedItemsThisRun;
+
+  void dispose() {
+    _apiReachableSub?.cancel();
+    _queueStatusController.close();
+    _progressController.close();
+    _pauseStatusController.close();
+    _syncEventController.close();
+  }
+}
+
+// ✅ SyncEvent classes
+enum SyncEventType {
+  started,
+  progress,
+  completed,
+  error,
+  paused,
+  resumed,
+}
+
+class SyncEvent {
+  final SyncEventType type;
+  final String? message;
+  final int? progress;
+
+  SyncEvent({required this.type, this.message, this.progress});
 }

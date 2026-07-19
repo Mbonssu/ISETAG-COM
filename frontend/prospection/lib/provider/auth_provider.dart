@@ -1,237 +1,311 @@
-// lib/providers/user_provider.dart
+// lib/providers/auth_provider.dart
+
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../models/agent_commercial.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
-import '../models/localStorage/local_storage.dart';
+import '../models/agent_commercial.dart';
+import '../services/api_service.dart';
 
-class UserProvider extends ChangeNotifier {
+class AuthProvider extends ChangeNotifier {
+  static final AuthProvider _instance = AuthProvider._internal();
+  factory AuthProvider() => _instance;
+  AuthProvider._internal();
 
-  static final UserProvider _instance = UserProvider._internal();
-  factory UserProvider() => _instance;
-  UserProvider._internal();
+  final ApiService _apiService = ApiService();
 
   User? _currentUser;
   AgentCommercial? _currentAgent;
   bool _isLoading = false;
-  String? _error;
+  String? _errorMessage;
 
+  // Getters
   User? get currentUser => _currentUser;
   AgentCommercial? get currentAgent => _currentAgent;
   bool get isLoading => _isLoading;
-  String? get error => _error;
-  bool get isLoggedIn => _currentUser != null;
-  String get fullName => _currentUser?.fullName ?? '';
-  String get initials => _currentUser?.initials ?? '';
-
-  // Check if user is admin
-  bool get isAdmin => _currentUser?.isAdmin ?? false;
+  String? get errorMessage => _errorMessage;
+  bool get isAuthenticated => _currentUser != null;
   bool get isAgent => _currentUser?.isAgent ?? false;
-  bool get isUser => _currentUser?.isUser ?? false;
+  bool get isAdmin => _currentUser?.isAdmin ?? false;
+  String get fullName => _currentUser?.fullName ?? '';
+  String get initials => _currentUser?.initials ?? 'A';
+  String get userEmail => _currentUser?.email ?? '';
+  String get userPhone => _currentUser?.telephone ?? '';
+  String get agentMatricule => _currentAgent?.matriculeAgent ?? '';
 
-  // Load user from localStorage
-  Future<bool> loadUser(String userId) async {
+  SharedPreferences? _prefs;
+
+  static const String _userKey = 'user_data';
+  static const String _agentKey = 'agent_data';
+  static const String _authTokenKey = 'auth_token';
+  static const String _refreshTokenKey = 'refresh_token';
+  static const String _passwordKey = 'user_password';
+  static const String _lastLoginKey = 'last_login';
+  static const String _rememberMeKey = 'remember_me';
+  static const String _rememberedUsernameKey = 'remembered_username';
+  static const String _currentOutingIdKey = 'current_outing_id';
+  static const String _currentParticipationIdKey = 'current_participation_id';
+  static const String _currentParticipationDataKey = 'current_participation_data'; // ✅ NEW
+  static const String _isLoggedInKey = 'is_logged_in';
+
+  // ✅ Initialize - Load from cache
+  Future<void> init() async {
+    if (_prefs != null) return;
+    _prefs = await SharedPreferences.getInstance();
+
+    // Load user from cache
+    final userJson = _prefs?.getString(_userKey);
+    if (userJson != null && userJson.isNotEmpty) {
+      try {
+        final data = jsonDecode(userJson);
+        _currentUser = User.fromJson(data);
+        notifyListeners();
+      } catch (e) {
+        print('Error parsing user data: $e');
+        await _prefs?.remove(_userKey);
+      }
+    }
+
+    // Load agent from cache
+    if (_currentUser != null && _currentUser!.isAgent) {
+      final agentJson = _prefs?.getString(_agentKey);
+      if (agentJson != null && agentJson.isNotEmpty) {
+        try {
+          final data = jsonDecode(agentJson);
+          _currentAgent = AgentCommercial.fromJson(data);
+          notifyListeners();
+        } catch (e) {
+          print('Error parsing agent data: $e');
+          await _prefs?.remove(_agentKey);
+        }
+      }
+    }
+  }
+
+  // ✅ Save user data to cache
+  Future<void> saveUserData(User user,
+      {AgentCommercial? agent,
+      String? password,
+      String? token,
+      String? refreshToken}) async {
+    _prefs ??= await SharedPreferences.getInstance();
+
+    try {
+      _currentUser = user;
+
+      // Save user to cache
+      await _prefs!.setString(_userKey, jsonEncode(user.toJsonApi()));
+
+      // Save agent if provided
+      if (agent != null) {
+        _currentAgent = agent;
+        await _prefs!.setString(_agentKey, jsonEncode(agent.toJsonApi()));
+      }
+
+      // Save password if provided
+      if (password != null && password.isNotEmpty) {
+        await _prefs!.setString(_passwordKey, password);
+      }
+
+      // Save tokens
+      if (token != null && token.isNotEmpty) {
+        await _prefs!.setString(_authTokenKey, token);
+      }
+      if (refreshToken != null && refreshToken.isNotEmpty) {
+        await _prefs!.setString(_refreshTokenKey, refreshToken);
+      }
+
+      // Save last login
+      await _prefs!.setString(_lastLoginKey, DateTime.now().toIso8601String());
+
+      // ✅ Set is_logged_in flag to true
+      await _prefs!.setBool(_isLoggedInKey, true);
+
+      notifyListeners();
+      print('✅ User data saved: ${user.fullName}');
+    } catch (e) {
+      print('❌ Error saving user data: $e');
+      _errorMessage = e.toString();
+    }
+  }
+
+  // ✅ Login
+  Future<bool> login(String email, String password) async {
     _isLoading = true;
-    _error = null;
+    _errorMessage = null;
     notifyListeners();
 
     try {
-      final localStorage = LocalStorage.instance;
-      await localStorage.init();
-      
-      // Get user from Isar
-      final user = await localStorage.getUserById(userId);
-      
-      if (user != null) {
-        _currentUser = user;
-        
-        // If user is an agent, load agent details
-        if (user.isAgent) {
-          _currentAgent = await localStorage.getAgentByUserId(userId);
-        } else {
-          _currentAgent = null;
+      final result = await _apiService.login(email, password);
+
+      if (result['success'] == true) {
+        final user = result['user'];
+        final agent = result['agent'];
+        final token = result['token'];
+        final refreshToken = result['refreshToken'];
+
+        if (user != null) {
+          await saveUserData(
+            user,
+            agent: agent,
+            password: password,
+            token: token?.toString(),
+            refreshToken: refreshToken?.toString(),
+          );
         }
-        
+
         _isLoading = false;
         notifyListeners();
         return true;
       } else {
-        _error = 'User not found';
+        _errorMessage = result['message']?.toString() ?? 'login_failed';
         _isLoading = false;
         notifyListeners();
         return false;
       }
     } catch (e) {
-      _error = e.toString();
+      _errorMessage = 'login_error';
       _isLoading = false;
       notifyListeners();
       return false;
     }
   }
 
-  // Login user
-  Future<bool> login(String emailOrPhone, String password) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      final localStorage = LocalStorage.instance;
-      await localStorage.init();
-      
-      // Find user by email or phone
-      final user = await localStorage.getUserByEmailOrPhone(emailOrPhone);
-      
-      if (user == null) {
-        _error = 'User not found';
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-      
-      // Check password (in production, use hashed password)
-      if (user.motDePasse != password) {
-        _error = 'Invalid password';
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-      
-      // Check if user is active
-      if (!user.actif) {
-        _error = 'Account is inactive';
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-      
-      _currentUser = user;
-      
-      // If user is an agent, load agent details
-      if (user.isAgent) {
-        _currentAgent = await localStorage.getAgentByUserId(user.idUtilisateur);
-      } else {
-        _currentAgent = null;
-      }
-      
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+  // ✅ Logout
+  Future<void> logout() async {
+    await _apiService.logout();
+    await removeUserData();
   }
 
-  // // Register new user
-  // Future<bool> register(User user, {AgentCommercial? agentData}) async {
-  //   _isLoading = true;
-  //   _error = null;
-  //   notifyListeners();
+  // ✅ Remove user data
+  Future<void> removeUserData() async {
+    _prefs ??= await SharedPreferences.getInstance();
+    await _prefs!.remove(_userKey);
+    await _prefs!.remove(_agentKey);
+    await _prefs!.remove(_authTokenKey);
+    await _prefs!.remove(_refreshTokenKey);
+    await _prefs!.remove(_passwordKey);
+    await _prefs!.remove(_lastLoginKey);
+    await _prefs!.remove(_isLoggedInKey);
+    await _prefs!.remove(_currentParticipationDataKey); // ✅ Also remove participation data
 
-  //   try {
-  //     final localStorage = LocalStorage.instance;
-  //     await localStorage.init();
-      
-  //     // Check if user already exists
-  //     final existing = await localStorage.getUserByEmailOrPhone(user.telephone);
-  //     if (existing != null) {
-  //       _error = 'User already exists';
-  //       _isLoading = false;
-  //       notifyListeners();
-  //       return false;
-  //     }
-      
-  //     // Save user
-  //     user.createdAt = DateTime.now().toIso8601String();
-  //     await localStorage.saveUser(user);
-      
-  //     // If user is an agent, save agent details
-  //     if (user.isAgent && agentData != null) {
-  //       agentData.idUtilisateur = user.idUtilisateur;
-  //       await localStorage.saveAgent(agentData);
-  //       _currentAgent = agentData;
-  //     }
-      
-  //     _currentUser = user;
-  //     _isLoading = false;
-  //     notifyListeners();
-  //     return true;
-  //   } catch (e) {
-  //     _error = e.toString();
-  //     _isLoading = false;
-  //     notifyListeners();
-  //     return false;
-  //   }
-  // }
-
-  // Update user profile
-  Future<bool> updateUser(User updatedUser) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      final localStorage = LocalStorage.instance;
-      await localStorage.init();
-      
-      await localStorage.updateUser(updatedUser);
-      
-      _currentUser = updatedUser;
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-  }
-
-  // Update agent details
-  // Future<bool> updateAgent(AgentCommercial updatedAgent) async {
-  //   if (_currentAgent == null) {
-  //     _error = 'No agent data found';
-  //     notifyListeners();
-  //     return false;
-  //   }
-
-  //   _isLoading = true;
-  //   _error = null;
-  //   notifyListeners();
-
-  //   try {
-  //     final localStorage = LocalStorage.instance;
-  //     await localStorage.init();
-      
-  //     await localStorage.updateAgent(updatedAgent);
-      
-  //     _currentAgent = updatedAgent;
-  //     _isLoading = false;
-  //     notifyListeners();
-  //     return true;
-  //   } catch (e) {
-  //     _error = e.toString();
-  //     _isLoading = false;
-  //     notifyListeners();
-  //     return false;
-  //   }
-  // }
-
-  // Logout
-  void logout() {
     _currentUser = null;
     _currentAgent = null;
-    _isLoading = false;
-    _error = null;
+    _errorMessage = null;
+
     notifyListeners();
+    print('✅ User data removed');
   }
 
-  // Clear error
-  void clearError() {
-    _error = null;
-    notifyListeners();
+  // ✅ Save remember me
+  Future<void> saveRememberMe(bool remember, String username) async {
+    _prefs ??= await SharedPreferences.getInstance();
+    await _prefs!.setBool(_rememberMeKey, remember);
+    if (remember && username.isNotEmpty) {
+      await _prefs!.setString(_rememberedUsernameKey, username);
+    } else {
+      await _prefs!.remove(_rememberedUsernameKey);
+    }
+  }
+
+  // ✅ Check if user is logged in
+  Future<bool> isUserLoggedIn() async {
+    _prefs ??= await SharedPreferences.getInstance();
+    final isLoggedIn = _prefs!.getBool(_isLoggedInKey) ?? false;
+    
+    // ✅ Also verify that user data exists
+    if (isLoggedIn) {
+      final userJson = _prefs!.getString(_userKey);
+      if (userJson == null || userJson.isEmpty) {
+        await _prefs!.remove(_isLoggedInKey);
+        return false;
+      }
+      final token = _prefs!.getString(_authTokenKey);
+      if (token == null || token.isEmpty) {
+        await _prefs!.remove(_isLoggedInKey);
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  // ✅ Get auth token
+  Future<String?> getAuthToken() async {
+    _prefs ??= await SharedPreferences.getInstance();
+    return _prefs!.getString(_authTokenKey);
+  }
+
+  // ==================== PARTICIPATION METHODS ====================
+
+  /// Save participation ID
+  Future<void> saveParticipationId(String participationId) async {
+    _prefs ??= await SharedPreferences.getInstance();
+    await _prefs!.setString(_currentParticipationIdKey, participationId);
+    print('✅ Participation ID saved: $participationId');
+  }
+
+  /// Get cached participation ID
+  Future<String?> getCachedParticipationId() async {
+    _prefs ??= await SharedPreferences.getInstance();
+    return _prefs!.getString(_currentParticipationIdKey);
+  }
+
+  /// Clear participation ID
+  Future<void> clearParticipationId() async {
+    _prefs ??= await SharedPreferences.getInstance();
+    await _prefs!.remove(_currentParticipationIdKey);
+    await _prefs!.remove(_currentParticipationDataKey);
+    print('✅ Participation ID cleared');
+  }
+
+  /// ✅ Save full participation data
+  Future<void> saveParticipationData(Map<String, dynamic> data) async {
+    _prefs ??= await SharedPreferences.getInstance();
+    await _prefs!.setString(_currentParticipationDataKey, jsonEncode(data));
+    print('✅ Participation data saved');
+  }
+
+  /// ✅ Get cached participation data
+  Future<Map<String, dynamic>?> getCachedParticipationData() async {
+    _prefs ??= await SharedPreferences.getInstance();
+    final data = _prefs!.getString(_currentParticipationDataKey);
+    if (data != null && data.isNotEmpty) {
+      try {
+        return jsonDecode(data) as Map<String, dynamic>;
+      } catch (e) {
+        print('Error parsing participation data: $e');
+        return null;
+      }
+    }
+    return null;
+  }
+
+  // ==================== OUTING METHODS ====================
+
+  /// Save outing ID
+  Future<void> saveOutingId(String outingId) async {
+    _prefs ??= await SharedPreferences.getInstance();
+    await _prefs!.setString(_currentOutingIdKey, outingId);
+    print('✅ Outing ID saved: $outingId');
+  }
+
+  /// Get cached outing ID
+  Future<String?> getCachedOutingId() async {
+    _prefs ??= await SharedPreferences.getInstance();
+    return _prefs!.getString(_currentOutingIdKey);
+  }
+
+  /// Clear outing ID
+  Future<void> clearOutingId() async {
+    _prefs ??= await SharedPreferences.getInstance();
+    await _prefs!.remove(_currentOutingIdKey);
+    print('✅ Outing ID cleared');
+  }
+
+  @override
+  void dispose() {
+    _apiService.dispose();
+    super.dispose();
   }
 }

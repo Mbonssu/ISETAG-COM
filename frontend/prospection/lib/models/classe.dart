@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:isetagcom/models/etablissement.dart';
 import 'package:isetagcom/utils/status.dart';
 
@@ -47,23 +47,47 @@ class Classe {
       syncState: json["sync"]);
 
   /// For UI / local display
-  Map<String, dynamic> toJson() {
-    return {
-      'idClasse': idClasse,
-      'idEts': idEts,
-      'libelleClasse': libelleClasse,
-      'createdAt': createdAt,
-    };
-  }
+  // Map<String, dynamic> toJson() {
+  //   return {
+  //     'idClasse': idClasse,
+  //     'idEts': idEts,
+  //     'libelleClasse': libelleClasse,
+  //     'createdAt': createdAt,
+  //   };
+  // }
 
-  /// For API
-  Map<String, dynamic> toJsonApi() {
-    return {
-      'idClasse': idClasse,
-      'idEts': idEts,
-      'libelleClasse': libelleClasse,
-      'createdAt': createdAt?.toIso8601String(),
-      "syncState": syncState.name
-    };
-  }
+  // /// For API
+  // Map<String, dynamic> toJsonApi() {
+  //   return {
+  //     'idClasse': idClasse,
+  //     'idEts': idEts,
+  //     'libelleClasse': libelleClasse,
+  //     'createdAt': createdAt?.toIso8601String(),
+  //     "syncState": syncState.name
+  //   };
+  // }
+
+  // lib/models/classe.dart
+
+  /// Pour l'affichage local / UI
+  Map<String, dynamic> toLocalJson() => {
+        'idClasse': idClasse,
+        'idEts': idEts,
+        'libelleClasse': libelleClasse,
+        'createdAt': createdAt?.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
+        'ets': ets.value?.toLocalJson(),
+        'prospects': prospects.map((p) => p.toLocalJson()).toList(),
+        'syncState': syncState.name,
+      };
+
+  /// Pour l'API
+  Map<String, dynamic> toJsonApi() => {
+        'idClasse': idClasse,
+        'idEts': idEts,
+        'libelleClasse': libelleClasse,
+        'createdAt': createdAt?.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
+        'syncState': syncState.name,
+      };
 }

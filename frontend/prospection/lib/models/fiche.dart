@@ -1,4 +1,5 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
+import '../provider/auth_provider.dart';
 import '../utils/status.dart';
 import 'pros.dart';
 import 'source.dart';
@@ -37,6 +38,9 @@ class Fiche {
   @enumerated
   SyncState syncState;
 
+  // final authProvider = AuthProvider();
+  // print("Participation id: ${await authProvider.getCachedParticipationId()
+
   Fiche(
       {required this.idFiche,
       required this.idSrc,
@@ -64,27 +68,47 @@ class Fiche {
     return fiche;
   }
 
+  /// Pour l'affichage local / UI
   Map<String, dynamic> toLocalJson() => {
         'idFiche': idFiche,
+        'idSrc': idSrc,
         'dateCollecte': dateCollecte.toIso8601String(),
         'commentaire': commentaire,
         'scoreInteret': scoreInteret,
         'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
         'isCurrent': isCurrent,
-
-        // Source linked to the fiche
         'source': source.value?.toLocalJson(),
-
-        // Prospects linked to the fiche
         'prospects': prospects.map((p) => p.toLocalJson()).toList(),
+        'syncState': syncState.name,
       };
 
-  Map<String, dynamic> toJsonApi() => {
-        'idFiche': idFiche,
-        'dateCollecte': dateCollecte.toIso8601String(),
-        'commentaire': commentaire,
-        'scoreInteret': scoreInteret,
-        'createdAt': createdAt.toIso8601String(),
-        'isCurrent': isCurrent,
-      };
+  @ignore
+  Future<String?> get participationId async {
+    try {
+      final authProvider = AuthProvider();
+      print(
+          "Participation id: ${await authProvider.getCachedParticipationId()}");
+      return await authProvider.getCachedParticipationId();
+    } catch (e) {
+      print('❌ Error getting participation ID from AuthProvider: $e');
+      return null;
+    }
+  }
+
+  /// Pour l'API
+  Future<Map<String, dynamic>> toJsonApi() async {
+    return {
+      'idFiche': idFiche,
+      'idParticipation': await participationId,
+      'idSource': idSrc,
+      'dateCollecte': dateCollecte.toIso8601String(),
+      'commentaire': commentaire,
+      'scoreInteret': scoreInteret,
+      'createdAt': createdAt.toIso8601String(),
+      // 'updatedAt': updatedAt?.toIso8601String(),
+      // 'isCurrent': isCurrent,
+      // 'syncState': syncState.name,
+    };
+  }
 }
