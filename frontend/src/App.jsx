@@ -20,7 +20,7 @@ import EtablissementForm from './pages/Etablissements/EtablissementForm';
 import EtablissementDetail from './pages/Etablissements/EtablissementDetail';
 import FilieresList from './pages/Filieres/FilieresList';
 import FiliereForm from './pages/Filieres/FiliereForm';
-// import FiliereDetail from './pages/Filieres/FiliereDetail'; // ⚠️ Désactivé : ce fichier est entièrement commenté (pas d'export default), ça faisait planter <App> avec "Element type is invalid"
+// import FiliereDetail from './pages/Filieres/FiliereDetail'; //  Désactivé : ce fichier est entièrement commenté (pas d'export default), ça faisait planter <App> avec "Element type is invalid"
 import SourcesList from './pages/Sources/SourcesList';
 import SourceForm from './pages/Sources/SourceForm';
 import RelancesList from './pages/Relances/RelancesList';
@@ -111,7 +111,7 @@ function App() {
           <Route path="/filieres" element={<FilieresList />} />
           <Route path="/filieres/new" element={<FiliereForm />} />
           {/* <Route path="/filieres/:id" element={<FiliereDetail />} /> */}
-          {/* ⚠️ Route désactivée : FiliereDetail.jsx est entièrement commenté, à réécrire avec specialiteService */}
+          {/*  Route désactivée : FiliereDetail.jsx est entièrement commenté, à réécrire avec specialiteService */}
           <Route path="/filieres/edit/:id" element={<FiliereForm />} />
           
           <Route path="/sources" element={<SourcesList />} />

@@ -134,7 +134,7 @@ export const useExport = () => {
       data.forEach(item => {
         tableRows += '<tr style="border-bottom: 1px solid #ddd;">';
         columns.forEach(col => {
-          tableRows += `<td style="padding: 8px;">${item[col.key] || ''}</tr>`;
+          tableRows += `<td style="padding: 8px;">${item[col.key] || ''}</td>`;
         });
         tableRows += '</tr>';
       });
@@ -166,11 +166,31 @@ export const useExport = () => {
       const canvas = await html2canvas(pdfContent, { scale: 2, backgroundColor: '#ffffff', logging: false });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      
-      const imgWidth = 210;
+
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const imgWidth = pageWidth;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+      if (imgHeight <= pageHeight) {
+        // Tient sur une seule page
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      } else {
+        //  CORRIGÉ : avant, un long tableau était juste tronqué en bas de
+        // la première page. On découpe maintenant l'image sur autant de
+        // pages A4 que nécessaire.
+        let heightLeft = imgHeight;
+        let position = 0;
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+      }
+
       pdf.save(`${filename}_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.pdf`);
       
       document.body.removeChild(pdfContent);

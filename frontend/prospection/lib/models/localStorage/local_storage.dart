@@ -75,7 +75,485 @@ class LocalStorage {
     return _isar;
   }
 
-  // ==================== PROSPECT ====================
+  // ==================== WATCH METHODS WITH INCREMENTAL SUPPORT ====================
+
+  /// Watch etablissements in real-time, only returning items not already in the provided list.
+  Stream<List<Etablissement>> watchEtablissementsIncremental(
+      List<Etablissement> existing) {
+    final existingIds = existing.map((e) => e.idEtablissement).toSet();
+    bool isFirst = true;
+
+    return _isar.etablissements
+        .where()
+        .watch(fireImmediately: true)
+        .asyncMap((_) async {
+      final all = await _isar.etablissements.where().findAll();
+      if (isFirst) {
+        isFirst = false;
+        if (existingIds.isEmpty) {
+          return all;
+        } else {
+          return all
+              .where((e) => !existingIds.contains(e.idEtablissement))
+              .toList();
+        }
+      } else {
+        return all
+            .where((e) => !existingIds.contains(e.idEtablissement))
+            .toList();
+      }
+    });
+  }
+
+  /// Watch classes in real-time, only returning items not already in the provided list.
+  Stream<List<Classe>> watchClassesIncremental(List<Classe> existing) {
+    final existingIds = existing.map((c) => c.idClasse).toSet();
+    bool isFirst = true;
+
+    return _isar.classes
+        .where()
+        .watch(fireImmediately: true)
+        .asyncMap((_) async {
+      final all = await _isar.classes.where().findAll();
+      if (isFirst) {
+        isFirst = false;
+        if (existingIds.isEmpty) {
+          return all;
+        } else {
+          return all.where((c) => !existingIds.contains(c.idClasse)).toList();
+        }
+      } else {
+        return all.where((c) => !existingIds.contains(c.idClasse)).toList();
+      }
+    });
+  }
+
+  /// Watch specialites in real-time, only returning items not already in the provided list.
+  Stream<List<Specialite>> watchSpecialitesIncremental(
+      List<Specialite> existing) {
+    final existingIds = existing.map((s) => s.idSpecialite).toSet();
+    bool isFirst = true;
+
+    return _isar.specialites
+        .where()
+        .watch(fireImmediately: true)
+        .asyncMap((_) async {
+      final all = await _isar.specialites.where().findAll();
+      if (isFirst) {
+        isFirst = false;
+        if (existingIds.isEmpty) {
+          return all;
+        } else {
+          return all
+              .where((s) => !existingIds.contains(s.idSpecialite))
+              .toList();
+        }
+      } else {
+        return all.where((s) => !existingIds.contains(s.idSpecialite)).toList();
+      }
+    });
+  }
+
+  /// Generate 1500 dummy prospects with all relationships
+  Future<void> generateDummyProspects() async {
+    try {
+      print('🔄 Generating 1500 dummy prospects...');
+      final now = DateTime.now();
+
+      // 1. Sources (10) - These represent the source_infos options
+      final sources = <Source>[];
+      final sourceInfos = [
+        'Réseaux sociaux',
+        'Recommandation',
+        'Site web',
+        'Événement',
+        'Prospection terrain',
+        'Partenariat',
+        'Campagne email',
+        'Publicité',
+        'Salon professionnel',
+        'Bouche à oreille',
+      ];
+
+      for (int i = 0; i < sourceInfos.length; i++) {
+        final source = Source(
+          idSource: 'src_${i + 1}_${now.millisecondsSinceEpoch}',
+          libelleSource: sourceInfos[i],
+          createdAt: now,
+          syncState: SyncState.pending,
+        );
+        sources.add(source);
+        await saveSource(source);
+      }
+      print('✅ ${sources.length} sources created');
+
+      // 2. Etablissements (15)
+      final etablissements = <Etablissement>[];
+      final etablissementNames = [
+        'Lycée de Biyem-Assi',
+        'Lycée Technique d\'Efouan',
+        'Institut Confucius',
+        'Lycée Général Leclerc',
+        'Collège Vogt',
+        'Lycée de Mvog-Mbi',
+        'Lycée de Nkolndongo',
+        'Lycée de Mendong',
+        'Lycée de Ngoa-Ekelle',
+        'Lycée de Mbalmayo',
+        'Lycée de Soa',
+        'Collège de la Retraite',
+        'Lycée de Nlongkak',
+        'Institut Siantou',
+        'Lycée de Bafoussam',
+      ];
+
+      for (int i = 0; i < etablissementNames.length; i++) {
+        final ets = Etablissement(
+          idEtablissement: 'ets_${i + 1}_${now.millisecondsSinceEpoch}',
+          nomEtablissement: etablissementNames[i],
+          typeEtablissement: ['Secondary', 'University', 'Secondary'][i % 3],
+          adresse: 'Adresse ${i + 1}, Cameroun',
+          telephone:
+              '+237 6${(10000000 + i * 10000).toString().padLeft(7, '0')}',
+          ville: ['Yaoundé', 'Douala', 'Bafoussam', 'Bamenda'][i % 4],
+          region: ['Centre', 'Littoral', 'Ouest', 'Nord-Ouest'][i % 4],
+          createdAt: now,
+          syncState: SyncState.pending,
+        );
+        etablissements.add(ets);
+        await saveEtablissement(ets);
+      }
+      print('✅ ${etablissements.length} etablissements created');
+
+      // 3. Classes (25)
+      final classes = <Classe>[];
+      final classNames = [
+        'Terminale C',
+        'Terminale D',
+        'Terminale A4',
+        'Terminale TI',
+        'BTS 1',
+        'BTS 2',
+        'Licence 1',
+        'Licence 2',
+        'Licence 3',
+        'Master 1',
+        'Master 2',
+        'Licence',
+      ];
+
+      for (int i = 0; i < classNames.length; i++) {
+        final etsIndex = i % etablissements.length;
+        final clse = Classe(
+          idClasse: 'classe_${i + 1}_${now.millisecondsSinceEpoch}',
+          idEts: etablissements[etsIndex].idEtablissement,
+          libelleClasse: classNames[i],
+          createdAt: now,
+          syncState: SyncState.pending,
+        );
+        classes.add(clse);
+        await saveClasse(clse);
+      }
+      print('✅ ${classes.length} classes created');
+
+      // 4. Specialites (25)
+      final specialites = <Specialite>[];
+      final specialiteNames = [
+        'Génie Logiciel',
+        'Génie Civil',
+        'Génie Mécanique',
+        'Marketing',
+        'Finance',
+        'Comptabilité',
+        'Réseaux et Télécoms',
+        'Cybersécurité',
+        'Intelligence Artificielle',
+        'Ressources Humaines',
+        'Logistique',
+        'Communication',
+        'Design UI/UX',
+        'Développement Mobile',
+        'Data Science',
+        'DevOps',
+        'Cloud Computing',
+        'Blockchain',
+        'Énergies Renouvelables',
+        'Biotechnologie',
+        'Robotique',
+        'Aéronautique',
+        'Agronomie',
+        'Architecture',
+        'Médecine',
+      ];
+
+      for (int i = 0; i < specialiteNames.length; i++) {
+        final spec = Specialite(
+          idSpecialite: 'spec_${i + 1}_${now.millisecondsSinceEpoch}',
+          libelleSpecialite: specialiteNames[i],
+          description: 'Description de ${specialiteNames[i]}',
+          createdAt: now,
+          syncState: SyncState.pending,
+        );
+        specialites.add(spec);
+        await saveSpecialite(spec);
+      }
+      print('✅ ${specialites.length} specialites created');
+
+      // 5. Fiches (15) - Each fiche is associated with a source
+      final fiches = <Fiche>[];
+      final ficheComments = [
+        'Visite initiale',
+        'Suivi prospect',
+        'Contact établi',
+        'Demande d\'information',
+        'Rendez-vous pris',
+        'Confirmation d\'intérêt',
+        'Relance effectuée',
+        'Nouveau contact',
+        'Prospection active',
+        'Suivi personnalisé',
+        'Prise de contact',
+        'Entretien réalisé',
+        'Offre envoyée',
+        'Négociation',
+        'Signature prochaine',
+      ];
+
+      for (int i = 0; i < sources.length; i++) {
+        final fiche = Fiche(
+          idFiche: 'fiche_${i + 1}_${now.millisecondsSinceEpoch}',
+          idSrc: sources[i].idSource,
+          dateCollecte: now.subtract(Duration(days: i * 2)),
+          commentaire: ficheComments[i % ficheComments.length],
+          scoreInteret: 3 + (i % 8),
+          createdAt: now,
+          isCurrent: i == 0,
+          syncState: SyncState.pending,
+        );
+        fiches.add(fiche);
+        await saveFiche(fiche);
+      }
+      print('✅ ${fiches.length} fiches created');
+
+      // 6. Generate 1500 Prospects with source_infos
+      final firstNames = [
+        'Jean',
+        'Marie',
+        'Paul',
+        'Claire',
+        'David',
+        'Sarah',
+        'Kevin',
+        'Laura',
+        'Thomas',
+        'Julie',
+        'Nicolas',
+        'Emma',
+        'Alexandre',
+        'Léa',
+        'Raphaël',
+        'Manon',
+        'Lucas',
+        'Chloé',
+        'Hugo',
+        'Camille',
+        'Louis',
+        'Alice',
+        'Arnaud',
+        'Céline',
+        'François',
+        'Diane',
+        'Pierre',
+        'Sophie',
+        'Blaise',
+        'Jacqueline',
+        'Romain',
+        'Adeline',
+        'Daniel',
+        'Martine',
+        'Michel',
+        'Suzanne',
+        'André',
+        'Elise',
+        'Philippe',
+        'Isabelle',
+        'Christophe',
+        'Nathalie',
+        'Éric',
+        'Valérie',
+        'Stéphane',
+        'Catherine',
+        'Laurent',
+        'Anne',
+        'Frédéric',
+        'Isabelle',
+      ];
+
+      final lastNames = [
+        'Dupont',
+        'Martin',
+        'Durand',
+        'Bernard',
+        'Thomas',
+        'Petit',
+        'Robert',
+        'Richard',
+        'Dubois',
+        'Laurent',
+        'Simon',
+        'Michel',
+        'Lefebvre',
+        'Leroy',
+        'Roux',
+        'David',
+        'Bertrand',
+        'Moreau',
+        'Fournier',
+        'Girard',
+        'Bonnet',
+        'François',
+        'Martinez',
+        'Legrand',
+        'Garnier',
+        'Faure',
+        'Rousseau',
+        'Blanc',
+        'Guerin',
+        'Muller',
+        'Henry',
+        'Roussel',
+        'Nicolas',
+        'Perrin',
+        'Morin',
+        'Mathieu',
+        'Clement',
+        'Gauthier',
+        'Dumont',
+        'Lopez',
+        'Fontaine',
+        'Chevalier',
+        'Robin',
+        'Masson',
+        'Sanchez',
+        'Adam',
+        'Garcia',
+      ];
+
+      final typeProspects = ['Étudiant', 'Éleve'];
+      final sexes = ['Masculin', 'Féminin'];
+      final niveauEtudes = [
+        'Baccalauréat',
+        'BTS 1',
+        'BTS 2',
+        'Licence',
+        'Master 1',
+        'Master 2',
+        'Doctorat'
+      ];
+      final statuses = [
+        ProspectStatus.relancer,
+        ProspectStatus.nouveau,
+        ProspectStatus.contacte
+      ];
+      final phonePrefix = ['6', '7', '8', '9'];
+
+      int savedCount = 0;
+      const totalCount = 1500;
+      const batchSize = 50;
+
+      for (int batch = 0; batch < totalCount; batch += batchSize) {
+        final end =
+            (batch + batchSize < totalCount) ? batch + batchSize : totalCount;
+
+        for (int i = batch; i < end; i++) {
+          final firstName = firstNames[i % firstNames.length];
+          final lastName = lastNames[i % lastNames.length];
+          final fullName = '$firstName $lastName';
+
+          final classe = classes[i % classes.length];
+          final fiche = fiches[i % fiches.length];
+          // Assign source_infos from the source list (ensuring each prospect gets a source)
+          final sourceInfo = sourceInfos[i % sourceInfos.length];
+          final numSpecialites = 1 + (i % 4);
+
+          final prospect = Prospect(
+            idProspect: 'prospect_${i + 1}_${now.millisecondsSinceEpoch}',
+            idfiche: fiche.idFiche,
+            idClass: classe.idClasse,
+            nomComplet: fullName,
+            telephone:
+                '+237 ${phonePrefix[i % phonePrefix.length]}${(10000000 + i * 1000).toString().padLeft(7, '0')}',
+            email:
+                '${firstName.toLowerCase()}.${lastName.toLowerCase()}$i@example.com',
+            niveauEtude: niveauEtudes[i % niveauEtudes.length],
+            adresse: '${100 + i} Rue des Écoles, Cameroun',
+            sexe: sexes[i % 2],
+            typeProspect: typeProspects[i % typeProspects.length],
+            source_infos: sourceInfo, // Assign the source info string
+            commentaireGen: 'Prospect #${i + 1} - $firstName $lastName',
+            concerne: null,
+            date_relance:
+                i % 5 == 0 ? now.add(Duration(days: 5 + (i % 20))) : null,
+            createdAt: now.subtract(Duration(days: i % 30)),
+            // updatedAt: null,
+            syncState: SyncState.pending,
+            prospectStatus: statuses[i % statuses.length],
+          );
+
+          await saveProspect(prospect);
+
+          final selectedSpecialites = <Specialite>[];
+          for (int s = 0; s < numSpecialites; s++) {
+            final specIndex = (i + s * 7) % specialites.length;
+            final spec = specialites[specIndex];
+
+            if (!selectedSpecialites.contains(spec)) {
+              selectedSpecialites.add(spec);
+
+              final interet = InteretFiliere(
+                idInteret:
+                    'interet_${i + 1}_${s + 1}_${now.millisecondsSinceEpoch}',
+                idProspect: prospect.idProspect,
+                idSpecialite: spec.idSpecialite,
+                ordrePreference: s + 1,
+                niveauInteret: 4 + (i % 7),
+                commentaire: 'Intérêt pour ${spec.libelleSpecialite}',
+                createdAt: now,
+                syncState: SyncState.pending,
+              );
+
+              interet.prospect.value = prospect;
+              interet.specialite.value = spec;
+
+              await saveInteret(interet);
+              prospect.AllSpec.add(spec);
+            }
+          }
+
+          savedCount++;
+          if (savedCount % 100 == 0) {
+            print('📊 Progress: $savedCount/$totalCount');
+          }
+        }
+
+        print('📦 Batch ${(batch / batchSize).toInt() + 1} completed');
+      }
+
+      print('✅ Successfully saved $savedCount dummy prospects!');
+      print('📊 Summary:');
+      print('   - ${sources.length} Sources');
+      print('   - ${etablissements.length} Etablissements');
+      print('   - ${classes.length} Classes');
+      print('   - ${specialites.length} Specialites');
+      print('   - ${fiches.length} Fiches');
+      print('   - $savedCount Prospects with source_infos assigned');
+    } catch (e) {
+      print('❌ Error generating dummy data: $e');
+      rethrow;
+    }
+  }
+
+  // ==================== PROSPECT - OPTIMIZED CHECKERS ====================
 
   Future<bool> _prospectExistsByPhone(String phone) async {
     try {
@@ -126,8 +604,14 @@ class LocalStorage {
 
       await _isar.writeTxn(() async {
         await _isar.prospects.put(prospect);
-        await prospect.classe.save();
-        await prospect.fiche.save();
+        if (prospect.classe.value != null) {
+          await prospect.classe.save();
+        }
+
+        // ✅ Save the fiche relationship
+        if (prospect.fiche.value != null) {
+          await prospect.fiche.save();
+        }
       });
 
       return 'prospect_added_success';
@@ -394,6 +878,32 @@ class LocalStorage {
     }
   }
 
+  // Add etablissement only if it doesn't exist by name
+  Future<String> addEtablissementIfNotExists(
+      Etablissement etablissement) async {
+    try {
+      // Check if exists by name - using the same method
+      final existing =
+          await getEtablissementByNom(etablissement.nomEtablissement);
+
+      if (existing != null) {
+        print(
+            '⚠️ Establishment already exists: ${etablissement.nomEtablissement}');
+        return 'establishment_already_exists';
+      }
+
+      await _isar.writeTxn(() async {
+        await _isar.etablissements.put(etablissement);
+      });
+
+      print('✅ New establishment added: ${etablissement.nomEtablissement}');
+      return 'establishment_added_success';
+    } catch (e) {
+      print('Error adding etablissement: $e');
+      return 'error_saving_establishment';
+    }
+  }
+
   Future<List<Etablissement>> getAllEtablissements() async {
     try {
       return await _isar.etablissements.where().findAll();
@@ -528,6 +1038,29 @@ class LocalStorage {
       return 'specialty_added_success';
     } catch (e) {
       print('Error saving specialite: $e');
+      return 'error_saving_specialty';
+    }
+  }
+
+  // Add specialite only if it doesn't exist by name
+  Future<String> addSpecialiteIfNotExists(Specialite specialite) async {
+    try {
+      // Check if exists by name - using the same method
+      final existing = await getSpecialiteByNom(specialite.libelleSpecialite);
+
+      if (existing != null) {
+        print('⚠️ Speciality already exists: ${specialite.libelleSpecialite}');
+        return 'specialty_already_exists';
+      }
+
+      await _isar.writeTxn(() async {
+        await _isar.specialites.put(specialite);
+      });
+
+      print('✅ New speciality added: ${specialite.libelleSpecialite}');
+      return 'specialty_added_success';
+    } catch (e) {
+      print('Error adding specialite: $e');
       return 'error_saving_specialty';
     }
   }
@@ -778,448 +1311,142 @@ class LocalStorage {
         final classe = classeMap[prospect.idClass];
         final ets = classe != null ? etsMap[classe.idEts] : null;
 
-        detailsList.add(ProspectDetails(
-          prosp: prospect,
-          etablissement: ets ??
-              Etablissement(
-                idEtablissement: '',
-                nomEtablissement: 'Non spécifié',
-                typeEtablissement: '',
-                createdAt: DateTime.now(),
-                syncState: SyncState.pending,
-              ),
-          classe: classe ??
-              Classe(
-                idClasse: '',
-                idEts: '',
-                libelleClasse: 'Non spécifié',
-                createdAt: DateTime.now(),
-                syncState: SyncState.pending,
-              ),
-          specialities: specialities,
-        ));
-      }
+  //       return ProspectDetails(
+  //         prosp: p,
+  //         etablissement: ets?.nomEtablissement ?? '',
+  //         classe: classe?.libelleClasse ?? '',
+  //         specialities: specsP,
+  //       );
+  //     }).toList();
+  //   } catch (e) {
+  //     print('Error building prospect details list: $e');
+  //     return [];
+  //   }
+  // }
 
-      return detailsList;
-    } catch (e) {
-      print('❌ Error getting paginated prospects: $e');
-      return [];
-    }
-  }
-
-  /// ✅ Récupérer les relances avec pagination
-  Future<List<ProspectDetails>> getPaginatedRelances({
-    required int page,
-    required int pageSize,
-    bool onlyOverdue = false,
-  }) async {
+  static Future<List<ProspectDetails>> _buildProspectDetailsList(
+      Isar isar, List<Prospect> prospects) async {
     try {
-      final now = DateTime.now();
+      print('🔍 === START _buildProspectDetailsList ===');
+      print('📊 Number of prospects: ${prospects.length}');
 
-      var query = _isar.prospects.where().filter().date_relanceIsNotNull();
-
-      if (onlyOverdue) {
-        query = query.date_relanceLessThan(now);
+      if (prospects.isEmpty) {
+        print('⚠️ Prospects list is empty, returning empty list');
+        return [];
       }
 
-      final prospects =
-          await query.offset(page * pageSize).limit(pageSize).findAll();
+      // ✅ OPTIMIZATION: BATCH LOAD all classes in ONE query (not N queries)
+      print(
+          '🔄 Batch loading relationships for ${prospects.length} prospects...');
 
-      if (prospects.isEmpty) return [];
+      // Get all class IDs as Strings
+      final classIds =
+          prospects.map((p) => p.idClass).where((id) => id.isNotEmpty).toList();
 
-      prospects.sort((a, b) => a.date_relance!.compareTo(b.date_relance!));
+      print('📋 Class IDs found: ${classIds.length}');
 
-      // ✅ Batch load all relations
-      final prospectIds = prospects.map((p) => p.idProspect).toList();
-
-      final allInterets = await _isar.interetFilieres
+      // ✅ OPTIMIZATION: ONE query for ALL classes
+      final classes = await isar.classes
           .where()
           .filter()
           .anyOf(prospectIds, (q, id) => q.idProspectEqualTo(id))
           .findAll();
 
-      final specialiteIds = allInterets.map((i) => i.idSpecialite).toList();
-      final allSpecialites = specialiteIds.isNotEmpty
-          ? await _isar.specialites
-              .where()
-              .anyOf(specialiteIds, (q, id) => q.idSpecialiteEqualTo(id))
-              .findAll()
-          : [];
+      print('📊 Classes retrieved from DB: ${classes.length}');
 
-      final specialiteMap = {for (var s in allSpecialites) s.idSpecialite: s};
+      // Build class map for O(1) lookup
+      final classeMap = {for (var c in classes) c.idClasse: c};
 
-      final classeIds = prospects.map((p) => p.idClass).toList();
-      final allClasses = await _isar.classes
-          .where()
-          .anyOf(classeIds, (q, id) => q.idClasseEqualTo(id))
-          .findAll();
+      // ✅ OPTIMIZATION: Get all ets IDs in ONE pass
+      final etsIds =
+          classes.where((c) => c.idEts.isNotEmpty).map((c) => c.idEts).toList();
 
-      final classeMap = {for (var c in allClasses) c.idClasse: c};
+      print('📋 Etablissement IDs found: ${etsIds.length}');
 
-      final etsIds = allClasses.map((c) => c.idEts).toList();
-      final allEts = await _isar.etablissements
+      // ✅ OPTIMIZATION: ONE query for ALL etablissements
+      final etss = await isar.etablissements
           .where()
           .anyOf(etsIds, (q, id) => q.idEtablissementEqualTo(id))
           .findAll();
 
-      final etsMap = {for (var e in allEts) e.idEtablissement: e};
+      print('📊 Etablissements retrieved from DB: ${etss.length}');
 
-      // ✅ Build details
-      final detailsList = <ProspectDetails>[];
-      for (final prospect in prospects) {
-        final interets = allInterets
-            .where((i) => i.idProspect == prospect.idProspect)
-            .toList();
+      // Build ets map for O(1) lookup
+      final etsMap = {for (var e in etss) e.idEtablissement: e};
 
-        final specialities = interets
-            .map((i) {
-              final spec = specialiteMap[i.idSpecialite];
-              return spec != null
-                  ? SpecialityDetail(
-                      libelleSpecialite: spec.libelleSpecialite,
-                      orderPreference: i.ordrePreference,
-                      niveau: i.niveauInteret,
-                      commentaire: i.commentaire ?? '',
-                    )
-                  : null;
-            })
-            .whereType<SpecialityDetail>()
-            .toList()
-          ..sort((a, b) => a.orderPreference.compareTo(b.orderPreference));
+      // ✅ OPTIMIZATION: Get all interests in ONE query
+      final ids = prospects.map((p) => p.idProspect).toList();
 
-        final classe = classeMap[prospect.idClass];
-        final ets = classe != null ? etsMap[classe.idEts] : null;
-
-        detailsList.add(ProspectDetails(
-          prosp: prospect,
-          etablissement: ets ??
-              Etablissement(
-                idEtablissement: '',
-                nomEtablissement: 'Non spécifié',
-                typeEtablissement: '',
-                createdAt: DateTime.now(),
-                syncState: SyncState.pending,
-              ),
-          classe: classe ??
-              Classe(
-                idClasse: '',
-                idEts: '',
-                libelleClasse: 'Non spécifié',
-                createdAt: DateTime.now(),
-                syncState: SyncState.pending,
-              ),
-          specialities: specialities,
-        ));
-      }
-
-      return detailsList;
-    } catch (e) {
-      print('❌ Error getting paginated relances: $e');
-      return [];
-    }
-  }
-
-  /// ✅ Récupérer les prospects par fiche avec pagination
-  Future<List<ProspectDetails>> getPaginatedProspectsByFiche({
-    required String ficheId,
-    required int page,
-    required int pageSize,
-  }) async {
-    try {
-      final prospects = await _isar.prospects
-          .where()
+      final allLinks = await isar.interetFilieres
           .filter()
           .idficheEqualTo(ficheId)
           .offset(page * pageSize)
           .limit(pageSize)
           .findAll();
 
-      if (prospects.isEmpty) return [];
+      print('📊 Interests found: ${allLinks.length}');
 
-      final List<ProspectDetails> results = [];
-      for (final prospect in prospects) {
-        final details = await buildProspectDetails(prospect);
-        results.add(details);
-      }
-      return results;
-    } catch (e) {
-      print('❌ Error getting paginated prospects by fiche: $e');
-      return [];
-    }
-  }
+      // ✅ OPTIMIZATION: Get all specialites in ONE query
+      if (allLinks.isNotEmpty) {
+        final specialiteIds = allLinks
+            .where((l) => l.idSpecialite.isNotEmpty)
+            .map((l) => l.idSpecialite)
+            .toList();
 
-  /// ✅ Rechercher des prospects avec pagination
-  Future<List<ProspectDetails>> searchPaginatedProspects({
-    required String query,
-    required int page,
-    required int pageSize,
-  }) async {
-    try {
-      if (query.isEmpty) {
-        return await getPaginatedProspects(page: page, pageSize: pageSize);
-      }
+        final specialites = await isar.specialites
+            .where()
+            .anyOf(specialiteIds, (q, id) => q.idSpecialiteEqualTo(id))
+            .findAll();
 
-      final lowerQuery = query.toLowerCase();
+        final specialiteMap = {for (var s in specialites) s.idSpecialite: s};
 
-      final allProspects = await _isar.prospects.where().findAll();
-
-      final filteredProspects = allProspects.where((p) {
-        final nomMatch = p.nomComplet.toLowerCase().contains(lowerQuery);
-
-        bool etsMatch = false;
-        if (p.classe.value != null) {
-          etsMatch = p.classe.value!.ets.value?.nomEtablissement
-                  .toLowerCase()
-                  .contains(lowerQuery) ??
-              false;
+        // Attach specialites to their interests
+        for (final link in allLinks) {
+          link.specialite.value = specialiteMap[link.idSpecialite];
         }
+      }
 
-        return nomMatch || etsMatch;
+      // ✅ Build results with O(1) lookups
+      final result = prospects.map((p) {
+        final specsP = allLinks
+            .where((l) => l.idProspect == p.idProspect)
+            .map((l) => SpecialityDetail(
+                  libelleSpecialite:
+                      l.specialite.value?.libelleSpecialite ?? '',
+                  orderPreference: l.ordrePreference,
+                  niveau: l.niveauInteret,
+                  commentaire: l.commentaire,
+                ))
+            .toList()
+          ..sort((a, b) => a.orderPreference.compareTo(b.orderPreference));
+
+        final classe = classeMap[p.idClass];
+        final ets = classe != null ? etsMap[classe.idEts] : null;
+
+        return ProspectDetails(
+          prosp: p,
+          etablissement: ets?.nomEtablissement ?? '',
+          classe: classe?.libelleClasse ?? '',
+          specialities: specsP,
+        );
       }).toList();
 
-      final start = page * pageSize;
-      final end = (start + pageSize) > filteredProspects.length
-          ? filteredProspects.length
-          : start + pageSize;
+      // Final summary
+      int emptyEtablissement =
+          result.where((d) => d.etablissement.isEmpty).length;
+      int emptyClasse = result.where((d) => d.classe.isEmpty).length;
 
-      final paginatedProspects = filteredProspects.sublist(
-        start < filteredProspects.length ? start : 0,
-        end,
-      );
+      print('📊 === FINAL RESULTS ===');
+      print('   - Total prospects: ${result.length}');
+      print('   - Empty etablissement: $emptyEtablissement/${result.length}');
+      print('   - Empty classe: $emptyClasse/${result.length}');
 
-      final List<ProspectDetails> results = [];
-      for (final prospect in paginatedProspects) {
-        final details = await buildProspectDetails(prospect);
-        results.add(details);
-      }
-      return results;
+      print('✅ === END _buildProspectDetailsList ===');
+      return result;
     } catch (e) {
-      print('❌ Error searching paginated prospects: $e');
+      print('❌ Error building prospect details list: $e');
+      print('❌ Stack trace: ${StackTrace.current}');
       return [];
-    }
-  }
-
-  /// ✅ Compter le nombre total de prospects
-  Future<int> countProspects({
-    String? ficheId,
-    bool? hasRelanceDate,
-  }) async {
-    try {
-      var query = _isar.prospects.where();
-
-      if (ficheId != null) {
-        query = query.filter().idficheEqualTo(ficheId)
-            as QueryBuilder<Prospect, Prospect, QWhere>;
-      }
-
-      if (hasRelanceDate == true) {
-        query = query.filter().date_relanceIsNotNull()
-            as QueryBuilder<Prospect, Prospect, QWhere>;
-      }
-
-      return await query.count();
-    } catch (e) {
-      print('❌ Error counting prospects: $e');
-      return 0;
-    }
-  }
-
-  // ==================== BUILD PROSPECT DETAILS ====================
-
-  Future<ProspectDetails> buildProspectDetails(Prospect prospect) async {
-    try {
-      await prospect.interets.load();
-      final List<SpecialityDetail> specialities = [];
-
-      for (final interet in prospect.interets) {
-        final specialite = await _loadSpecialiteForInteret(interet);
-        if (specialite != null) {
-          specialities.add(
-            SpecialityDetail(
-              libelleSpecialite: specialite.libelleSpecialite,
-              orderPreference: interet.ordrePreference,
-              niveau: interet.niveauInteret,
-              commentaire: interet.commentaire ?? '',
-            ),
-          );
-        }
-      }
-
-      specialities.sort(
-        (a, b) => a.orderPreference.compareTo(b.orderPreference),
-      );
-
-      final classe = await _loadClasseForProspect(prospect);
-      if (classe != null) {
-        prospect.classe.value = classe;
-      }
-
-      final etablissement =
-          classe != null ? await _loadEtablissementForClasse(classe) : null;
-
-      return ProspectDetails(
-        prosp: prospect,
-        etablissement: etablissement!,
-        classe: classe!,
-        specialities: specialities,
-      );
-    } catch (e) {
-      print('❌ Error building prospect details: $e');
-      return ProspectDetails(
-        prosp: prospect,
-        etablissement: Etablissement(
-          idEtablissement: 'unknown',
-          nomEtablissement: 'Non spécifié',
-          typeEtablissement: 'Non spécifié',
-          syncState: SyncState.pending,
-          createdAt: DateTime.now(),
-        ),
-        classe: Classe(
-          idClasse: 'unknown',
-          idEts: 'unknown',
-          libelleClasse: 'Non spécifié',
-          syncState: SyncState.pending,
-          createdAt: DateTime.now(),
-        ),
-        specialities: [],
-      );
-    }
-  }
-
-  // ==================== STREAMS ====================
-
-  Stream<List<ProspectDetails>> watchProspectsShared({int limit = 500}) {
-    _prospectsController ??= StreamController<List<ProspectDetails>>.broadcast(
-      onListen: () {},
-      onCancel: () {
-        if (!(_prospectsController?.hasListener ?? false)) {
-          _prospectsWatcher?.cancel().then((_) {
-            _prospectsWatcher = null;
-          }).catchError((_) {
-            _prospectsWatcher = null;
-          });
-        }
-      },
-    );
-
-    if (_prospectsWatcher != null) {
-      return _prospectsController!.stream;
-    }
-
-    try {
-      _prospectsWatcher = _isar.prospects
-          .where()
-          .sortByIdProspectDesc()
-          .limit(limit)
-          .watch(fireImmediately: true)
-          .asyncMap((_) async {
-        try {
-          final prospects = await _isar.prospects
-              .where()
-              .sortByIdProspectDesc()
-              .limit(limit)
-              .findAll();
-
-          if (prospects.isEmpty) return <ProspectDetails>[];
-
-          final List<ProspectDetails> results = [];
-          for (final prospect in prospects) {
-            await prospect.interets.load();
-            for (final interet in prospect.interets) {
-              await interet.specialite.load();
-            }
-            await prospect.classe.load();
-            if (prospect.classe.value != null) {
-              await prospect.classe.value!.ets.load();
-            }
-
-            final List<SpecialityDetail> specs = [];
-            for (final interet in prospect.interets) {
-              final specialite = interet.specialite.value;
-              if (specialite != null) {
-                specs.add(
-                  SpecialityDetail(
-                    libelleSpecialite: specialite.libelleSpecialite,
-                    orderPreference: interet.ordrePreference,
-                    niveau: interet.niveauInteret,
-                    commentaire: interet.commentaire ?? '',
-                  ),
-                );
-              }
-            }
-            specs
-                .sort((a, b) => a.orderPreference.compareTo(b.orderPreference));
-
-            final classe = prospect.classe.value;
-            final ets = classe?.ets.value;
-
-            results.add(
-              ProspectDetails(
-                prosp: prospect,
-                etablissement: ets!,
-                classe: classe!,
-                specialities: specs,
-              ),
-            );
-          }
-
-          return results;
-        } catch (e) {
-          print('❌ Error in shared prospects watcher: $e');
-          return <ProspectDetails>[];
-        }
-      }).listen(
-        (list) {
-          try {
-            _prospectsController?.add(list);
-          } catch (e) {
-            // ignore
-          }
-        },
-        onError: (e) {
-          _prospectsController?.addError(e);
-        },
-      );
-    } catch (e) {
-      print('❌ Error starting shared prospects watcher: $e');
-    }
-
-    return _prospectsController!.stream;
-  }
-
-  Stream<List<ProspectDetails>> watchProspectsWithSpecs({
-    int limit = 500,
-  }) async* {
-    try {
-      yield* _isar.prospects
-          .where()
-          .sortByIdProspectDesc()
-          .limit(limit)
-          .watch(fireImmediately: true)
-          .asyncMap((_) async {
-        try {
-          final prospects = await _isar.prospects
-              .where()
-              .sortByIdProspectDesc()
-              .limit(limit)
-              .findAll();
-
-          if (prospects.isEmpty) return <ProspectDetails>[];
-
-          final List<ProspectDetails> results = [];
-          for (final prospect in prospects) {
-            final details = await buildProspectDetails(prospect);
-            results.add(details);
-          }
-          return results;
-        } catch (e) {
-          print('Error in watchProspectsWithSpecs: $e');
-          return <ProspectDetails>[];
-        }
-      });
-    } catch (e) {
-      print('Error in watchProspectsWithSpecs: $e');
-      yield [];
     }
   }
 

@@ -2,12 +2,12 @@ from rest_framework.permissions import BasePermission
 
 class IsAdmin(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.profil.role == 'admin'
+        return request.user.is_authenticated and request.user.role == 'admin'
 
 class IsSuperviseur(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.profil.role in ['admin', 'superviseur']
+        return request.user.is_authenticated and request.user.role in ['admin', 'superviseur']
 
 class IsAgent(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.profil.role in ['admin', 'superviseur', 'agent']
+        return request.user.is_authenticated and request.user.role in ['admin', 'superviseur', 'agent']

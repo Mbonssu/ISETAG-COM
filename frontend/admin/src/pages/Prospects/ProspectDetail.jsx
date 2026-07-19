@@ -832,6 +832,9 @@ import StarRating from '../../components/StarRating';
 import { Prospect } from '../../models/prospect';
 import './Prospects.css';
 import { Tag, Building, Bell, MessageSquare, Clock } from 'lucide-react';
+import { ToastContainer } from '../../components/common/Toast';
+import { useTranslation } from '../../hooks/useTranslation';
+import { getErrorMessage } from '../../utils/errorMessages';
 
 // Mapping identique à celui de ProspectForm.jsx : niveauInteret est un texte
 // ("Faible" | "Moyen" | "Élevé" | "Très élevé"), pas un nombre. parseInt()
@@ -841,6 +844,7 @@ const NIVEAU_TO_STARS = { 'Faible': 1, 'Moyen': 2, 'Élevé': 3, 'Très élevé'
 const ProspectDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { t } = useTranslation();
 
   const [prospect, setProspect] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -849,6 +853,32 @@ const ProspectDetail = () => {
   const [fiche, setFiche] = useState(null);
   const [relances, setRelances] = useState([]);
   const [suivis, setSuivis] = useState([]);
+  const [toasts, setToasts] = useState([]);
+
+  const addToast = (message, type = 'success') => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => removeToast(id), 3000);
+  };
+
+  const removeToast = (id) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
+
+  // ⚠️ CORRIGÉ : le backend a fait évoluer certains schémas (fiches
+  // notamment) d'un champ "idProspect" unique vers un tableau
+  // "prospects[]". Ce helper matche les deux formats pour ne pas casser
+  // le filtrage si relances/suivis suivent la même évolution.
+  const entityConcerneProspect = (entity, prospectId) => {
+    if (!entity) return false;
+    if (entity.idProspect === prospectId) return true;
+    if (entity.prospect_detail?.idProspect === prospectId) return true;
+    if (entity.prospect_details?.idProspect === prospectId) return true;
+    if (Array.isArray(entity.prospects)) {
+      return entity.prospects.some((p) => p.idProspect === prospectId);
+    }
+    return false;
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -893,7 +923,7 @@ const ProspectDetail = () => {
         try {
           const raw = await ficheService.getAll();
           const list = Array.isArray(raw) ? raw : (raw?.results ?? []);
-          const ficheDuProspect = list.find((f) => f.idProspect === id);
+          const ficheDuProspect = list.find((f) => entityConcerneProspect(f, id));
           if (ficheDuProspect) {
             let etablissementNom = null;
             const idSortie = ficheDuProspect.participation_detail?.idSortie;
@@ -924,7 +954,7 @@ const ProspectDetail = () => {
         try {
           const raw = await relanceService.getAll();
           const list = Array.isArray(raw) ? raw : (raw?.results ?? []);
-          setRelances(list.filter((r) => r.idProspect === id));
+          setRelances(list.filter((r) => entityConcerneProspect(r, id)));
         } catch (err) {
           console.warn('⚠️ Impossible de charger les relances:', err);
           setRelances([]);
@@ -934,20 +964,22 @@ const ProspectDetail = () => {
         try {
           const raw = await suiviService.getAll();
           const list = Array.isArray(raw) ? raw : (raw?.results ?? []);
-          setSuivis(list.filter((s) => s.idProspect === id));
+          setSuivis(list.filter((s) => entityConcerneProspect(s, id)));
         } catch (err) {
           console.warn('⚠️ Impossible de charger les suivis:', err);
           setSuivis([]);
         }
       } catch (err) {
         console.error('❌ Erreur:', err);
-        setError(err.message);
+        setError(getErrorMessage(err, t));
+        addToast(getErrorMessage(err, t), 'error');
       } finally {
         setLoading(false);
       }
     };
 
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   // ============================================================
@@ -984,12 +1016,35 @@ const ProspectDetail = () => {
     );
   };
 
-  if (loading) return <p className="page-loading">Chargement…</p>;
-  if (error) return <p className="form-error">{error}</p>;
-  if (!prospect) return <p className="form-error">Prospect introuvable.</p>;
+  if (loading) {
+    return (
+      <>
+        <ToastContainer toasts={toasts} removeToast={removeToast} />
+        <p className="page-loading">Chargement…</p>
+      </>
+    );
+  }
+  if (error) {
+    return (
+      <>
+        <ToastContainer toasts={toasts} removeToast={removeToast} />
+        <p className="form-error">{error}</p>
+      </>
+    );
+  }
+  if (!prospect) {
+    return (
+      <>
+        <ToastContainer toasts={toasts} removeToast={removeToast} />
+        <p className="form-error">Prospect introuvable.</p>
+      </>
+    );
+  }
 
   return (
     <div className="page-container">
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
+
       <div className="page-header-actions">
         <div>
           <h1 className="page-title-h1">Détail du prospect</h1>

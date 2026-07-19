@@ -6,7 +6,7 @@ const BASE_URL = '/user_api/ISETAG_COM.users/';
 export const userService = {
   /** GET /user_api/ISETAG_COM.users/ -> liste de tous les utilisateurs (tableau direct) */
   getAll: (params = {}) => {
-    // ✅ Filtrer les paramètres undefined et null
+    //  Filtrer les paramètres undefined et null
     const cleanParams = {};
     Object.keys(params).forEach(key => {
       if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
@@ -15,13 +15,13 @@ export const userService = {
     });
 
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all users:', queryString || 'sans paramètres');
+    ('📡 GET all users:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
   /** GET /user_api/ISETAG_COM.users/<pk>/ -> un utilisateur précis */
   getById: (pk) => {
-    console.log('📡 GET user by id:', pk);
+    ('📡 GET user by id:', pk);
     return api.get(`${BASE_URL}${pk}/`);
   },
 
@@ -31,7 +31,7 @@ export const userService = {
    * utilise MultiPartParser ; sinon on envoie du JSON classique.
    */
   create: (userData) => {
-    console.log('📡 POST create user:', userData);
+    ('📡 POST create user:', userData);
     if (userData.photoProfil instanceof File) {
       return api.post(BASE_URL, buildFormData(userData));
     }
@@ -43,7 +43,7 @@ export const userService = {
    * Même règle FormData/JSON que create().
    */
   update: (pk, userData) => {
-    console.log('📡 PUT update user:', pk, userData);
+    ('📡 PUT update user:', pk, userData);
     if (userData.photoProfil instanceof File) {
       return api.put(`${BASE_URL}${pk}/`, buildFormData(userData));
     }
@@ -52,7 +52,7 @@ export const userService = {
 
   /** DELETE /user_api/ISETAG_COM.users/<pk>/ */
   delete: (pk) => {
-    console.log('📡 DELETE user:', pk);
+    ('📡 DELETE user:', pk);
     return api.delete(`${BASE_URL}${pk}/`);
   },
 };

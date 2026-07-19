@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from drf_spectacular.utils import extend_schema, extend_schema_view
 # from .ws_utils import notify_service_created, notify_service_updated, notify_service_deleted
-# from authentification.permissions import IsAdmin, IsSuperviseur,IsAgent
+from authentification.permissions import IsAdmin, IsSuperviseur,IsAgent
 
 
 @extend_schema_view(
@@ -20,22 +20,29 @@ class CampagneView(APIView):
     
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     
-    # def get_permissions(self):
-    #     """
-    #     Permissions différentes selon la méthode HTTP.
-    #     """
-    #     if self.request.method == 'GET':
-    #         return [IsSuperviseur()]   # admins + superviseurs
-    #     elif self.request.method == 'POST':
-    #         return [IsAgent()]         # admins seulement
-    #     elif self.request.method == 'PUT':
-    #         return [IsAgent()]         # tous les rôles
-    #     elif self.request.method == 'DELETE':
-    #         return [IsAdmin()]         # admins seulement
-    #     return [IsAdmin()]             # fallback sécurisé
+    def get_permissions(self):
+        """
+        Permissions différentes selon la méthode HTTP.
+        """
+        if self.request.method == 'GET':
+            return [IsSuperviseur()]   # admins + superviseurs
+        elif self.request.method == 'POST':
+            return [IsAgent()]         # admins seulement
+        elif self.request.method == 'PUT':
+            return [IsAgent()]         # tous les rôles
+        elif self.request.method == 'DELETE':
+            return [IsAdmin()]         # admins seulement
+        return [IsAdmin()]             # fallback sécurisé
 
     
-    def get(self, request):
+    def get(self, request, pk=None):
+        if pk is not None:
+            try:
+                campagne = CampagneProspection.objects.get(pk=pk)
+                serializer = CampagneProspectionSerializer(campagne)
+                return Response(serializer.data)
+            except CampagneProspection.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
         campagnes = CampagneProspection.objects.all()
         serializer = CampagneProspectionSerializer(campagnes, many=True)
         return Response(serializer.data)
@@ -79,21 +86,28 @@ class ZoneView(APIView):
     
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     
-    # def get_permissions(self):
-    #     """
-    #     Permissions différentes selon la méthode HTTP.
-    #     """
-    #     if self.request.method == 'GET':
-    #         return [IsSuperviseur()]   # admins + superviseurs
-    #     elif self.request.method == 'POST':
-    #         return [IsAgent()]         # admins seulement
-    #     elif self.request.method == 'PUT':
-    #         return [IsAgent()]         # tous les rôles
-    #     elif self.request.method == 'DELETE':
-    #         return [IsAdmin()]         # admins seulement
-    #     return [IsAdmin()]             # fallback sécurisé
+    def get_permissions(self):
+        """
+        Permissions différentes selon la méthode HTTP.
+        """
+        if self.request.method == 'GET':
+            return [IsSuperviseur()]   # admins + superviseurs
+        elif self.request.method == 'POST':
+            return [IsAgent()]         # admins seulement
+        elif self.request.method == 'PUT':
+            return [IsAgent()]         # tous les rôles
+        elif self.request.method == 'DELETE':
+            return [IsAdmin()]         # admins seulement
+        return [IsAdmin()]             # fallback sécurisé
     
-    def get(self, request):
+    def get(self, request, pk=None):
+        if(pk):
+            try:
+                Zones = Zone.objects.filter(idZone=pk)
+                serializer = ZoneSerializer(Zones, many=True)
+                return Response(serializer.data)
+            except Zone.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
         zones = Zone.objects.all()
         serializer = ZoneSerializer(zones, many=True)
         return Response(serializer.data)
@@ -137,21 +151,28 @@ class SortieView(APIView):
         
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     
-    # def get_permissions(self):
-    #     """
-    #     Permissions différentes selon la méthode HTTP.
-    #     """
-    #     if self.request.method == 'GET':
-    #         return [IsSuperviseur()]   # admins + superviseurs
-    #     elif self.request.method == 'POST':
-    #         return [IsAgent()]         # admins seulement
-    #     elif self.request.method == 'PUT':
-    #         return [IsAgent()]         # tous les rôles
-    #     elif self.request.method == 'DELETE':
-    #         return [IsAdmin()]         # admins seulement
-    #     return [IsAdmin()]             # fallback sécurisé
+    def get_permissions(self):
+        """
+        Permissions différentes selon la méthode HTTP.
+        """
+        if self.request.method == 'GET':
+            return [IsSuperviseur()]   # admins + superviseurs
+        elif self.request.method == 'POST':
+            return [IsAgent()]         # admins seulement
+        elif self.request.method == 'PUT':
+            return [IsAgent()]         # tous les rôles
+        elif self.request.method == 'DELETE':
+            return [IsAdmin()]         # admins seulement
+        return [IsAdmin()]             # fallback sécurisé
     
-    def get(self, request):
+    def get(self, request, pk=None):
+        if pk is not None:
+            try:
+                sortie = Sortie.objects.get(pk=pk)
+                serializer = SortieSerializer(sortie)
+                return Response(serializer.data)
+            except Sortie.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
         sorties = Sortie.objects.all()
         serializer = SortieSerializer(sorties, many=True)
         return Response(serializer.data)
@@ -195,21 +216,28 @@ class SourceView(APIView):
         
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     
-    # def get_permissions(self):
-    #     """
-    #     Permissions différentes selon la méthode HTTP.
-    #     """
-    #     if self.request.method == 'GET':
-    #         return [IsSuperviseur()]   # admins + superviseurs
-    #     elif self.request.method == 'POST':
-    #         return [IsAgent()]         # admins seulement
-    #     elif self.request.method == 'PUT':
-    #         return [IsAgent()]         # tous les rôles
-    #     elif self.request.method == 'DELETE':
-    #         return [IsAdmin()]         # admins seulement
-    #     return [IsAdmin()]             # fallback sécurisé
+    def get_permissions(self):
+        """
+        Permissions différentes selon la méthode HTTP.
+        """
+        if self.request.method == 'GET':
+            return [IsSuperviseur()]   # admins + superviseurs
+        elif self.request.method == 'POST':
+            return [IsAgent()]         # admins seulement
+        elif self.request.method == 'PUT':
+            return [IsAgent()]         # tous les rôles
+        elif self.request.method == 'DELETE':
+            return [IsAdmin()]         # admins seulement
+        return [IsAdmin()]             # fallback sécurisé
     
-    def get(self, request):
+    def get(self, request, pk=None):
+        if(pk):
+            try:
+                sources = source.objects.filter(idSource=pk)
+            except source.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            serializer = SourceSerializer(sources, many=True)
+            return Response(serializer.data)
         sources = source.objects.all()
         serializer = SourceSerializer(sources, many=True)
         return Response(serializer.data)
@@ -253,21 +281,28 @@ class ParticipationView(APIView):
         
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     
-    # def get_permissions(self):
-    #     """
-    #     Permissions différentes selon la méthode HTTP.
-    #     """
-    #     if self.request.method == 'GET':
-    #         return [IsSuperviseur()]   # admins + superviseurs
-    #     elif self.request.method == 'POST':
-    #         return [IsAgent()]         # admins seulement
-    #     elif self.request.method == 'PUT':
-    #         return [IsAgent()]         # tous les rôles
-    #     elif self.request.method == 'DELETE':
-    #         return [IsAdmin()]         # admins seulement
-    #     return [IsAdmin()]             # fallback sécurisé
+    def get_permissions(self):
+        """
+        Permissions différentes selon la méthode HTTP.
+        """
+        if self.request.method == 'GET':
+            return [IsSuperviseur()]   # admins + superviseurs
+        elif self.request.method == 'POST':
+            return [IsAgent()]         # admins seulement
+        elif self.request.method == 'PUT':
+            return [IsAgent()]         # tous les rôles
+        elif self.request.method == 'DELETE':
+            return [IsAdmin()]         # admins seulement
+        return [IsAdmin()]             # fallback sécurisé
     
-    def get(self, request):
+    def get(self, request, pk=None):
+        if pk is not None:
+            try:
+                participation_instance = Participation.objects.get(pk=pk)
+                serializer = ParticipationSerializer(participation_instance)
+                return Response(serializer.data)
+            except Participation.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
         participations = Participation.objects.all()
         serializer = ParticipationSerializer(participations, many=True)
         return Response(serializer.data)
@@ -311,21 +346,28 @@ class ficheSortieView(APIView):
         
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     
-    # def get_permissions(self):
-    #     """
-    #     Permissions différentes selon la méthode HTTP.
-    #     """
-    #     if self.request.method == 'GET':
-    #         return [IsSuperviseur()]   # admins + superviseurs
-    #     elif self.request.method == 'POST':
-    #         return [IsAgent()]         # admins seulement
-    #     elif self.request.method == 'PUT':
-    #         return [IsAgent()]         # tous les rôles
-    #     elif self.request.method == 'DELETE':
-    #         return [IsAdmin()]         # admins seulement
-    #     return [IsAdmin()]             # fallback sécurisé
+    def get_permissions(self):
+        """
+        Permissions différentes selon la méthode HTTP.
+        """
+        if self.request.method == 'GET':
+            return [IsSuperviseur()]   # admins + superviseurs
+        elif self.request.method == 'POST':
+            return [IsAgent()]         # admins seulement
+        elif self.request.method == 'PUT':
+            return [IsAgent()]         # tous les rôles
+        elif self.request.method == 'DELETE':
+            return [IsAdmin()]         # admins seulement
+        return [IsAdmin()]             # fallback sécurisé
     
-    def get(self, request):
+    def get(self, request, pk=None):
+        if(pk):
+            try:
+                fiches = ficheSortie.objects.filter(idFiche=pk)
+            except ficheSortie.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            serializer = ficheSortieSerializer(fiches, many=True)
+            return Response(serializer.data)
         fiches = ficheSortie.objects.all()
         serializer = ficheSortieSerializer(fiches, many=True)
         return Response(serializer.data)
@@ -369,22 +411,26 @@ class etablissementView(APIView):
     
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     
-    # def get_permissions(self):
-    #     """
-    #     Permissions différentes selon la méthode HTTP.
-    #     """
-    #     if self.request.method == 'GET':
-    #         return [IsSuperviseur()]   # admins + superviseurs
-    #     elif self.request.method == 'POST':
-    #         return [IsAgent()]         # admins seulement
-    #     elif self.request.method == 'PUT':
-    #         return [IsAgent()]         # tous les rôles
-    #     elif self.request.method == 'DELETE':
-    #         return [IsAdmin()]         # admins seulement
-    #     return [IsAdmin()]             # fallback sécurisé
+    def get_permissions(self):
+        """
+        Permissions différentes selon la méthode HTTP.
+        """
+        if self.request.method == 'GET':
+            return [IsSuperviseur()]   # admins + superviseurs
+        elif self.request.method == 'POST':
+            return [IsAgent()]         # admins seulement
+        elif self.request.method == 'PUT':
+            return [IsAgent()]         # tous les rôles
+        elif self.request.method == 'DELETE':
+            return [IsAdmin()]         # admins seulement
+        return [IsAdmin()]             # fallback sécurisé
     
-    def get(self, request):
-        etablissements = Etablissement.objects.all()
+    def get(self, request,pk=None):
+        if pk is None:
+            etablissements = Etablissement.objects.all()
+        else:
+            etablissements = Etablissement.objects.filter(pk=pk)
+
         serializer = etablissementSerializer(etablissements, many=True)
         return Response(serializer.data)
     
@@ -415,3 +461,67 @@ class etablissementView(APIView):
 
         etablissement_instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+@extend_schema(
+    tags=['Sorties'],
+    summary="Récupérer ma sortie active",
+    description=(
+        "Retourne la sortie au statut 'En-cours' à laquelle l'agent connecté "
+        "participe actuellement, via sa Participation existante."
+    ),
+    responses={200: SortieSerializer, 404: None},
+)
+class MaSortieActiveView(APIView):
+
+    def get(self, request):
+        participation = Participation.objects.filter(
+            idUtilisateur=request.user,
+            idSortie__statut='en-cours',
+        ).order_by('-idSortie__dateSortie').first()
+
+        if participation is None:
+            return Response(
+                {"detail": "Aucune participation active trouvée."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        print(
+            f"user: {request.user}, "
+            f"participation: {participation.idParticipation}, "
+            f"sortie: {participation.idSortie}, "
+            f"statut: {participation.idSortie.statut}"
+        )
+
+        sortie_serializer = SortieSerializer(participation.idSortie)
+
+        response_data = {
+            "idParticipation": participation.idPartici.pation,
+            "sortie": sortie_serializer.data,
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+
+"""
+class MaSortieActiveView(APIView):
+
+    def get(self, request):
+        participation = Participation.objects.filter(
+            idUtilisateur=request.user,
+            idSortie__statut='en-cours',
+            #idSortie__statut='En-cours',
+        ).order_by('-idSortie__dateSortie').first()
+
+        if participation is None:
+            return Response(
+                {"detail": "Aucune participation active trouvée."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        
+        print(f"user: {request.user}, sortie: {participation.idSortie}, statut: {participation.idSortie.statut}")
+
+        serializer = SortieSerializer(participation.idSortie)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+"""
+        

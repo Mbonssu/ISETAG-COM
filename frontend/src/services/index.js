@@ -124,7 +124,7 @@ export { userService } from './userService';
 /**
  * Service de gestion des spécialités
  *
- * ⚠️ CORRIGÉ : ce projet n'a pas de notion de "filière" côté backend.
+ *  CORRIGÉ : ce projet n'a pas de notion de "filière" côté backend.
  * L'API (ISETAG_COM_API.yaml) expose uniquement :
  *   /specialite_api/ISETAG_COM.specialites/
  * Le fichier filiereService.js exporte donc réellement `specialiteService`
@@ -289,10 +289,10 @@ export { ficheService } from './ficheService';
  * APRÈS (avec index.js) :
  *   import { api, userService, prospectService } from '../services';
  * 
- * ✅ Code plus propre
- * ✅ Moins d'imports à gérer
- * ✅ Facile à refactoriser
- * ✅ Centralisation des services
+ *  Code plus propre
+ *  Moins d'imports à gérer
+ *  Facile à refactoriser
+ *  Centralisation des services
  */
 
 export { suiviService } from './suiviService';

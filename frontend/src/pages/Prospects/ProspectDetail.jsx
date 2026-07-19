@@ -50,11 +50,11 @@
 // //             setInterets(interetsWithDetails);
 // //           }
 // //         } catch (err) {
-// //           console.warn('⚠️ Aucun niveau d\'intérêt trouvé:', err);
+// //           console.warn(' Aucun niveau d\'intérêt trouvé:', err);
 // //           setInterets([]);
 // //         }
 // //       } catch (err) {
-// //         console.error('❌ Erreur:', err);
+// //         console.error(' Erreur:', err);
 // //         setError(err.message);
 // //       } finally {
 // //         setLoading(false);
@@ -299,7 +299,7 @@
 //         // Charger les niveaux d'intérêt
 //         try {
 //           const interetsData = await interetService.getByProspect(id);
-//           console.log('🔍 DEBUG - forme brute de la réponse getByProspect:', interetsData);
+//           ('🔍 DEBUG - forme brute de la réponse getByProspect:', interetsData);
 //           if (Array.isArray(interetsData) && interetsData.length > 0) {
 //             const interetsWithDetails = await Promise.all(
 //               interetsData.map(async (interet) => {
@@ -322,11 +322,11 @@
 //             setInterets(interetsWithDetails);
 //           }
 //         } catch (err) {
-//           console.warn('⚠️ Aucun niveau d\'intérêt trouvé:', err);
+//           console.warn(' Aucun niveau d\'intérêt trouvé:', err);
 //           setInterets([]);
 //         }
 //       } catch (err) {
-//         console.error('❌ Erreur:', err);
+//         console.error(' Erreur:', err);
 //         setError(err.message);
 //       } finally {
 //         setLoading(false);
@@ -598,11 +598,11 @@ const ProspectDetail = () => {
             setInterets(interetsWithDetails);
           }
         } catch (err) {
-          console.warn('⚠️ Aucun niveau d\'intérêt trouvé:', err);
+          console.warn(' Aucun niveau d\'intérêt trouvé:', err);
           setInterets([]);
         }
       } catch (err) {
-        console.error('❌ Erreur:', err);
+        console.error(' Erreur:', err);
         setError(err.message);
       } finally {
         setLoading(false);

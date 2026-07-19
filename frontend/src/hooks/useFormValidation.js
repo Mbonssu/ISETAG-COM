@@ -10,7 +10,7 @@
 //   // ============================================================
 
 //   const validateField = (name, value) => {
-//     // ✅ Vérifier si le champ existe dans les règles
+//     //  Vérifier si le champ existe dans les règles
 //     if (!rules || !rules[name]) {
 //       return ''; // Pas de règles = pas d'erreur
 //     }
@@ -233,7 +233,7 @@
 
 import { useState, useCallback } from 'react';
 
-// ⚠️ CORRIGÉ : toutes les fonctions retournées par ce hook sont maintenant
+//  CORRIGÉ : toutes les fonctions retournées par ce hook sont maintenant
 // mémoïsées avec useCallback. Avant, elles étaient redéfinies à CHAQUE
 // re-render (nouvelles références à chaque fois), ce qui cassait n'importe
 // quel useEffect/useCallback ailleurs qui les mettait en dépendance

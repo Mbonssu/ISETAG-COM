@@ -6,8 +6,8 @@ import 'config/app_config.dart';
 import 'provider/auth_provider.dart';
 import 'routes/app_router.dart';
 import 'screens/splash_screen.dart';
-// import 'package:timezone/timezone.dart' as tz;
-// import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 
 import 'services/notification_service.dart';
 
@@ -18,28 +18,14 @@ Future<void> main() async {
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,
   ));
-  // print("Calling healtcheck");
-  // final ApiService _api = ApiService();
-  // await _api.healthCheck();
+
   // ✅ ONLY initialize timezone here (lightweight)
-  // tz.initializeTimeZones();
-  // final location = tz.getLocation('Africa/Lagos');
-  // tz.setLocalLocation(location);
-  await NotificationService.instance.initialize();
-  final authProvider = AuthProvider();
-  await authProvider.init();
-  //print("Generating tests data....");
-  // ✅ Générer les données de test
-  // await TestDataGenerator.generate500Prospects();
+  tz.initializeTimeZones();
+  final location = tz.getLocation('Africa/Lagos');
+  tz.setLocalLocation(location);
+
   // ✅ Run app immediately - splash screen shows quickly
-  runApp( MultiProvider(
-      providers: [
-        ChangeNotifierProvider<AuthProvider>.value(
-          value: authProvider,
-        ),
-      ],
-      child: const IsetagApp(),
-    ),);
+  runApp(const IsetagApp());
 }
 // If you only need to sync once
 

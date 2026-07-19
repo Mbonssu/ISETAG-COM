@@ -5,7 +5,7 @@ import { getExportHeaderHTML } from '../components/ExportHeader/ExportHeader';
 // Export vers Excel avec en-tête
 export const exportToExcel = (data, filename, sheetName = 'Sheet1', headerOptions = {}) => {
   try {
-    console.log('exportToExcel called with:', { filename, dataLength: data.length });
+    ('exportToExcel called with:', { filename, dataLength: data.length });
     
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
@@ -35,7 +35,7 @@ export const exportToExcel = (data, filename, sheetName = 'Sheet1', headerOption
 // Export vers CSV avec en-tête
 export const exportToCSV = (data, filename, headerOptions = {}) => {
   try {
-    console.log('exportToCSV called with:', { filename, dataLength: data.length });
+    ('exportToCSV called with:', { filename, dataLength: data.length });
     
     const ws = XLSX.utils.json_to_sheet(data);
     const csvBuffer = XLSX.write(ws, { bookType: 'csv', type: 'array' });
@@ -63,7 +63,7 @@ export const exportToCSV = (data, filename, headerOptions = {}) => {
 // Export vers JSON avec en-tête
 export const exportToJSON = (data, filename, headerOptions = {}) => {
   try {
-    console.log('exportToJSON called with:', { filename, dataLength: data.length });
+    ('exportToJSON called with:', { filename, dataLength: data.length });
     
     const exportObject = {
       metadata: {
@@ -88,7 +88,7 @@ export const exportToJSON = (data, filename, headerOptions = {}) => {
 // Export vers PDF stylisé avec en-tête
 export const exportToStyledPDF = async (data, title, columns, filename, headerOptions = {}) => {
   try {
-    console.log('exportToStyledPDF called with:', { title, filename, dataLength: data.length });
+    ('exportToStyledPDF called with:', { title, filename, dataLength: data.length });
     
     // Créer un élément temporaire pour le rendu
     const tempDiv = document.createElement('div');

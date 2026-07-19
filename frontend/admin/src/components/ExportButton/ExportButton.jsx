@@ -1,46 +1,151 @@
-import React, { useState } from 'react';
-import { Download, FileSpreadsheet, FileJson, FileText, FileImage } from 'lucide-react';
+// import React, { useState, useRef, useEffect } from 'react';
+// import { Download, FileSpreadsheet, FileText, FileJson, Loader } from 'lucide-react';
+// import { useExport } from '../../hooks/useExport';
+// import './ExportButton.css';
+
+// /**
+//  * Bouton d'export réutilisable (Excel / PDF / CSV), à placer dans
+//  * n'importe quelle page de liste.
+//  *
+//  * Usage :
+//  *   <ExportButton
+//  *     data={filteredProspects}
+//  *     filename="prospects"
+//  *     title="Liste des prospects"
+//  *     columns={[
+//  *       { key: 'nomComplet', label: 'Nom complet' },
+//  *       { key: 'telephone', label: 'Téléphone' },
+//  *       { key: 'email', label: 'Email' },
+//  *     ]}
+//  *     filters={{ Recherche: searchTerm || 'Aucune' }}
+//  *   />
+//  *
+//  * - `data` : le tableau d'objets à exporter (idéalement déjà filtré)
+//  * - `columns` : définit l'ordre et les libellés des colonnes pour le PDF ;
+//  *   pour Excel/CSV, seules les clés listées dans `columns` sont exportées
+//  *   (évite d'exporter des champs internes/techniques par erreur)
+//  */
+// const ExportButton = ({ data = [], filename = 'export', title = 'Export', columns = [], filters = {} }) => {
+//   const { isExporting, exportToExcel, exportToCSV, exportToPDF } = useExport();
+//   const [open, setOpen] = useState(false);
+//   const ref = useRef(null);
+
+//   useEffect(() => {
+//     const onClickOutside = (e) => {
+//       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+//     };
+//     document.addEventListener('mousedown', onClickOutside);
+//     return () => document.removeEventListener('mousedown', onClickOutside);
+//   }, []);
+
+//   // Ne garde que les colonnes définies, avec leurs libellés, pour Excel/CSV
+//   const shapeData = () => {
+//     if (!columns.length) return data;
+//     return data.map((item) => {
+//       const row = {};
+//       columns.forEach((col) => { row[col.label] = item[col.key] ?? ''; });
+//       return row;
+//     });
+//   };
+
+//   const handleExport = async (type) => {
+//     setOpen(false);
+//     if (data.length === 0) return;
+//     const shaped = shapeData();
+//     if (type === 'excel') await exportToExcel(shaped, filename, title, filters);
+//     if (type === 'csv') await exportToCSV(shaped, filename, title, filters);
+//     if (type === 'pdf') await exportToPDF(data, filename, title, filters, columns);
+//   };
+
+//   return (
+//     <div className="export-btn-wrap" ref={ref}>
+//       <button className="btn-outline" onClick={() => setOpen((v) => !v)} disabled={isExporting || data.length === 0}>
+//         {isExporting ? <Loader size={16} className="spin" /> : <Download size={16} />}
+//         {isExporting ? 'Export en cours…' : 'Exporter'}
+//       </button>
+//       {open && (
+//         <div className="export-dropdown">
+//           <button onClick={() => handleExport('excel')}><FileSpreadsheet size={15} /> Excel (.xlsx)</button>
+//           <button onClick={() => handleExport('pdf')}><FileText size={15} /> PDF</button>
+//           <button onClick={() => handleExport('csv')}><FileJson size={15} /> CSV</button>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default ExportButton;
+
+import React, { useState, useRef, useEffect } from 'react';
+import { Download, FileSpreadsheet, FileText, FileJson, Loader } from 'lucide-react';
 import { useExport } from '../../hooks/useExport';
+import './ExportButton.css';
 
-const ExportButton = ({ data, filename, title, filters, columns }) => {
-  const [showMenu, setShowMenu] = useState(false);
-  const { isExporting, exportToExcel, exportToCSV, exportToJSON, exportToPDF } = useExport();
+/**
+ * Bouton d'export réutilisable (Excel / PDF / CSV), à placer dans
+ * n'importe quelle page de liste.
+ *
+ * Usage :
+ *   <ExportButton
+ *     data={filteredProspects}
+ *     filename="prospects"
+ *     title="Liste des prospects"
+ *     columns={[
+ *       { key: 'nomComplet', label: 'Nom complet' },
+ *       { key: 'telephone', label: 'Téléphone' },
+ *       { key: 'email', label: 'Email' },
+ *     ]}
+ *     filters={{ Recherche: searchTerm || 'Aucune' }}
+ *   />
+ *
+ * - `data` : le tableau d'objets à exporter (idéalement déjà filtré)
+ * - `columns` : définit l'ordre et les libellés des colonnes pour le PDF ;
+ *   pour Excel/CSV, seules les clés listées dans `columns` sont exportées
+ *   (évite d'exporter des champs internes/techniques par erreur)
+ */
+const ExportButton = ({ data = [], filename = 'export', title = 'Export', columns = [], filters = {} }) => {
+  const { isExporting, exportToExcel, exportToCSV, exportToPDF } = useExport();
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
 
-  const handleExport = async (format) => {
-    let success = false;
-    switch(format) {
-      case 'excel':
-        success = exportToExcel(data, filename, title, filters);
-        break;
-      case 'csv':
-        success = exportToCSV(data, filename, title, filters);
-        break;
-      case 'json':
-        success = exportToJSON(data, filename, title, filters);
-        break;
-      case 'pdf':
-        success = await exportToPDF(data, filename, title, filters, columns);
-        break;
-      default:
-        success = exportToExcel(data, filename, title, filters);
-    }
-    setShowMenu(false);
+  useEffect(() => {
+    const onClickOutside = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
+
+  // Ne garde que les colonnes définies, avec leurs libellés, pour Excel/CSV
+  const shapeData = () => {
+    if (!columns.length) return data;
+    return data.map((item) => {
+      const row = {};
+      columns.forEach((col) => { row[col.label] = item[col.key] ?? ''; });
+      return row;
+    });
   };
 
-  if (!data || data.length === 0) return null;
+  const handleExport = async (type) => {
+    setOpen(false);
+    if (data.length === 0) return;
+    const shaped = shapeData();
+    if (type === 'excel') await exportToExcel(shaped, filename, title, filters);
+    if (type === 'csv') await exportToCSV(shaped, filename, title, filters);
+    if (type === 'pdf') await exportToPDF(data, filename, title, filters, columns);
+  };
 
   return (
-    <div className="export-dropdown">
-      <button className="btn-outline" onClick={() => setShowMenu(!showMenu)} disabled={isExporting}>
-        <Download size={18} />
-        {isExporting ? 'Export...' : 'Exporter'}
+    <div className="exportbtn-wrap" ref={ref}>
+      <button className="btn-outline" onClick={() => setOpen((v) => !v)} disabled={isExporting || data.length === 0}>
+        {isExporting ? <Loader size={16} className="spin" /> : <Download size={16} />}
+        {isExporting ? 'Export en cours…' : 'Exporter'}
       </button>
-      {showMenu && (
-        <div className="export-menu">
-          <button onClick={() => handleExport('excel')}><FileSpreadsheet size={16} /> Excel (.xlsx)</button>
-          <button onClick={() => handleExport('csv')}><FileText size={16} /> CSV (.csv)</button>
-          <button onClick={() => handleExport('json')}><FileJson size={16} /> JSON (.json)</button>
-          <button onClick={() => handleExport('pdf')}><FileImage size={16} /> PDF</button>
+      {open && (
+        <div className="exportbtn-menu">
+          <button onClick={() => handleExport('excel')}><FileSpreadsheet size={15} /> Excel (.xlsx)</button>
+          <button onClick={() => handleExport('pdf')}><FileText size={15} /> PDF</button>
+          <button onClick={() => handleExport('csv')}><FileJson size={15} /> CSV</button>
         </div>
       )}
     </div>

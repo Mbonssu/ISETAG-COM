@@ -42,8 +42,8 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animationController.forward();
 
-    // ✅ Initialize app and navigate after 2 seconds
-    Future.delayed(const Duration(seconds: 2), _initializeApp);
+    // ✅ Initialize app in background
+    _initializeApp();
   }
 
   Future<void> _initializeApp() async {
@@ -103,6 +103,7 @@ class _SplashScreenState extends State<SplashScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // ✅ Image with rounded borders - No orange container
                       Container(
                         width: 120,
                         height: 120,

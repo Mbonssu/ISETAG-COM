@@ -22,13 +22,13 @@ class FicheExcelExportService {
       verticalAlign: VerticalAlign.Center,
     );
 
-    // ✅ FIXED: Using textWrapping: TextWrapping.WrapText
+    //  FIXED: Using textWrapping: TextWrapping.WrapText
     final CellStyle zebraStyle = CellStyle(
       backgroundColorHex: ExcelColor.fromHexString('#F5F5F5'), // backgroundGrey
       fontColorHex: ExcelColor.fromHexString('#1A1A1A'), // textPrimary
       fontFamily: getFontFamily(FontFamily.Arial),
       verticalAlign: VerticalAlign.Top, // Top-align text for rows that stretch vertically
-      textWrapping: TextWrapping.WrapText, // ✅ Tells Excel to break lines on \n
+      textWrapping: TextWrapping.WrapText, //  Tells Excel to break lines on \n
     );
 
     final CellStyle normalStyle = CellStyle(
@@ -36,7 +36,7 @@ class FicheExcelExportService {
       fontColorHex: ExcelColor.fromHexString('#1A1A1A'), // textPrimary
       fontFamily: getFontFamily(FontFamily.Arial),
       verticalAlign: VerticalAlign.Top, // Top-align text for rows that stretch vertically
-      textWrapping: TextWrapping.WrapText, // ✅ Tells Excel to break lines on \n
+      textWrapping: TextWrapping.WrapText, //  Tells Excel to break lines on \n
     );
 
     // Write Master Fiche Info Rows at top

@@ -4,7 +4,7 @@ import { relanceService } from '../services/relanceService';
 /**
  * Hook global de notification des relances.
  *
- * ⚠️ Limite honnête : ceci vérifie périodiquement (toutes les 30s) pendant
+ *  Limite honnête : ceci vérifie périodiquement (toutes les 30s) pendant
  * que l'application est ouverte dans le navigateur. Ça ne peut PAS envoyer
  * une notification si l'app est complètement fermée (pas d'onglet ouvert) —
  * ça demanderait des notifications push serveur (Web Push + backend dédié),
@@ -109,7 +109,7 @@ export const useRelanceNotifications = () => {
 
       sauvegarderIdsNotifiees(notifiedIdsRef.current);
     } catch (err) {
-      console.warn('⚠️ Impossible de vérifier les relances pour notification:', err);
+      console.warn(' Impossible de vérifier les relances pour notification:', err);
     }
   }, [addToast]);
 

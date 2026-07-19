@@ -2,7 +2,7 @@
  * Modèle Suivi - Correspond aux données RÉELLEMENT renvoyées par le backend
  * (schéma SuiviProspect / SuiviProspectRequest de ISETAG_COM_API.yaml)
  *
- * ⚠️ CORRIGÉ : le backend n'a QUE ces champs. Il n'existe PAS de
+ *  CORRIGÉ : le backend n'a QUE ces champs. Il n'existe PAS de
  * typeSuivi, idAgent, statut ni prochainAction côté serveur — ces champs
  * ont été retirés (ils n'étaient jamais réellement sauvegardés).
  *

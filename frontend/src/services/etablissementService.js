@@ -5,7 +5,7 @@
  *   /campagne_api/ISETAG_COM.etablissements/        (GET liste, POST création)
  *   /campagne_api/ISETAG_COM.etablissements/<id>/   (GET un, PUT, DELETE)
  *
- * ⚠️ Corrigé :
+ *  Corrigé :
  * - L'ancienne URL "/etablissement_api/ISETAG_COM.etablissements/"
  *   n'existe pas dans l'API : le préfixe réel est "campagne_api".
  * - getClasses()/addClasse() ont été retirées : aucune route
@@ -26,28 +26,28 @@ export const etablissementService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all etablissements:', queryString || 'sans paramètres');
+    ('📡 GET all etablissements:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
   getById: (idEtablissement) => {
-    console.log('📡 GET etablissement by ID:', idEtablissement);
+    ('📡 GET etablissement by ID:', idEtablissement);
     return api.get(`${BASE_URL}${idEtablissement}/`);
   },
 
   create: (data) => {
     const payload = { idEtablissement: `TEMP-${Date.now()}`, ...data };
-    console.log('📝 CREATE etablissement:', payload);
+    ('📝 CREATE etablissement:', payload);
     return api.post(BASE_URL, payload);
   },
 
   update: (idEtablissement, data) => {
-    console.log('📝 UPDATE etablissement:', idEtablissement, data);
+    ('📝 UPDATE etablissement:', idEtablissement, data);
     return api.put(`${BASE_URL}${idEtablissement}/`, data);
   },
 
   delete: (idEtablissement) => {
-    console.log('🗑️ DELETE etablissement:', idEtablissement);
+    ('🗑️ DELETE etablissement:', idEtablissement);
     return api.delete(`${BASE_URL}${idEtablissement}/`);
   },
 };

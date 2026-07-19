@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { useAuth } from './AuthContext';
 import { relanceService } from '../services/relanceService';
 
 /**
  * Système de notifications centralisé de l'app.
  *
- * ⚠️ Remplace l'ancien tableau `notifications` codé en dur dans Topbar.jsx
+ *  Remplace l'ancien tableau `notifications` codé en dur dans Topbar.jsx
  * (qui n'était connecté à rien du tout).
  *
  * Aujourd'hui : détecte les relances dont l'heure est arrivée (comme
@@ -47,6 +48,7 @@ const sauvegarder = (key, value) => {
 };
 
 export const NotificationProvider = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
   const [notifications, setNotifications] = useState(() => charger(STORAGE_ITEMS, []));
   const vusRef = useRef(new Set(charger(STORAGE_VUS, [])));
 
@@ -109,7 +111,7 @@ export const NotificationProvider = ({ children }) => {
         vusRef.current.add(cleUnique);
       });
     } catch (err) {
-      console.warn('⚠️ Impossible de vérifier les relances pour notification:', err);
+      console.warn(' Impossible de vérifier les relances pour notification:', err);
     }
   }, [ajouterNotification]);
 
@@ -120,10 +122,12 @@ export const NotificationProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    if (isLoading || !isAuthenticated) return;
+
     verifierRelances();
     const interval = setInterval(verifierRelances, POLL_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [verifierRelances]);
+  }, [verifierRelances, isAuthenticated, isLoading]);
 
   const markAsRead = useCallback((id) => {
     setNotifications((prev) => {

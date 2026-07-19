@@ -20,28 +20,28 @@ export const relanceService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all relances:', queryString || 'sans paramètres');
+    ('📡 GET all relances:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
   getById: (idRelance) => {
-    console.log('📡 GET relance by ID:', idRelance);
+    ('📡 GET relance by ID:', idRelance);
     return api.get(`${BASE_URL}${idRelance}/`);
   },
 
   create: (data) => {
     const payload = { idRelance: `TEMP-${Date.now()}`, ...data };
-    console.log('📝 CREATE relance:', payload);
+    ('📝 CREATE relance:', payload);
     return api.post(BASE_URL, payload);
   },
 
   update: (idRelance, data) => {
-    console.log('📝 UPDATE relance:', idRelance, data);
+    ('📝 UPDATE relance:', idRelance, data);
     return api.put(`${BASE_URL}${idRelance}/`, data);
   },
 
   delete: (idRelance) => {
-    console.log('🗑️ DELETE relance:', idRelance);
+    ('🗑️ DELETE relance:', idRelance);
     return api.delete(`${BASE_URL}${idRelance}/`);
   },
 };

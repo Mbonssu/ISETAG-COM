@@ -25,7 +25,13 @@
     "test": "cross-env NODE_ENV=test react-scripts test",
     "eject": "react-scripts eject"
   },
+<<<<<<< HEAD
   "proxy": "http://192.168.30.152:8000",
+=======
+
+  "proxy": "http://192.168.30.184:8000",
+
+>>>>>>> bcfcdb1937f7a3dc258484d3cd4e56f4e7560c9a
   "eslintConfig": {
     "extends": [
       "react-app",

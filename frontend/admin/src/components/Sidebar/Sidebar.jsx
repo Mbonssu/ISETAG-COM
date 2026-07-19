@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 import './Sidebar.css';
 
 const Sidebar = ({ isCollapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useLanguage();
+  const { user, logout } = useAuth();
   const [activeItem, setActiveItem] = useState(location.pathname);
 
   const menuItems = [
@@ -68,8 +70,18 @@ const Sidebar = ({ isCollapsed }) => {
         ))}
       </nav>
       <div className="sidebar-footer">
-        <div className="admin-card"><div className="admin-avatar">A</div><div className="admin-info"><div className="admin-name">Admin ISETAG</div><div className="admin-role">{t('administrateur')}</div></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg></div>
-        <div className="logout-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg><span>{t('deconnexion')}</span></div>
+        <div className="admin-card">
+          <div className="admin-avatar">{user?.prenom?.[0] || 'A'}</div>
+          <div className="admin-info">
+            <div className="admin-name">{user ? `${user.prenom} ${user.nom}` : 'Admin ISETAG'}</div>
+            <div className="admin-role">{user?.role || t('administrateur')}</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg>
+        </div>
+        <div className="logout-btn" onClick={() => { logout(); navigate('/login'); }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+          <span>{t('deconnexion')}</span>
+        </div>
       </div>
     </aside>
   );

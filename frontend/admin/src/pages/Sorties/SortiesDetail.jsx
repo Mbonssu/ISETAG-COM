@@ -258,7 +258,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Edit, Calendar, MapPin, Target, Building, Loader, AlertCircle, Users, Plus, Trash2, User } from 'lucide-react';
+import { ArrowLeft, Edit, Calendar, MapPin, Target, Building, Loader, AlertCircle, Users, Plus, User, Check, X } from 'lucide-react';
 import { sortieService } from '../../services/sortieService';
 import { campagneService } from '../../services/campagneService';
 import { userService } from '../../services/userService';
@@ -303,6 +303,9 @@ const SortiesDetail = () => {
   const [sharedFields, setSharedFields] = useState({
     dateAssignation: '', heureArrivee: '', heureDepart: '', statut: 'Prévu', observation: '',
   });
+  const [editingParticipationId, setEditingParticipationId] = useState(null);
+  const [editStatut, setEditStatut] = useState('Prévu');
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const addToast = (message, type = 'success') => {
     const tid = Date.now();
@@ -346,7 +349,10 @@ const SortiesDetail = () => {
       .catch(() => { setAgentsList([]); setManagersList([]); });
   }, [id]);
 
+  const idsDejaAffectes = new Set(participations.map((p) => p.idUtilisateur));
+
   const toggleUser = (idUtilisateur) => {
+    if (idsDejaAffectes.has(idUtilisateur)) return; // déjà affecté à cette sortie, on ignore le clic
     setSelectedUsers((prev) =>
       prev.includes(idUtilisateur) ? prev.filter((x) => x !== idUtilisateur) : [...prev, idUtilisateur]
     );
@@ -356,6 +362,11 @@ const SortiesDetail = () => {
     e.preventDefault();
     if (selectedUsers.length === 0) {
       addToast('Coche au moins un agent ou un manager', 'error');
+      return;
+    }
+    const doublons = selectedUsers.filter((idUtilisateur) => idsDejaAffectes.has(idUtilisateur));
+    if (doublons.length > 0) {
+      addToast('Un ou plusieurs agents sélectionnés sont déjà affectés à cette sortie', 'error');
       return;
     }
     if (!sharedFields.dateAssignation) {
@@ -387,13 +398,34 @@ const SortiesDetail = () => {
     }
   };
 
-  const handleRemoveParticipation = async (idParticipation) => {
+  const startEditStatut = (p) => {
+    setEditingParticipationId(p.idParticipation);
+    setEditStatut(p.statut || 'Prévu');
+  };
+
+  const cancelEditStatut = () => {
+    setEditingParticipationId(null);
+  };
+
+  const saveEditStatut = async (p) => {
+    setSavingEdit(true);
     try {
-      await campagneService.deleteParticipation(idParticipation);
-      addToast('Agent retiré de la sortie', 'success');
+      await campagneService.updateParticipation(p.idParticipation, {
+        idUtilisateur: p.idUtilisateur,
+        idSortie: id,
+        dateAssignation: p.dateAssignation,
+        heureArrivee: p.heureArrivee,
+        heureDepart: p.heureDepart,
+        statut: editStatut,
+        observation: p.observation,
+      });
+      addToast('Statut mis à jour', 'success');
+      setEditingParticipationId(null);
       fetchParticipations();
     } catch (err) {
-      addToast("Erreur lors du retrait de l'agent", 'error');
+      addToast(err.message || 'Erreur lors de la mise à jour du statut', 'error');
+    } finally {
+      setSavingEdit(false);
     }
   };
 
@@ -465,7 +497,7 @@ const SortiesDetail = () => {
             ============================================================ */}
         <div className="detail-card full-width">
           <div className="table-header" style={{ justifyContent: 'space-between', marginBottom: 16 }}>
-            <h3><Users size={18} style={{ verticalAlign: 'middle', marginRight: 6 }} />Agents affectés ({participations.length})</h3>
+            <h3><Users size={18} style={{ verticalAlign: 'middle', marginRight: 6 }} />Agents affectés ({participations.length})</h3> <br />
             <button className="btn-primary" style={{ padding: '6px 12px' }} onClick={() => setShowAddForm((v) => !v)}>
               <Plus size={16} /> Affecter un agent
             </button>
@@ -481,17 +513,20 @@ const SortiesDetail = () => {
                     <p style={{ color: '#9ca3af', fontSize: 13 }}>Aucun agent trouvé</p>
                   ) : (
                     <div className="checkbox-grid">
-                      {agentsList.map((u) => (
-                        <label key={u.idUtilisateur} className="checkbox-pill">
-                          <input
-                            type="checkbox"
-                            checked={selectedUsers.includes(u.idUtilisateur)}
-                            onChange={() => toggleUser(u.idUtilisateur)}
-                            disabled={saving}
-                          />
-                          {u.prenom} {u.nom}
-                        </label>
-                      ))}
+                      {agentsList.map((u) => {
+                        const dejaAffecte = idsDejaAffectes.has(u.idUtilisateur);
+                        return (
+                          <label key={u.idUtilisateur} className="checkbox-pill" style={dejaAffecte ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}>
+                            <input
+                              type="checkbox"
+                              checked={selectedUsers.includes(u.idUtilisateur)}
+                              onChange={() => toggleUser(u.idUtilisateur)}
+                              disabled={saving || dejaAffecte}
+                            />
+                            {u.prenom} {u.nom}{dejaAffecte ? ' (déjà affecté)' : ''}
+                          </label>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -502,17 +537,20 @@ const SortiesDetail = () => {
                     <p style={{ color: '#9ca3af', fontSize: 13 }}>Aucun manager trouvé</p>
                   ) : (
                     <div className="checkbox-grid">
-                      {managersList.map((u) => (
-                        <label key={u.idUtilisateur} className="checkbox-pill">
-                          <input
-                            type="checkbox"
-                            checked={selectedUsers.includes(u.idUtilisateur)}
-                            onChange={() => toggleUser(u.idUtilisateur)}
-                            disabled={saving}
-                          />
-                          {u.prenom} {u.nom}
-                        </label>
-                      ))}
+                      {managersList.map((u) => {
+                        const dejaAffecte = idsDejaAffectes.has(u.idUtilisateur);
+                        return (
+                          <label key={u.idUtilisateur} className="checkbox-pill" style={dejaAffecte ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}>
+                            <input
+                              type="checkbox"
+                              checked={selectedUsers.includes(u.idUtilisateur)}
+                              onChange={() => toggleUser(u.idUtilisateur)}
+                              disabled={saving || dejaAffecte}
+                            />
+                            {u.prenom} {u.nom}{dejaAffecte ? ' (déjà affecté)' : ''}
+                          </label>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -567,12 +605,31 @@ const SortiesDetail = () => {
                       <td>{p.dateAssignation}</td>
                       <td>{p.heureArrivee || '-'}</td>
                       <td>{p.heureDepart || '-'}</td>
-                      <td><span className="badge badge-info">{p.statut}</span></td>
+                      <td>
+                        {editingParticipationId === p.idParticipation ? (
+                          <select value={editStatut} onChange={(e) => setEditStatut(e.target.value)} disabled={savingEdit}>
+                            {statutsParticipation.map((s) => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                        ) : (
+                          <span className="badge badge-info">{p.statut}</span>
+                        )}
+                      </td>
                       <td><small>{p.observation || '-'}</small></td>
                       <td>
-                        <button className="action-btn delete" onClick={() => handleRemoveParticipation(p.idParticipation)}>
-                          <Trash2 size={16} />
-                        </button>
+                        {editingParticipationId === p.idParticipation ? (
+                          <>
+                            <button className="action-btn view" onClick={() => saveEditStatut(p)} disabled={savingEdit} title="Valider">
+                              <Check size={16} />
+                            </button>
+                            <button className="action-btn delete" onClick={cancelEditStatut} disabled={savingEdit} title="Annuler">
+                              <X size={16} />
+                            </button>
+                          </>
+                        ) : (
+                          <button className="action-btn edit" onClick={() => startEditStatut(p)} title="Modifier le statut">
+                            <Edit size={16} />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

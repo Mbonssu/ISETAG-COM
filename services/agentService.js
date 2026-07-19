@@ -28,7 +28,7 @@ export const agentService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all agents:', queryString || 'sans paramètres');
+    ('📡 GET all agents:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
@@ -38,7 +38,7 @@ export const agentService = {
    * @param {string} idAgent - Identifiant de l'agent
    */
   getById: (idAgent) => {
-    console.log('📡 GET agent by ID:', idAgent);
+    ('📡 GET agent by ID:', idAgent);
     return api.get(`${BASE_URL}${idAgent}/`);
   },
 
@@ -55,7 +55,7 @@ export const agentService = {
    */
   create: (data) => {
     const payload = { idAgent: `TEMP-${Date.now()}`, ...data };
-    console.log('📝 CREATE agent:', payload);
+    ('📝 CREATE agent:', payload);
     return api.post(BASE_URL, payload);
   },
 
@@ -66,7 +66,7 @@ export const agentService = {
    * @param {Object} data    - Nouvelles données
    */
   update: (idAgent, data) => {
-    console.log('📝 UPDATE agent:', idAgent, data);
+    ('📝 UPDATE agent:', idAgent, data);
     return api.put(`${BASE_URL}${idAgent}/`, data);
   },
 
@@ -76,7 +76,7 @@ export const agentService = {
    * @param {string} idAgent - Identifiant de l'agent
    */
   delete: (idAgent) => {
-    console.log('🗑️ DELETE agent:', idAgent);
+    ('🗑️ DELETE agent:', idAgent);
     return api.delete(`${BASE_URL}${idAgent}/`);
   },
 
@@ -86,7 +86,7 @@ export const agentService = {
    * @param {string} idAgent - Identifiant de l'agent
    */
   getStats: (idAgent) => {
-    console.log('📊 GET stats for agent:', idAgent);
+    ('📊 GET stats for agent:', idAgent);
     return api.get(`${BASE_URL}${idAgent}/stats/`);
   },
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit, Trash2, Eye, Filter, Download, AlertCircle, FileSpreadsheet, FileJson, FileText, FileImage } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, Filter, AlertCircle } from 'lucide-react';
 import Modal from '../../components/common/Modal';
 import { ToastContainer } from '../../components/common/Toast';
 import Pagination from '../../components/Pagination/Pagination';
@@ -11,10 +11,8 @@ import { Prospect } from '../../models/prospect';
 import { SkeletonTable } from '../../components/Skeleton/Skeleton';
 import EmptyState from '../../components/EmptyState/EmptyState';
 import { useUrlState } from '../../hooks/useUrlState';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import ExportButton from '../../components/ExportButton/ExportButton';
+import { getErrorMessage } from '../../utils/errorMessages';
 import './Prospects.css';
 
 const ProspectsList = () => {
@@ -23,8 +21,6 @@ const ProspectsList = () => {
   const [searchTerm, setSearchTerm] = useUrlState('q', '');
   const [filterSexe, setFilterSexe] = useUrlState('sexe', 'all');
   const [filterType, setFilterType] = useUrlState('type', 'all');
-  const [showExportMenu, setShowExportMenu] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, prospectId: null, prospectName: '' });
   const [toasts, setToasts] = useState([]);
   const [allProspects, setAllProspects] = useState([]);
@@ -51,8 +47,8 @@ const ProspectsList = () => {
       const list = Array.isArray(data) ? data.map(item => Prospect.fromDjango(item)) : [];
       setAllProspects(list);
     } catch (error) {
-      setLoadError(error.message);
-      addToast('Erreur lors du chargement des prospects', 'error');
+      setLoadError(getErrorMessage(error, t));
+      addToast(getErrorMessage(error, t), 'error');
     } finally {
       setLoading(false);
     }
@@ -88,7 +84,7 @@ const ProspectsList = () => {
       addToast(`${prospectName} ${t('suppressionReussie')}`, 'success');
       fetchProspects();
     } catch (error) {
-      addToast('Erreur lors de la suppression', 'error');
+      addToast(getErrorMessage(error, t), 'error');
     }
   };
 
@@ -122,19 +118,20 @@ const ProspectsList = () => {
           <p className="page-description">{t('descProspects')}</p>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <div className="export-dropdown">
-            <button className="btn-outline" onClick={() => setShowExportMenu(!showExportMenu)} disabled={isExporting}>
-              <Download size={18} /> Exporter
-            </button>
-            {showExportMenu && (
-              <div className="export-menu">
-                <button><FileSpreadsheet size={16} /> Excel (.xlsx)</button>
-                <button><FileText size={16} /> CSV (.csv)</button>
-                <button><FileJson size={16} /> JSON (.json)</button>
-                <button><FileImage size={16} /> PDF</button>
-              </div>
-            )}
-          </div>
+          <ExportButton
+            data={filteredProspects}
+            filename="prospects"
+            title="Liste des prospects"
+            columns={[
+              { key: 'nomComplet', label: 'Nom complet' },
+              { key: 'telephone', label: 'Téléphone' },
+              { key: 'adresse', label: 'Adresse' },
+              { key: 'ville', label: 'Ville' },
+              { key: 'typeProspect', label: 'Type' },
+              { key: 'domaineEtude', label: "Domaine d'étude" },
+            ]}
+            filters={{ Recherche: searchTerm || 'Aucune', Type: filterType !== 'all' ? filterType : 'Tous' }}
+          />
           <button className="btn-primary" onClick={() => navigate('/prospects/new')}>
             <Plus size={18} /> {t('ajouter')}
           </button>

@@ -9,7 +9,7 @@
 // import { Suivi } from '../../models/suivi';
 // import '../Prospects/Prospects.css';
 
-// // ⚠️ CORRIGÉ : plus de filtre par type (n'existe pas côté backend),
+// //  CORRIGÉ : plus de filtre par type (n'existe pas côté backend),
 // // plus de colonne Agent / Prochaine action (idem).
 
 // const SuivisList = () => {
@@ -37,11 +37,11 @@
 //     setError(null);
 //     try {
 //       const data = await suiviService.getAll();
-//       console.log('📥 Suivis chargés:', data);
+//       ('📥 Suivis chargés:', data);
 //       const suivisData = Suivi.fromDjango(data);
 //       setSuivis(suivisData);
 //     } catch (err) {
-//       console.error('❌ Erreur de chargement:', err);
+//       console.error(' Erreur de chargement:', err);
 //       setError(err.message);
 //       addToast('Erreur lors du chargement des suivis', 'error');
 //     } finally {
@@ -193,7 +193,7 @@ import { prospectService } from '../../services/prospectService';
 import { Suivi } from '../../models/suivi';
 import '../Prospects/Prospects.css';
 
-// ⚠️ CORRIGÉ : plus de filtre par type (n'existe pas côté backend),
+//  CORRIGÉ : plus de filtre par type (n'existe pas côté backend),
 // plus de colonne Agent / Prochaine action (idem).
 
 const SuivisList = () => {
@@ -232,7 +232,7 @@ const SuivisList = () => {
       });
       setProspectsById(map);
     } catch (err) {
-      console.warn('⚠️ Impossible de charger les prospects pour résoudre les noms:', err);
+      console.warn(' Impossible de charger les prospects pour résoudre les noms:', err);
     }
   };
 
@@ -243,11 +243,11 @@ const SuivisList = () => {
     setError(null);
     try {
       const data = await suiviService.getAll();
-      console.log('📥 Suivis chargés:', data);
+      ('📥 Suivis chargés:', data);
       const suivisData = Suivi.fromDjango(data);
       setSuivis(suivisData);
     } catch (err) {
-      console.error('❌ Erreur de chargement:', err);
+      console.error(' Erreur de chargement:', err);
       setError(err.message);
       addToast('Erreur lors du chargement des suivis', 'error');
     } finally {

@@ -1,7 +1,7 @@
 /**
  * Service de gestion des agents.
  *
- * ⚠️ IMPORTANT : il n'existe AUCUNE route "/agent_api/..." dans l'API
+ *  IMPORTANT : il n'existe AUCUNE route "/agent_api/..." dans l'API
  * (ISETAG_COM_API.yaml). Les "agents" ne sont pas une ressource à part :
  * ce sont des lignes du modèle Utilisateur qui ont un champ `role`
  * (ex: role = "agent"). La seule route réelle est donc :
@@ -37,7 +37,6 @@ export const agentService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all agents (via users):', queryString);
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
@@ -47,7 +46,6 @@ export const agentService = {
    * @param {string} idAgent - Identifiant de l'utilisateur (idUtilisateur)
    */
   getById: (idAgent) => {
-    console.log('📡 GET agent by ID (via users):', idAgent);
     return api.get(`${BASE_URL}${idAgent}/`);
   },
 
@@ -64,7 +62,6 @@ export const agentService = {
    */
   create: (data) => {
     const payload = { role: 'agent', ...data };
-    console.log('📝 CREATE agent (via users):', payload);
     return api.post(BASE_URL, payload);
   },
 
@@ -75,7 +72,6 @@ export const agentService = {
    * @param {Object} data
    */
   update: (idAgent, data) => {
-    console.log('📝 UPDATE agent (via users):', idAgent, data);
     return api.put(`${BASE_URL}${idAgent}/`, data);
   },
 
@@ -85,7 +81,6 @@ export const agentService = {
    * @param {string} idAgent
    */
   delete: (idAgent) => {
-    console.log('🗑️ DELETE agent (via users):', idAgent);
     return api.delete(`${BASE_URL}${idAgent}/`);
   },
 };

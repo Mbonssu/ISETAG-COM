@@ -72,7 +72,7 @@ export const campagneService = {
    * });
    */
   getAll: (params = {}) => {
-    // ✅ Filtrer les paramètres undefined et null
+    //  Filtrer les paramètres undefined et null
     const cleanParams = {};
     Object.keys(params).forEach(key => {
       if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
@@ -81,7 +81,7 @@ export const campagneService = {
     });
 
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all campagnes:', queryString || 'sans paramètres');
+    ('📡 GET all campagnes:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
@@ -95,7 +95,7 @@ export const campagneService = {
    * const campagne = await campagneService.getById('CAMP001');
    */
   getById: (pk) => {
-    console.log('📡 GET campagne by id:', pk);
+    ('📡 GET campagne by id:', pk);
     return api.get(`${BASE_URL}${pk}/`);
   },
 
@@ -130,7 +130,7 @@ export const campagneService = {
    * });
    */
   create: (data) => {
-    console.log('📡 POST create campagne:', data);
+    ('📡 POST create campagne:', data);
     return api.post(BASE_URL, data);
   },
 
@@ -161,7 +161,7 @@ export const campagneService = {
    * });
    */
   update: (pk, data) => {
-    console.log('📡 PUT update campagne:', pk, data);
+    ('📡 PUT update campagne:', pk, data);
     return api.put(`${BASE_URL}${pk}/`, data);
   },
 
@@ -172,7 +172,7 @@ export const campagneService = {
   /**
    * DELETE /campagne_api/ISETAG_COM.campagnes/<pk>/ -> supprimer une campagne
    * 
-   * ⚠️ Cette action est irréversible !
+   *  Cette action est irréversible !
    * 
    * @param {string} pk - L'identifiant de la campagne
    * @returns {Promise} - Promesse confirmant la suppression
@@ -181,7 +181,7 @@ export const campagneService = {
    * await campagneService.delete('CAMP001');
    */
   delete: (pk) => {
-    console.log('📡 DELETE campagne:', pk);
+    ('📡 DELETE campagne:', pk);
     return api.delete(`${BASE_URL}${pk}/`);
   },
 
@@ -190,7 +190,7 @@ export const campagneService = {
   // ============================================================
 
   /**
-   * ⚠️ CORRIGÉ : il n'existe AUCUNE route
+   *  CORRIGÉ : il n'existe AUCUNE route
    * "/campagne_api/ISETAG_COM.campagnes/<id>/participations/".
    * Les participations sont une ressource indépendante :
    *
@@ -207,7 +207,7 @@ export const campagneService = {
    * @param {string} idSortie - L'identifiant de la sortie
    */
   getParticipationsBySortie: (idSortie) => {
-    console.log('📡 GET participations for sortie:', idSortie);
+    ('📡 GET participations for sortie:', idSortie);
     return api.get(`/campagne_api/ISETAG_COM.participations/?idSortie=${idSortie}`);
   },
 
@@ -222,7 +222,7 @@ export const campagneService = {
    */
   addParticipation: (data) => {
     const payload = { idParticipation: `TEMP-${Date.now()}`, ...data };
-    console.log('📝 POST create participation:', payload);
+    ('📝 POST create participation:', payload);
     return api.post('/campagne_api/ISETAG_COM.participations/', payload);
   },
 

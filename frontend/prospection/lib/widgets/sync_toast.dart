@@ -76,7 +76,7 @@
 // //           _controller.forward();
 // //           break;
 // //         case SyncStatus.completed:
-// //           _statusMessage = '✅ Synchronisation terminée !';
+// //           _statusMessage = ' Synchronisation terminée !';
 // //           _backgroundColor = Colors.green;
 // //           _icon = Icons.check_circle;
 // //           _isVisible = true;
@@ -84,7 +84,7 @@
 // //           Future.delayed(const Duration(seconds: 3), _hideToast);
 // //           break;
 // //         case SyncStatus.failed:
-// //           _statusMessage = '❌ Échec de synchronisation';
+// //           _statusMessage = ' Échec de synchronisation';
 // //           _backgroundColor = Colors.red;
 // //           _icon = Icons.error;
 // //           _isVisible = true;
@@ -385,7 +385,7 @@
 //           _controller.forward();
 //           break;
 //         case SyncStatus.completed:
-//           _statusMessage = '✅ Synchronisation terminée !'.tr;
+//           _statusMessage = ' Synchronisation terminée !'.tr;
 //           _backgroundColor = Colors.green;
 //           _icon = Icons.check_circle;
 //           _isVisible = true;
@@ -393,7 +393,7 @@
 //           Future.delayed(const Duration(seconds: 3), _hideToast);
 //           break;
 //         case SyncStatus.failed:
-//           _statusMessage = '❌ Échec de synchronisation'.tr;
+//           _statusMessage = ' Échec de synchronisation'.tr;
 //           _backgroundColor = Colors.red;
 //           _icon = Icons.error;
 //           _isVisible = true;

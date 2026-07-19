@@ -14,17 +14,17 @@ export const relanceService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all relances:', queryString || 'sans paramètres');
+    ('📡 GET all relances:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
   getById: (idRelance) => {
-    console.log('📡 GET relance by ID:', idRelance);
+    ('📡 GET relance by ID:', idRelance);
     return api.get(`${BASE_URL}${idRelance}/`);
   },
 
   create: (data) => {
-    // ✅ L'API attend exactement ces champs
+    //  L'API attend exactement ces champs
     const payload = {
       idRelance: data.idRelance || `REL-${Date.now()}`,
       idProspect: data.idProspect,
@@ -32,7 +32,7 @@ export const relanceService = {
       sujet: data.sujet || '',
       description: data.description || '',
     };
-    console.log('📝 CREATE relance:', payload);
+    ('📝 CREATE relance:', payload);
     return api.post(BASE_URL, payload);
   },
 
@@ -44,12 +44,12 @@ export const relanceService = {
       sujet: data.sujet || '',
       description: data.description || '',
     };
-    console.log('📝 UPDATE relance:', idRelance, payload);
+    ('📝 UPDATE relance:', idRelance, payload);
     return api.put(`${BASE_URL}${idRelance}/`, payload);
   },
 
   delete: (idRelance) => {
-    console.log('🗑️ DELETE relance:', idRelance);
+    ('🗑️ DELETE relance:', idRelance);
     return api.delete(`${BASE_URL}${idRelance}/`);
   },
 };

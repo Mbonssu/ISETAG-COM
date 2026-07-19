@@ -42,7 +42,7 @@
 
 import React from 'react';
 
-// ⚠️ CORRIGÉ : "agent" et "statut" n'existent pas sur le modèle Prospect
+//  CORRIGÉ : "agent" et "statut" n'existent pas sur le modèle Prospect
 // côté backend, retirés. "Filière" remplacé par "domaineEtude" (champ réel).
 
 const getInitials = (nom) => {

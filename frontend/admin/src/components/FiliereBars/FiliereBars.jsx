@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import FiliereRow from './FiliereRow';
 import './FiliereBars.css';
 
-// ⚠️ CORRIGÉ : liste 100% codée en dur, sans lien avec les vraies données.
+//  CORRIGÉ : liste 100% codée en dur, sans lien avec les vraies données.
 // "Filière" au sens strict (relation via interetSpecialite) n'a pas de
 // route groupée côté backend, ce qui rendrait ce calcul très coûteux
 // (un appel par prospect). On utilise donc "domaineEtude", un champ RÉEL

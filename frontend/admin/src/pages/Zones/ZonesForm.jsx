@@ -5,12 +5,6 @@ import { ToastContainer } from '../../components/common/Toast';
 import { zoneService } from '../../services/zoneService';
 import '../Prospects/Prospects.css';
 
-// ⚠️ CORRIGÉ : ce formulaire n'appelait jamais l'API (juste un toast fake).
-// Champs alignés sur le vrai schéma ZoneRequest : idZone, libele,
-// description, quartier, ville, pays, region, lieuDepart, lieuArrivee.
-// (le champ "code" n'existe pas côté backend, remplacé par "libele" ;
-// "lieuFin" renommé "lieuArrivee")
-
 const ZonesForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -48,9 +42,6 @@ const ZonesForm = () => {
     if (isEdit && id) {
       zoneService.getById(id)
         .then((raw) => {
-          console.log('📥 Zone chargée:', raw);
-          // ⚠️ Le backend renvoie parfois un tableau [{...}] au lieu d'un
-          // objet direct pour getById (bug backend). On gère les deux cas.
           const data = Array.isArray(raw) ? raw[0] : raw;
           setFormData({
             libele: data?.libele || '',
@@ -64,7 +55,7 @@ const ZonesForm = () => {
           });
         })
         .catch((err) => {
-          console.error('❌ Erreur chargement zone:', err);
+          console.error(' Erreur chargement zone:', err);
           addToast(`Erreur: ${err.message}`, 'error');
         })
         .finally(() => setLoading(false));
@@ -111,7 +102,7 @@ const ZonesForm = () => {
       }
       setTimeout(() => navigate('/zones'), 1500);
     } catch (err) {
-      console.error('❌ Erreur:', err);
+      console.error(' Erreur:', err);
       addToast(err.message || "Erreur lors de l'enregistrement", 'error');
     } finally {
       setSaving(false);

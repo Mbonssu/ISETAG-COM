@@ -10,11 +10,18 @@ import { ToastContainer } from '../../components/common/Toast';
 import Pagination from '../../components/Pagination/Pagination';
 import { usePagination } from '../../hooks/usePagination';
 import { relanceService } from '../../services/relanceService';
+import { useTranslation } from '../../hooks/useTranslation';
+import { SkeletonTable } from '../../components/Skeleton/Skeleton';
+import { matchesDateRange as matchesDateRangeFilter } from './relancesFilterUtils';
 import '../Prospects/Prospects.css';
 
 const RelancesList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [nomProspectSecours, setNomProspectSecours] = useState('');
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, relanceId: null, relanceName: '' });
   const [toasts, setToasts] = useState([]);
   const [relances, setRelances] = useState([]);
@@ -35,13 +42,10 @@ const RelancesList = () => {
     setLoading(true);
     setError(null);
     try {
-      console.log('🔄 Chargement des relances...');
       const params = search ? { search: search } : {};
       const data = await relanceService.getAll(params);
-      console.log('✅ Relances chargées:', data);
       setRelances(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('❌ Erreur chargement relances:', err);
       setError(err.message || 'Erreur lors du chargement des relances');
       setRelances([]);
       addToast(`Erreur: ${err.message || 'Impossible de charger les relances'}`, 'error');
@@ -49,6 +53,9 @@ const RelancesList = () => {
       setLoading(false);
     }
   };
+
+  const getNomProspect = (relance ) => relance?.prospect_details?.nomComplet || nomProspectSecours || relance?.idProspect;
+
 
   useEffect(() => {
     loadRelances();
@@ -67,6 +74,13 @@ const RelancesList = () => {
     loadRelances('');
   };
 
+  const clearFilters = () => {
+    setSearchTerm('');
+    setStartDate('');
+    setEndDate('');
+    loadRelances('');
+  };
+
   const handleDelete = async () => {
     if (!deleteModal.relanceId) return;
     try {
@@ -75,7 +89,6 @@ const RelancesList = () => {
       loadRelances(searchTerm);
       setDeleteModal({ isOpen: false, relanceId: null, relanceName: '' });
     } catch (err) {
-      console.error('❌ Erreur suppression:', err);
       addToast(`Erreur: ${err.message || 'Impossible de supprimer'}`, 'error');
     }
   };
@@ -107,13 +120,19 @@ const RelancesList = () => {
     return relance.idProspect || 'Prospect inconnu';
   };
 
-  const filteredRelances = relances.filter(r => {
-    if (!searchTerm) return true;
+  const hasActiveFilters = Boolean(searchTerm || startDate || endDate);
+
+  const filteredRelances = relances.filter((r) => {
     const term = searchTerm.toLowerCase();
     const prospectName = getProspectName(r).toLowerCase();
-    return (r.sujet?.toLowerCase().includes(term) || 
-            prospectName.includes(term) ||
-            r.idRelance?.toLowerCase().includes(term));
+    const matchesSearch = !searchTerm || (
+      r.sujet?.toLowerCase().includes(term) ||
+      prospectName.includes(term) ||
+      String(r.idRelance ?? '').toLowerCase().includes(term)
+    );
+    const matchesDate = matchesDateRangeFilter(r.dateRelance, startDate, endDate);
+
+    return matchesSearch && matchesDate;
   });
 
   const { currentPage, totalPages, paginatedItems, goToPage, itemsPerPage } = usePagination(filteredRelances, 10);
@@ -121,10 +140,7 @@ const RelancesList = () => {
   if (loading) {
     return (
       <div className="page-container">
-        <div className="text-center py-5">
-          <Loader size={48} className="spinner" />
-          <p className="mt-3">Chargement des relances...</p>
-        </div>
+        <SkeletonTable rows={6} columns={5} />
       </div>
     );
   }
@@ -134,14 +150,14 @@ const RelancesList = () => {
       <AlertCircle size={48} />
       <h3>Aucun résultat trouvé</h3>
       <p>
-        {searchTerm 
-          ? `Aucune relance ne correspond à votre recherche "${searchTerm}"`
+        {hasActiveFilters
+          ? 'Aucune relance ne correspond aux filtres appliqués.'
           : 'Aucune relance n\'a été créée pour le moment'
         }
       </p>
       <div className="d-flex gap-2 justify-content-center">
-        {searchTerm && (
-          <button className="btn-outline" onClick={clearSearch}>Effacer les filtres</button>
+        {hasActiveFilters && (
+          <button className="btn-outline" onClick={clearFilters}>Effacer les filtres</button>
         )}
         <button className="btn-primary" onClick={() => navigate('/relances/new')}>
           <Plus size={16} /> Nouvelle relance
@@ -181,14 +197,14 @@ const RelancesList = () => {
 
       <div className="page-header-actions">
         <div>
-          <h1 className="page-title-h1">Gestion des Relances</h1>
+          <h1 className="page-title-h1">{t('gestionRelances')}</h1>
           <p className="page-description">
-            Planifiez et suivez les relances auprès des prospects.
+            {t('descRelances')}
             <span className="badge ms-2">{relances.length} relances</span>
           </p>
         </div>
         <button className="btn-primary" onClick={() => navigate('/relances/new')}>
-          <Plus size={18} /> Nouvelle relance
+          <Plus size={18} /> {t('nouvelleRelance')}
         </button>
       </div>
 
@@ -207,6 +223,30 @@ const RelancesList = () => {
             </button>
           )}
         </div>
+        <div className="filter-group">
+          <label htmlFor="relance-start-date">Du</label>
+          <input
+            id="relance-start-date"
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+        </div>
+        <div className="filter-group">
+          <label htmlFor="relance-end-date">Au</label>
+          <input
+            id="relance-end-date"
+            type="date"
+            value={endDate}
+            min={startDate || undefined}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </div>
+        {hasActiveFilters && (
+          <button className="btn-outline" onClick={clearFilters}>
+            Effacer les filtres
+          </button>
+        )}
         <button 
           className="btn-outline" 
           onClick={() => loadRelances(searchTerm)}
@@ -233,7 +273,7 @@ const RelancesList = () => {
                 {paginatedItems.map((relance) => (
                   <tr key={relance.idRelance}>
                     <td>
-                      <strong>{getProspectName(relance)}</strong></td>
+                      <strong>{getNomProspect(relance)}</strong></td>
                     <td>
                       <strong>{relance.sujet}</strong>
                     </td>

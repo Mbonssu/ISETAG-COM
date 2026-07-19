@@ -75,7 +75,7 @@ import React from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import './SourceDonut.css';
 
-// ⚠️ CORRIGÉ : remplacé le canvas fait main avec des sources 100% inventées
+//  CORRIGÉ : remplacé le canvas fait main avec des sources 100% inventées
 // par un vrai donut Recharts branché sur les vraies fiches de collecte
 // (source_detail.libele, calculé dans useDashboardStats).
 

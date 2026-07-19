@@ -8,7 +8,7 @@ import { usePagination } from '../../hooks/usePagination';
 import { zoneService } from '../../services/zoneService';
 import '../Prospects/Prospects.css';
 
-// ⚠️ CORRIGÉ : cette page était 100% mock (données codées en dur, aucun
+//  CORRIGÉ : cette page était 100% mock (données codées en dur, aucun
 // appel API). Le champ "code" n'existe pas côté backend (schéma Zone) :
 // remplacé par "libele". "lieuFin" renommé "lieuArrivee" (vrai nom du champ).
 
@@ -38,10 +38,10 @@ const ZonesList = () => {
     setError(null);
     try {
       const data = await zoneService.getAll();
-      console.log('📥 Zones chargées:', data);
+      ('📥 Zones chargées:', data);
       setZones(Array.isArray(data) ? data : (data?.results ?? []));
     } catch (err) {
-      console.error('❌ Erreur de chargement:', err);
+      console.error(' Erreur de chargement:', err);
       setError(err.message);
       addToast('Erreur lors du chargement des zones', 'error');
     } finally {

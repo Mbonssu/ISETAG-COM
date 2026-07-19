@@ -38,7 +38,7 @@ import { useNavigate } from 'react-router-dom';
 import TableRow from './TableRow';
 import './ProspectsTable.css';
 
-// ⚠️ CORRIGÉ : liste 100% codée en dur. Reçoit maintenant les vrais
+//  CORRIGÉ : liste 100% codée en dur. Reçoit maintenant les vrais
 // prospects (les 5 plus récents), triés par date de création.
 
 const ProspectsTable = ({ data = [] }) => {

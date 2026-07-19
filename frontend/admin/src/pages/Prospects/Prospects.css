@@ -1,10 +1,4 @@
 .page-container {
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 .page-header-actions {
@@ -106,14 +100,29 @@
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 10px;
   padding: 10px 16px;
+  min-width: 180px;
 }
 
+.filter-group label {
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.filter-group input,
 .filter-group select {
   border: none;
   outline: none;
   background: transparent;
   font-size: 14px;
   cursor: pointer;
+  width: 100%;
+  color: #374151;
+}
+
+.filter-group input[type="date"] {
+  color-scheme: light;
 }
 
 .table-container {

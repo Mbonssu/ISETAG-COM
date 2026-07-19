@@ -1,7 +1,7 @@
 from django.urls import path
 
 from ISETAG_COM_API import settings
-from .views import CampagneView, ZoneView, SortieView, SourceView, ParticipationView, etablissementView, ficheSortieView
+from .views import CampagneView, MaSortieActiveView, ZoneView, SortieView, SourceView, ParticipationView, etablissementView, ficheSortieView
 from django.conf.urls.static import static
 
 urlpatterns = urlpatterns = [
@@ -19,4 +19,5 @@ urlpatterns = urlpatterns = [
     path('ISETAG_COM.fiches-sortie/<str:pk>/', ficheSortieView.as_view(), name='fiche-sortie-detail'),
     path('ISETAG_COM.etablissements/', etablissementView.as_view(), name='etablissements'),
     path('ISETAG_COM.etablissements/<str:pk>/', etablissementView.as_view(), name='etablissement-detail'),
+    path('ma-sortie-active/', MaSortieActiveView.as_view(), name='ma-sortie-active'),
 ] 

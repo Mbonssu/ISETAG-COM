@@ -261,7 +261,7 @@ export const apiRequest = async (url, options = {}) => {
      * - Erreurs HTTP (404, 403, 500)
      * - Erreurs personnalisées du backend
      */
-    console.error('❌ API Error:', error);
+    console.error(' API Error:', error);
     
     /**
      * Relance l'erreur pour qu'elle soit capturée par le composant appelant

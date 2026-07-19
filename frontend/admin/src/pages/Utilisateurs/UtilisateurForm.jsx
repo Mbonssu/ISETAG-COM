@@ -45,7 +45,7 @@ const UtilisateurForm = () => {
     prenom: "",
     email: "",
     telephone: "",
-    role: "Agent",
+    role: "agent",
     statut: "actif",
     actif: true,
     dateEmbauche: "",
@@ -54,10 +54,9 @@ const UtilisateurForm = () => {
   });
 
   const roles = [
-    { value: "Administrateur", label: "Administrateur - Accès total" },
-    { value: "Manager", label: "Manager - Gestion des équipes" },
-    { value: "Agent", label: "Agent - Gestion des prospects" },
-    { value: "Viewer", label: "Viewer - Consultation uniquement" },
+    { value: "admin", label: "Administrateur - Accès total" },
+    { value: "superviseur", label: "Manager - Gestion des équipes" },
+    { value: "agent", label: "Agent - Gestion des prospects" },
   ];
 
   const statuts = [
@@ -69,14 +68,6 @@ const UtilisateurForm = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    console.log("🔍 Validation du formulaire:", formData);
-
-    // if (!isEdit) {
-    //   if (!formData.username.trim()) newErrors.username = "Le nom d'utilisateur est requis";
-    //   else if (!/^[\w.@+-]+$/.test(formData.username)) {
-    //     newErrors.username = "Lettres, chiffres et @/./+/-/_ uniquement";
-    //   }
-    // }
     if (!formData.username.trim()) {
       newErrors.username = "Le nom d'utilisateur est requis";
     } else if (!/^[\w.@+-]+$/.test(formData.username)) {
@@ -103,23 +94,18 @@ const UtilisateurForm = () => {
       }
     }
 
-    console.log("🔍 Erreurs de validation:", newErrors);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    console.log(
-      `✏️ Champ modifié: ${name} = ${type === "checkbox" ? checked : value}`,
-    );
 
     setFormData((prev) => {
       const newData = {
         ...prev,
         [name]: type === "checkbox" ? checked : value,
       };
-      console.log("📝 Nouveau state du formulaire:", newData);
       return newData;
     });
 
@@ -132,12 +118,8 @@ const UtilisateurForm = () => {
     if (isEdit) {
       const fetchUser = async () => {
         try {
-          console.log("📡 Chargement de l'utilisateur ID:", id);
           const response = await userService.getById(id);
-          console.log("📥 Réponse du chargement:", response);
-
           const userData = response.data || response;
-          console.log("📋 Données utilisateur reçues:", userData);
 
           const passwordValue = userData.password || userData.password_display || '' ;
 
@@ -147,7 +129,7 @@ const UtilisateurForm = () => {
             prenom: userData.prenom || "",
             email: userData.email || "",
             telephone: userData.telephone || "",
-            role: userData.role || "Agent",
+            role: userData.role || "agent",
             statut: userData.statut || "actif",
             actif: userData.actif !== undefined ? userData.actif : true,
             dateEmbauche: userData.dateEmbauche || "",
@@ -155,7 +137,6 @@ const UtilisateurForm = () => {
             confirmPassword:passwordValue,
           });
         } catch (error) {
-          console.error("❌ Erreur de chargement:", error);
           addToast("Erreur lors du chargement des données", "error");
           navigate("/utilisateurs");
         }
@@ -166,11 +147,9 @@ const UtilisateurForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("🚀 Soumission du formulaire");
-    console.log("📋 Données actuelles du formulaire:", formData);
+   
 
     if (!validateForm()) {
-      console.log("❌ Formulaire invalide");
       addToast("Veuillez corriger les erreurs dans le formulaire", "error");
       return;
     }
@@ -195,79 +174,49 @@ const UtilisateurForm = () => {
         // (AbstractUser.username, unique, requis par Django).
         userData.username = formData.username;
         userData.password = formData.password;
-        /**
-         * Le serializer backend (UtilisateurSerializer.create) génère lui-même
-         * idUtilisateur via uuid et écrasera toute valeur qu'on envoie ici.
-         * MAIS comme idUtilisateur est la primary key du modèle et que le
-         * serializer utilise `fields = '__all__'` sans `extra_kwargs`,
-         * DRF l'exige quand même au moment de la validation d'entrée,
-         * avant même d'atteindre create(). On envoie donc une valeur
-         * temporaire, purement pour satisfaire cette validation ;
-         * le backend la remplace systématiquement par la vraie valeur.
-         *
-         * ⚠️ Ceci est un contournement front. La vraie correction est
-         * côté backend : ajouter dans UtilisateurSerializer.Meta
-         *   extra_kwargs = { 'idUtilisateur': { 'required': False } }
-         */
+
         userData.idUtilisateur = `TEMP-${Date.now()}`;
       } else {
         userData.idUtilisateur = id;
-        console.log('ID utilisateur inclus pour la mise à jour : ${id}');
       }
 
       // Ajouter le mot de passe uniquement pour la création ou s'il est rempli en édition
       if (!isEdit) {
         userData.password = formData.password;
-        console.log("🔑 Mot de passe ajouté pour la création");
       } else if (formData.password) {
         userData.password = formData.password;
-        console.log("🔑 Mot de passe mis à jour");
       }
 
-      console.log(
-        "📤 Données envoyées à l'API:",
-        JSON.stringify(userData, null, 2),
-      );
 
       let response;
       if (isEdit) {
-        console.log(`🔄 Mise à jour de l'utilisateur ID: ${id}`);
         response = await userService.update(id, userData);
-        console.log("✅ Réponse de mise à jour:", response);
         userData.password = formData.password;
         userData.username = formData.username;
         addToast("Utilisateur modifié avec succès", "success");
       } else {
-        console.log("➕ Création d'un nouvel utilisateur");
         response = await userService.create(userData);
-        console.log("✅ Réponse de création:", response);
         addToast("Utilisateur créé avec succès", "success");
       }
 
-      console.log("📊 Réponse complète du serveur:", response);
 
       setTimeout(() => {
         navigate("/utilisateurs");
       }, 1500);
     } catch (error) {
-      console.error("❌ Erreur complète:", error);
-      console.error("❌ Message d'erreur:", error.message);
-      console.error("❌ Stack trace:", error.stack);
+      
 
       let errorMessage = "Erreur lors de l'enregistrement";
 
       if (error.response) {
-        console.error("❌ Réponse d'erreur:", error.response);
         try {
           const errorData = await error.response.json();
-          console.error("❌ Données d'erreur:", errorData);
           errorMessage =
             errorData.message ||
             errorData.detail ||
             errorData.non_field_errors?.[0] ||
             errorMessage;
         } catch (e) {
-          console.error("❌ Erreur de parsing de la réponse:", e);
         }
       }
 

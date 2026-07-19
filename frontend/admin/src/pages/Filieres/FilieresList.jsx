@@ -10,9 +10,12 @@ import { ToastContainer } from '../../components/common/Toast';
 import Pagination from '../../components/Pagination/Pagination';
 import { usePagination } from '../../hooks/usePagination';
 import { specialiteService } from '../../services/filiereService'; // ← CORRECTION : Bon import
+import { SkeletonTable } from '../../components/Skeleton/Skeleton';
+import { useTranslation } from '../../hooks/useTranslation';
 import '../Prospects/Prospects.css';
 
 const FilieresList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteModal, setDeleteModal] = useState({ 
@@ -39,13 +42,11 @@ const FilieresList = () => {
     setLoading(true);
     setError(null);
     try {
-      console.log('🔄 Chargement des spécialités...');
       const params = search ? { search: search } : {};
       const data = await specialiteService.getAll(params);
-      console.log('✅ Spécialités chargées:', data);
       setSpecialites(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('❌ Erreur chargement spécialités:', err);
+      console.error(' Erreur chargement spécialités:', err);
       setError(err.message || 'Erreur lors du chargement des spécialités');
       setSpecialites([]);
       addToast(`Erreur: ${err.message || 'Impossible de charger les spécialités'}`, 'error');
@@ -80,7 +81,7 @@ const FilieresList = () => {
       loadSpecialites(searchTerm);
       setDeleteModal({ isOpen: false, specialiteId: null, specialiteName: '' });
     } catch (err) {
-      console.error('❌ Erreur suppression:', err);
+      console.error(' Erreur suppression:', err);
       addToast(`Erreur: ${err.message || 'Impossible de supprimer'}`, 'error');
     }
   };
@@ -99,10 +100,7 @@ const FilieresList = () => {
   if (loading) {
     return (
       <div className="page-container">
-        <div className="text-center py-5">
-          <Loader size={48} className="spinner" />
-          <p className="mt-3">Chargement des spécialités...</p>
-        </div>
+        <SkeletonTable rows={6} columns={4} />
       </div>
     );
   }
@@ -166,9 +164,9 @@ const FilieresList = () => {
 
       <div className="page-header-actions">
         <div>
-          <h1 className="page-title-h1">Spécialités</h1>
+          <h1 className="page-title-h1">{t('gestionFilieres')}</h1>
           <p className="page-description">
-            Gérez les spécialités de formation.
+            {t('descFilieres')}
             <span className="badge ms-2">{specialites.length} spécialités</span>
           </p>
         </div>
@@ -176,7 +174,7 @@ const FilieresList = () => {
           className="btn-primary" 
           onClick={() => navigate('/filieres/new')}
         >
-          <Plus size={18} /> Nouvelle spécialité
+          <Plus size={18} /> {t('nouvelleFiliere')}
         </button>
       </div>
 

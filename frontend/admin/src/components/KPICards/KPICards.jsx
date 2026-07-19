@@ -21,7 +21,7 @@ import React from 'react';
 import KPICard from './KPICard';
 import './KPICards.css';
 
-// ⚠️ CORRIGÉ : les KPI étaient codés en dur. Reçoit maintenant les vraies
+//  CORRIGÉ : les KPI étaient codés en dur. Reçoit maintenant les vraies
 // valeurs calculées par useDashboardStats à partir des données réelles.
 const KPICards = ({ data = [] }) => {
   return (

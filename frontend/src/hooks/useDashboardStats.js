@@ -4,7 +4,7 @@
 // Ça évite que chaque composant (KPICards, EvolutionChart, SourceDonut...)
 // refasse les mêmes appels réseau en parallèle.
 //
-// ⚠️ Il n'existe pas de hooks/apiClient.js ni de méthodes api.getProspects()
+//  Il n'existe pas de hooks/apiClient.js ni de méthodes api.getProspects()
 // dans ce projet : les vrais appels réseau passent par les services dédiés
 // (src/services/*.js), qui eux-mêmes utilisent `api` (src/services/api.js).
 

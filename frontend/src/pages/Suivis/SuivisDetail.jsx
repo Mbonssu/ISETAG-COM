@@ -5,7 +5,7 @@
 // import { Suivi } from '../../models/suivi';
 // import '../Prospects/Prospects.css';
 
-// // ⚠️ CORRIGÉ : ce fichier affichait des données 100% inventées (mock),
+// //  CORRIGÉ : ce fichier affichait des données 100% inventées (mock),
 // // il ne faisait AUCUN appel API. Il charge maintenant le vrai suivi
 // // via GET /prospect_api/ISETAG_COM.suivis/{id}/.
 
@@ -23,10 +23,10 @@
 //       setError(null);
 //       try {
 //         const data = await suiviService.getById(id);
-//         console.log('📥 Suivi chargé:', data);
+//         ('📥 Suivi chargé:', data);
 //         setSuivi(Suivi.fromDjango(data));
 //       } catch (err) {
-//         console.error('❌ Erreur de chargement:', err);
+//         console.error(' Erreur de chargement:', err);
 //         setError(err.message);
 //       } finally {
 //         setLoading(false);
@@ -119,7 +119,7 @@ import { prospectService } from '../../services/prospectService';
 import { Suivi } from '../../models/suivi';
 import '../Prospects/Prospects.css';
 
-// ⚠️ CORRIGÉ : ce fichier affichait des données 100% inventées (mock),
+//  CORRIGÉ : ce fichier affichait des données 100% inventées (mock),
 // il ne faisait AUCUN appel API. Il charge maintenant le vrai suivi
 // via GET /prospect_api/ISETAG_COM.suivis/{id}/.
 
@@ -138,7 +138,7 @@ const SuivisDetail = () => {
       setError(null);
       try {
         const data = await suiviService.getById(id);
-        console.log('📥 Suivi chargé:', data);
+        ('📥 Suivi chargé:', data);
         const suiviObj = Suivi.fromDjango(data);
         setSuivi(suiviObj);
 
@@ -152,7 +152,7 @@ const SuivisDetail = () => {
           }
         }
       } catch (err) {
-        console.error('❌ Erreur de chargement:', err);
+        console.error(' Erreur de chargement:', err);
         setError(err.message);
       } finally {
         setLoading(false);

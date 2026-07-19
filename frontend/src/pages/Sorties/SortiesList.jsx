@@ -8,7 +8,7 @@ import { usePagination } from '../../hooks/usePagination';
 import { sortieService } from '../../services/sortieService';
 import '../Prospects/Prospects.css';
 
-// ⚠️ CORRIGÉ : plus de colonne "Agent" (n'existe pas côté backend, géré
+//  CORRIGÉ : plus de colonne "Agent" (n'existe pas côté backend, géré
 // via Participation séparément). Zone affichée via zone_detail (renvoyé
 // automatiquement par le backend), plus de champ zone en texte libre.
 
@@ -38,10 +38,10 @@ const SortiesList = () => {
     setError(null);
     try {
       const data = await sortieService.getAll();
-      console.log('📥 Sorties chargées:', data);
+      ('📥 Sorties chargées:', data);
       setSorties(Array.isArray(data) ? data : (data?.results ?? []));
     } catch (err) {
-      console.error('❌ Erreur de chargement:', err);
+      console.error(' Erreur de chargement:', err);
       setError(err.message);
       addToast('Erreur lors du chargement des sorties', 'error');
     } finally {

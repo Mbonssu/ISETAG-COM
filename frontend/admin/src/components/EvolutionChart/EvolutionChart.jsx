@@ -186,7 +186,7 @@ import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import './EvolutionChart.css';
 
-// ⚠️ CORRIGÉ : remplacé le canvas fait main avec des données 100% inventées
+//  CORRIGÉ : remplacé le canvas fait main avec des données 100% inventées
 // par un vrai graphique Recharts branché sur les vraies données (nombre
 // cumulé de prospects créés, mois par mois, calculé dans useDashboardStats).
 

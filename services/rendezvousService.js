@@ -20,28 +20,28 @@ export const rendezvousService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all rendezvous:', queryString || 'sans paramètres');
+    ('📡 GET all rendezvous:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
   getById: (idRdv) => {
-    console.log('📡 GET rendez-vous by ID:', idRdv);
+    ('📡 GET rendez-vous by ID:', idRdv);
     return api.get(`${BASE_URL}${idRdv}/`);
   },
 
   create: (data) => {
     const payload = { idRdv: `TEMP-${Date.now()}`, ...data };
-    console.log('📝 CREATE rendez-vous:', payload);
+    ('📝 CREATE rendez-vous:', payload);
     return api.post(BASE_URL, payload);
   },
 
   update: (idRdv, data) => {
-    console.log('📝 UPDATE rendez-vous:', idRdv, data);
+    ('📝 UPDATE rendez-vous:', idRdv, data);
     return api.put(`${BASE_URL}${idRdv}/`, data);
   },
 
   delete: (idRdv) => {
-    console.log('🗑️ DELETE rendez-vous:', idRdv);
+    ('🗑️ DELETE rendez-vous:', idRdv);
     return api.delete(`${BASE_URL}${idRdv}/`);
   },
 };

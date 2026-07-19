@@ -35,13 +35,13 @@
 //     setLoading(true);
 //     setError(null);
 //     try {
-//       console.log('🔄 Chargement des relances...');
+//       ('🔄 Chargement des relances...');
 //       const params = search ? { search: search } : {};
 //       const data = await relanceService.getAll(params);
-//       console.log('✅ Relances chargées:', data);
+//       (' Relances chargées:', data);
 //       setRelances(Array.isArray(data) ? data : []);
 //     } catch (err) {
-//       console.error('❌ Erreur chargement relances:', err);
+//       console.error(' Erreur chargement relances:', err);
 //       setError(err.message || 'Erreur lors du chargement des relances');
 //       setRelances([]);
 //       addToast(`Erreur: ${err.message || 'Impossible de charger les relances'}`, 'error');
@@ -75,7 +75,7 @@
 //       loadRelances(searchTerm);
 //       setDeleteModal({ isOpen: false, relanceId: null, relanceName: '' });
 //     } catch (err) {
-//       console.error('❌ Erreur suppression:', err);
+//       console.error(' Erreur suppression:', err);
 //       addToast(`Erreur: ${err.message || 'Impossible de supprimer'}`, 'error');
 //     }
 //   };
@@ -242,7 +242,7 @@
 //                     <td>{formatTime(relance.dateRelance)}</td>
 //                     <td>
 //                       <div className="action-buttons">
-//                         {/* ✅ BOUTON VOIR AJOUTÉ */}
+//                         {/*  BOUTON VOIR AJOUTÉ */}
 //                         <button 
 //                           className="action-btn view" 
 //                           onClick={() => navigate(`/relances/${relance.idRelance}`)}
@@ -328,13 +328,13 @@ const RelancesList = () => {
     setLoading(true);
     setError(null);
     try {
-      console.log('🔄 Chargement des relances...');
+      ('🔄 Chargement des relances...');
       const params = search ? { search: search } : {};
       const data = await relanceService.getAll(params);
-      console.log('✅ Relances chargées:', data);
+      (' Relances chargées:', data);
       setRelances(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('❌ Erreur chargement relances:', err);
+      console.error(' Erreur chargement relances:', err);
       setError(err.message || 'Erreur lors du chargement des relances');
       setRelances([]);
       addToast(`Erreur: ${err.message || 'Impossible de charger les relances'}`, 'error');
@@ -368,7 +368,7 @@ const RelancesList = () => {
       loadRelances(searchTerm);
       setDeleteModal({ isOpen: false, relanceId: null, relanceName: '' });
     } catch (err) {
-      console.error('❌ Erreur suppression:', err);
+      console.error(' Erreur suppression:', err);
       addToast(`Erreur: ${err.message || 'Impossible de supprimer'}`, 'error');
     }
   };

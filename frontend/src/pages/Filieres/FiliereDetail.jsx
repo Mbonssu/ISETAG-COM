@@ -52,11 +52,11 @@
 //     setError(null);
     
 //     try {
-//       console.log('🔄 Chargement de la filière:', id);
+//       ('🔄 Chargement de la filière:', id);
       
 //       // Charger les informations de la filière
 //       const data = await filiereService.getById(id);
-//       console.log('✅ Filière chargée:', data);
+//       (' Filière chargée:', data);
 //       setFiliere(data);
       
 //       // Charger les spécialités si disponibles
@@ -68,7 +68,7 @@
 //       }
       
 //     } catch (err) {
-//       console.error('❌ Erreur chargement filière:', err);
+//       console.error(' Erreur chargement filière:', err);
 //       setError(err.message || 'Erreur lors du chargement de la filière');
 //       addToast(`Erreur: ${err.message || 'Impossible de charger la filière'}`, 'error');
 //     } finally {
@@ -79,12 +79,12 @@
 //   const loadSpecialites = async (filiereId) => {
 //     setLoadingSpecialites(true);
 //     try {
-//       console.log('🔄 Chargement des spécialités pour:', filiereId);
+//       ('🔄 Chargement des spécialités pour:', filiereId);
 //       const data = await filiereService.getSpecialites(filiereId);
-//       console.log('✅ Spécialités chargées:', data);
+//       (' Spécialités chargées:', data);
 //       setSpecialites(Array.isArray(data) ? data : []);
 //     } catch (err) {
-//       console.error('❌ Erreur chargement spécialités:', err);
+//       console.error(' Erreur chargement spécialités:', err);
 //       // Ne pas afficher d'erreur bloquante, juste un toast
 //       addToast('Erreur lors du chargement des spécialités', 'warning');
 //     } finally {
@@ -105,7 +105,7 @@
 //     if (!deleteModal.specialiteId || !id) return;
     
 //     try {
-//       console.log('🗑️ Suppression spécialité:', deleteModal.specialiteId);
+//       ('🗑️ Suppression spécialité:', deleteModal.specialiteId);
       
 //       // Appel API pour supprimer la spécialité
 //       // Note: Adaptez selon votre API
@@ -120,7 +120,7 @@
 //       await loadFiliereData();
       
 //     } catch (err) {
-//       console.error('❌ Erreur suppression spécialité:', err);
+//       console.error(' Erreur suppression spécialité:', err);
 //       addToast(`Erreur: ${err.message || 'Impossible de supprimer la spécialité'}`, 'error');
 //     } finally {
 //       setDeleteModal({ isOpen: false, specialiteId: null, specialiteName: '' });

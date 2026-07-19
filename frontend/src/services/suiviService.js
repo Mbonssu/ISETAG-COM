@@ -5,7 +5,7 @@
  *   /prospect_api/ISETAG_COM.suivis/        (GET liste, POST création)
  *   /prospect_api/ISETAG_COM.suivis/<id>/   (GET un, PUT, DELETE)
  *
- * ⚠️ Corrigé :
+ *  Corrigé :
  * - L'ancienne URL "/suivi_api/ISETAG_COM.suivis/" n'existe pas dans
  *   l'API : le préfixe réel est "prospect_api".
  * - getStats(), getByProspect() et getByAgent() ont été retirées : aucune
@@ -37,7 +37,7 @@ export const suiviService = {
       }
     });
     const queryString = new URLSearchParams(cleanParams).toString();
-    console.log('📡 GET all suivis:', queryString || 'sans paramètres');
+    ('📡 GET all suivis:', queryString || 'sans paramètres');
     return api.get(queryString ? `${BASE_URL}?${queryString}` : BASE_URL);
   },
 
@@ -45,7 +45,7 @@ export const suiviService = {
    * GET /prospect_api/ISETAG_COM.suivis/<id>/ -> un suivi précis
    */
   getById: (idSuivi) => {
-    console.log('📡 GET suivi by ID:', idSuivi);
+    ('📡 GET suivi by ID:', idSuivi);
     return api.get(`${BASE_URL}${idSuivi}/`);
   },
 
@@ -57,7 +57,7 @@ export const suiviService = {
    */
   create: (data) => {
     const payload = { idSuivi: `TEMP-${Date.now()}`, ...data };
-    console.log('📝 CREATE suivi:', payload);
+    ('📝 CREATE suivi:', payload);
     return api.post(BASE_URL, payload);
   },
 
@@ -65,7 +65,7 @@ export const suiviService = {
    * PUT /prospect_api/ISETAG_COM.suivis/<id>/ -> mise à jour complète
    */
   update: (idSuivi, data) => {
-    console.log('📝 UPDATE suivi:', idSuivi, data);
+    ('📝 UPDATE suivi:', idSuivi, data);
     return api.put(`${BASE_URL}${idSuivi}/`, data);
   },
 
@@ -73,7 +73,7 @@ export const suiviService = {
    * DELETE /prospect_api/ISETAG_COM.suivis/<id>/ -> supprimer un suivi
    */
   delete: (idSuivi) => {
-    console.log('🗑️ DELETE suivi:', idSuivi);
+    ('🗑️ DELETE suivi:', idSuivi);
     return api.delete(`${BASE_URL}${idSuivi}/`);
   },
 };

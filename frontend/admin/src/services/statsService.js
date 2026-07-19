@@ -184,7 +184,7 @@ export function computeSourceDistribution(fichesSortie) {
 }
 
 // ---------- 4. FILIERE BARS ----------
-// ⚠️ On n'utilise PAS `prospect.domaineEtude` (un champ générique en texte
+//  On n'utilise PAS `prospect.domaineEtude` (un champ générique en texte
 // libre) : la vraie donnée métier, c'est la liste des filières/spécialités
 // que chaque prospect a explicitement choisies dans son formulaire, avec un
 // niveau d'intérêt (Faible/Moyen/Élevé/Très élevé/Excellent), via la table
@@ -293,11 +293,6 @@ export function computeRecentActivities({ fichesSortie, rendezVous, suivis, rela
     .map((a) => ({ ...a, time: formatDateFR(a.date) }));
 }
 
-// ---------- 6. PROSPECTS TABLE ----------
-// Construit les lignes du tableau "Derniers prospects ajoutés" à partir des
-// vrais prospects, avec un statut déduit (pas de champ "statut" natif côté
-// backend) : "À relancer" si une relance existe pour ce prospect, "Nouveau"
-// si créé ce mois-ci, sinon "Contacté".
 export function computeProspectsTableRows(prospects, relances, limit = 8) {
   const idsWithRelance = new Set(relances.map((r) => r.idProspect).filter(Boolean));
   const now = new Date();

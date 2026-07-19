@@ -285,10 +285,10 @@ export { ficheService } from './ficheService';
  * APRÈS (avec index.js) :
  *   import { api, userService, prospectService } from '../services';
  * 
- * ✅ Code plus propre
- * ✅ Moins d'imports à gérer
- * ✅ Facile à refactoriser
- * ✅ Centralisation des services
+ *  Code plus propre
+ *  Moins d'imports à gérer
+ *  Facile à refactoriser
+ *  Centralisation des services
  */
 
 export { suiviService } from './suiviService';

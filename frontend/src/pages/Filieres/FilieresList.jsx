@@ -39,13 +39,13 @@ const FilieresList = () => {
     setLoading(true);
     setError(null);
     try {
-      console.log('🔄 Chargement des spécialités...');
+      ('🔄 Chargement des spécialités...');
       const params = search ? { search: search } : {};
       const data = await specialiteService.getAll(params);
-      console.log('✅ Spécialités chargées:', data);
+      (' Spécialités chargées:', data);
       setSpecialites(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('❌ Erreur chargement spécialités:', err);
+      console.error(' Erreur chargement spécialités:', err);
       setError(err.message || 'Erreur lors du chargement des spécialités');
       setSpecialites([]);
       addToast(`Erreur: ${err.message || 'Impossible de charger les spécialités'}`, 'error');
@@ -80,7 +80,7 @@ const FilieresList = () => {
       loadSpecialites(searchTerm);
       setDeleteModal({ isOpen: false, specialiteId: null, specialiteName: '' });
     } catch (err) {
-      console.error('❌ Erreur suppression:', err);
+      console.error(' Erreur suppression:', err);
       addToast(`Erreur: ${err.message || 'Impossible de supprimer'}`, 'error');
     }
   };

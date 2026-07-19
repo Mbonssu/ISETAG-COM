@@ -83,7 +83,6 @@ const FiliereForm = () => {
     setLoadingData(true);
     try {
       const data = await specialiteService.getById(specialiteId);
-      console.log("📥 Données de la spécialité chargées:", data);
       
       setFieldValue("idSpecialite", data.idSpecialite);
       setFieldValue("libeleSpecialite", data.libeleSpecialite || "");
@@ -91,7 +90,7 @@ const FiliereForm = () => {
       setFieldValue("description", data.description || "");
       
     } catch (error) {
-      console.error("❌ Erreur chargement spécialité:", error);
+      console.error(" Erreur chargement spécialité:", error);
       addToast(
         `Erreur lors du chargement de la spécialité: ${error.message}`,
         "error"
@@ -123,7 +122,6 @@ const FiliereForm = () => {
         description: values.description || "",
       };
 
-      console.log("📤 Données à envoyer:", specialiteData);
 
       if (isEdit) {
         await specialiteService.update(id, specialiteData);
@@ -136,7 +134,7 @@ const FiliereForm = () => {
       setTimeout(() => navigate("/filieres"), 1500);
       
     } catch (error) {
-      console.error("❌ Erreur lors de l'enregistrement:", error);
+      console.error(" Erreur lors de l'enregistrement:", error);
       
       if (error.response?.data) {
         const backendErrors = error.response.data;
