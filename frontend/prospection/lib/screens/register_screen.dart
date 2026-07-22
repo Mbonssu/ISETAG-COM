@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: avoid_print, deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'login_screen.dart';

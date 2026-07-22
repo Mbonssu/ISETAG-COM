@@ -7,6 +7,7 @@ import 'package:isetagcom/models/specialite.dart';
 import 'package:isetagcom/services/translation_service.dart';
 import 'package:isetagcom/utils/status.dart';
 import 'interet_filiere.dart';
+import 'relance.dart';
 
 part 'generated/pros.g.dart';
 
@@ -62,6 +63,9 @@ class Prospect {
   /// Relation Isar
   @Backlink(to: 'prospect')
   final interets = IsarLinks<InteretFiliere>();
+
+  @Backlink(to: 'prospect')
+  final relances = IsarLinks<Relance>();
 
   @ignore
   final List<Specialite> AllSpec = [];

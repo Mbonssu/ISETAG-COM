@@ -16,6 +16,7 @@ import '../services/translation_service.dart';
 import '../services/notification_service.dart';
 import '../utils/idGenerator.dart';
 import '../utils/status.dart';
+import '../utils/sync_queue.dart';
 import '../utils/themes/glass_theme.dart';
 
 class AddProspectScreen extends StatefulWidget {
@@ -2110,16 +2111,10 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     );
   }
 
-  // ─── SAVE PROSPECT ────────────────────────────────────────────────────────
+  
 
   Future<void> _saveProspect() async {
-    if (_isSaving) return;
-    setState(() => _isSaving = true);
-
-    try {
-      if (!mounted) return;
-
-      LoadingService().show(context, message: 'saving_prospect'.tr);
+    LoadingService().show(context, message: 'saving_prospect'.tr);
 
       // Only page 1's fields (name + phone) are actually required.
       if (!_validatePersonalInfoPage()) {
@@ -2462,8 +2457,9 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
             syncState: SyncState.pending,
           );
 
-          interet.prospect.value = prospect;
-          interet.specialite.value = specialite;
+      // ✅ Link relationships
+      interet.prospect.value = prospect;
+      interet.specialite.value = specialite;
 
           await LocalStorage.instance.saveInteret(interet);
           prospect.interets.add(interet);
@@ -2493,6 +2489,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
                   : 'Relance programmée',
             );
 
+<<<<<<< HEAD
             _showSnackBar(
               '💬 Notification programmée pour le ${_formatDate(_date_relance!)}',
               _green,
@@ -2574,9 +2571,25 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} à ${date.hour}h${date.minute.toString().padLeft(2, '0')}';
-  }
+=======
+    _showSnackBar(
+        'prospect_saved'.tr.replaceFirst('{count}', '$savedInteretsCount'),
+        const Color(0xFF2E7D32),
+        3);
 
-  // ─── Reset ────────────────────────────────────────────────────────────────
+    _resetForm();
+    LoadingService().hide();
+
+    // Add all data to queue with correct priority
+    try {
+      await SyncQueue().syncNow();
+      print('✅ All items added to sync queue');
+    } catch (e) {
+      print('⚠️ Error adding to queue: $e');
+    }
+  }
+>>>>>>> b24d9102c6cc66f1c4daaff53fc675f62d25a225
+  }
 
   void _resetForm() {
     _nomCompletCtrl.clear();

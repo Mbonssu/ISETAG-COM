@@ -118,7 +118,14 @@ const RelanceSchema = CollectionSchema(
       ],
     )
   },
-  links: {},
+  links: {
+    r'prospect': LinkSchema(
+      id: 1179170612130135330,
+      name: r'prospect',
+      target: r'Prospect',
+      single: true,
+    )
+  },
   embeddedSchemas: {},
   getId: _relanceGetId,
   getLinks: _relanceGetLinks,
@@ -226,11 +233,12 @@ Id _relanceGetId(Relance object) {
 }
 
 List<IsarLinkBase<dynamic>> _relanceGetLinks(Relance object) {
-  return [];
+  return [object.prospect];
 }
 
 void _relanceAttach(IsarCollection<dynamic> col, Id id, Relance object) {
   object.isarId = id;
+  object.prospect.attach(col, col.isar.collection<Prospect>(), r'prospect', id);
 }
 
 extension RelanceByIndex on IsarCollection<Relance> {
@@ -1495,7 +1503,20 @@ extension RelanceQueryObject
     on QueryBuilder<Relance, Relance, QFilterCondition> {}
 
 extension RelanceQueryLinks
-    on QueryBuilder<Relance, Relance, QFilterCondition> {}
+    on QueryBuilder<Relance, Relance, QFilterCondition> {
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> prospect(
+      FilterQuery<Prospect> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'prospect');
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> prospectIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'prospect', 0, true, 0, true);
+    });
+  }
+}
 
 extension RelanceQuerySortBy on QueryBuilder<Relance, Relance, QSortBy> {
   QueryBuilder<Relance, Relance, QAfterSortBy> sortByCreatedAt() {

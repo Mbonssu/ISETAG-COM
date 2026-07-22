@@ -315,6 +315,13 @@ const ProspectSchema = CollectionSchema(
       target: r'InteretFiliere',
       single: false,
       linkName: r'prospect',
+    ),
+    r'relances': LinkSchema(
+      id: 8663377445292149841,
+      name: r'relances',
+      target: r'Relance',
+      single: false,
+      linkName: r'prospect',
     )
   },
   embeddedSchemas: {},
@@ -517,7 +524,7 @@ Id _prospectGetId(Prospect object) {
 }
 
 List<IsarLinkBase<dynamic>> _prospectGetLinks(Prospect object) {
-  return [object.fiche, object.classe, object.interets];
+  return [object.fiche, object.classe, object.interets, object.relances];
 }
 
 void _prospectAttach(IsarCollection<dynamic> col, Id id, Prospect object) {
@@ -526,6 +533,7 @@ void _prospectAttach(IsarCollection<dynamic> col, Id id, Prospect object) {
   object.classe.attach(col, col.isar.collection<Classe>(), r'classe', id);
   object.interets
       .attach(col, col.isar.collection<InteretFiliere>(), r'interets', id);
+  object.relances.attach(col, col.isar.collection<Relance>(), r'relances', id);
 }
 
 extension ProspectByIndex on IsarCollection<Prospect> {
@@ -3948,6 +3956,64 @@ extension ProspectQueryLinks
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(
           r'interets', lower, includeLower, upper, includeUpper);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> relances(
+      FilterQuery<Relance> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'relances');
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> relancesLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'relances', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> relancesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'relances', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> relancesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'relances', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      relancesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'relances', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition>
+      relancesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'relances', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<Prospect, Prospect, QAfterFilterCondition> relancesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'relances', lower, includeLower, upper, includeUpper);
     });
   }
 }

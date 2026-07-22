@@ -1,5 +1,6 @@
 import 'package:isar_community/isar.dart';
 import 'package:isetagcom/utils/status.dart';
+import 'pros.dart'; // ✅ IMPORT PROSPECT MODEL
 
 part 'generated/relance.g.dart';
 
@@ -28,7 +29,9 @@ class Relance {
   SyncState syncState =
       SyncState.pending; // pending, synced, toUpdate, toDelete
 
-  // Optional: store prospect name for quick display? Not necessary, we can load prospect separately.
+  // ✅ NEW: Relationship to Prospect
+  // This allows us to load the prospect and check if it's synced
+  final prospect = IsarLink<Prospect>();
 
   Relance({
     required this.idRelance,

@@ -1441,8 +1441,10 @@ class LocalStorage {
                   : null;
             })
             .whereType<SpecialityDetail>()
-            .toList()
-          ..sort((a, b) => a.orderPreference.compareTo(b.orderPreference));
+            .toList();
+
+        specialities
+            .sort((a, b) => a.orderPreference.compareTo(b.orderPreference));
 
         detailsList.add(
           ProspectDetails(
@@ -1954,81 +1956,6 @@ class LocalStorage {
       return [];
     }
   }
-
-  // ==================== SEED CLASSES ====================
-
-  // Future<void> seedClassesIfEmpty() async {
-  //   try {
-  //     final existing = await getAllClasses();
-  //     if (existing.isNotEmpty) return;
-
-  //     print('Seeding default classes...');
-
-  //     final List<String> classKeys = [
-  //       'class_a1',
-  //       'class_a2',
-  //       'class_a3',
-  //       'class_a4',
-  //       'class_abi',
-  //       'class_c',
-  //       'class_d',
-  //       'class_ti',
-  //       'class_b',
-  //       'class_g1',
-  //       'class_g2',
-  //       'class_g3',
-  //       'class_ses',
-  //       'class_f2',
-  //       'class_f3',
-  //       'class_mav',
-  //       'class_f4',
-  //       'class_is',
-  //       'class_gt',
-  //       'class_f1',
-  //       'class_ma',
-  //       'class_mf_ch',
-  //       'class_f7',
-  //       'class_ci',
-  //       'class_frcl',
-  //       'class_ih',
-  //       'class_esf',
-  //     ];
-
-  //     String generalEtsId;
-  //     final generalEts = await getEtablissementByNom('Lycée Général Leclerc');
-
-  //     if (generalEts != null) {
-  //       generalEtsId = generalEts.idEtablissement;
-  //     } else {
-  //       final now = DateTime.now();
-  //       final newEts = Etablissement(
-  //         idEtablissement: Generator.generateShortId('ets_'),
-  //         nomEtablissement: 'Lycée Général Leclerc',
-  //         typeEtablissement: 'secondaire',
-  //         createdAt: now,
-  //         syncState: SyncState.pending,
-  //       );
-  //       await saveEtablissement(newEts);
-  //       generalEtsId = newEts.idEtablissement;
-  //     }
-
-  //     final now = DateTime.now();
-  //     for (final key in classKeys) {
-  //       final classe = Classe(
-  //         idClasse: Generator.generateShortId('cls_'),
-  //         idEts: generalEtsId,
-  //         libelleClasse: key,
-  //         createdAt: now,
-  //         syncState: SyncState.pending,
-  //       );
-  //       await saveClasse(classe);
-  //     }
-
-  //     print('✅ ${classKeys.length} classes seeded successfully!');
-  //   } catch (e) {
-  //     print('❌ Error seeding classes: $e');
-  //   }
-  // }
 
   Future<void> seedClassesIfEmpty() async {
     try {

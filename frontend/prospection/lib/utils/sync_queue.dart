@@ -17,7 +17,7 @@ import '../utils/status.dart';
 import '../services/api_service.dart';
 import 'connection_checker.dart';
 
-/// Moteur de synchronisation hors-ligne -> Django.
+/// ✅ FIXED: Moteur de synchronisation hors-ligne -> Django avec gestion des dépendances
 class SyncQueue {
   static final SyncQueue _instance = SyncQueue._internal();
   factory SyncQueue() => _instance;
@@ -40,6 +40,11 @@ class SyncQueue {
   int _totalItemsThisRun = 0;
   int _syncedItemsThisRun = 0;
 
+  // ✅ NEW: Track synced remote IDs to avoid orphaned data
+  final Set<String> _syncedFicheIds = {};
+  final Set<String> _syncedProspectIds = {};
+  final Set<String> _syncedRelanceIds = {};
+
   final _queueStatusController = StreamController<bool>.broadcast();
   Stream<bool> get queueStatusStream => _queueStatusController.stream;
 
@@ -49,7 +54,6 @@ class SyncQueue {
   final _pauseStatusController = StreamController<bool>.broadcast();
   Stream<bool> get pauseStatusStream => _pauseStatusController.stream;
 
-  // ✅ Event stream for sync events
   final _syncEventController = StreamController<SyncEvent>.broadcast();
   Stream<SyncEvent> get syncEventStream => _syncEventController.stream;
 
@@ -85,10 +89,7 @@ class SyncQueue {
     }
   }
 
-  // ---------------------------------------------------------------------
-  // Comptages - Updated to include relances
-  // ---------------------------------------------------------------------
-
+  // ✅ FIXED: Updated to include relances
   Future<int> getPendingCount() async {
     final byType = await getPendingItemsByType();
     return byType.values.fold<int>(0, (sum, c) => sum + c);
@@ -100,7 +101,6 @@ class SyncQueue {
     try {
       final isar = _storage.isar;
       final results = await Future.wait<int>([
-        // Prospects
         isar.prospects
             .where()
             .filter()
@@ -108,7 +108,6 @@ class SyncQueue {
             .or()
             .syncStateEqualTo(SyncState.toUpdate)
             .count(),
-        // Fiches
         isar.fiches
             .where()
             .filter()
@@ -116,7 +115,6 @@ class SyncQueue {
             .or()
             .syncStateEqualTo(SyncState.toUpdate)
             .count(),
-        // Interets
         isar.interetFilieres
             .where()
             .filter()
@@ -124,7 +122,6 @@ class SyncQueue {
             .or()
             .syncStateEqualTo(SyncState.toUpdate)
             .count(),
-        // Specialites
         isar.specialites
             .where()
             .filter()
@@ -132,7 +129,6 @@ class SyncQueue {
             .or()
             .syncStateEqualTo(SyncState.toUpdate)
             .count(),
-        // Etablissements
         isar.etablissements
             .where()
             .filter()
@@ -140,7 +136,6 @@ class SyncQueue {
             .or()
             .syncStateEqualTo(SyncState.toUpdate)
             .count(),
-        // Sources
         isar.sources
             .where()
             .filter()
@@ -148,7 +143,7 @@ class SyncQueue {
             .or()
             .syncStateEqualTo(SyncState.toUpdate)
             .count(),
-        // ✅ Relances (only pending & toUpdate – no deletion)
+        // ✅ Include relances in pending count
         isar.relances
             .where()
             .filter()
@@ -171,7 +166,6 @@ class SyncQueue {
     }
   }
 
-  // ✅ Get items that need update (toUpdate status)
   Future<Map<String, int>> getUpdateItemsByType() async {
     try {
       final isar = _storage.isar;
@@ -311,10 +305,7 @@ class SyncQueue {
 
   Future<int> getPendingItemsCount() => getPendingCount();
 
-  // ---------------------------------------------------------------------
-  // Contrôle (pause / reprise / relance des échecs)
-  // ---------------------------------------------------------------------
-
+  // ✅ CONTROL (pause / resume / retry failed items)
   void _pauseInternal() {
     _isPaused = true;
     _shouldStopSync = true;
@@ -355,7 +346,6 @@ class SyncQueue {
     var count = 0;
 
     await isar.writeTxn(() async {
-      // Reset failed items to pending for retry
       for (final item in await isar.etablissements
           .where()
           .filter()
@@ -429,10 +419,7 @@ class SyncQueue {
     return count;
   }
 
-  // ---------------------------------------------------------------------
-  // Boucle principale - Updated to handle toUpdate first
-  // ---------------------------------------------------------------------
-
+  // ✅ MAIN LOOP WITH DEPENDENCY MANAGEMENT
   Future<void> syncNow({int? overrideBatchSize}) async {
     if (overrideBatchSize != null) setBatchSize(overrideBatchSize);
 
@@ -460,10 +447,15 @@ class SyncQueue {
     _shouldStopSync = false;
     _totalItemsThisRun = await getPendingCount();
     _syncedItemsThisRun = 0;
+    
+    // ✅ Clear synced IDs tracking at start of sync run
+    _syncedFicheIds.clear();
+    _syncedProspectIds.clear();
+    _syncedRelanceIds.clear();
+    
     _queueStatusController.add(true);
     _progressController.add(0.0);
 
-    // ✅ Emit started event
     _syncEventController.add(SyncEvent(type: SyncEventType.started));
 
     print('🔄 Démarrage synchro : $_totalItemsThisRun élément(s) en attente '
@@ -476,7 +468,7 @@ class SyncQueue {
     try {
       while (!_shouldStopSync && passCount < maxPasses) {
         passCount++;
-        // ✅ Sync toUpdate items first (priority)
+        // ✅ Sync with dependency order
         await _syncAllTypesInDependencyOrder();
         if (_shouldStopSync) break;
 
@@ -521,96 +513,57 @@ class SyncQueue {
     }
   }
 
+  // ✅ DEPENDENCY ORDER SYNC:
+  // 1. Fiches (must sync before prospects that reference them)
+  // 2. Prospects (must sync before interets and relances)
+  // 3. Specialites (must sync before interets)
+  // 4. Interets (depends on prospects & specialites)
+  // 5. Relances (depends on prospects, only pending & toUpdate, no deletion)
   Future<void> _syncAllTypesInDependencyOrder() async {
-    // ✅ 1. Sync toUpdate items first (priority)
+    // Priority 1: Sync toUpdate items first (edits to existing records)
     await _syncUpdates();
     if (_shouldStopSync) return;
 
-    // ✅ 2. Then sync pending items in dependency order
-    await _syncFiches();
-    if (_shouldStopSync) return;
-
+    // Priority 2: Establishment & source (foundational data)
     await _syncEtablissements();
     if (_shouldStopSync) return;
 
+    await _syncSources();
+    if (_shouldStopSync) return;
+
+    // Priority 3: Fiches (needed by prospects)
+    await _syncFiches();
+    if (_shouldStopSync) return;
+
+    // Priority 4: Prospects (needed by interets & relances)
     await _syncProspects();
     if (_shouldStopSync) return;
 
+    // Priority 5: Specialites (needed by interets)
     await _syncSpecialites();
     if (_shouldStopSync) return;
 
+    // Priority 6: Interets (depends on prospects & specialites)
     await _syncInterets();
     if (_shouldStopSync) return;
 
-    // ✅ 3. Sync relances – must happen AFTER prospects (no deletion)
-    await _syncRelancesUpdates();
+    // Priority 7: Relances (depends on prospects, must be LAST)
+    await _syncRelances();
     if (_shouldStopSync) return;
   }
 
-  // ---------------------------------------------------------------------
-  // Sync Updates (toUpdate items - priority)
-  // ---------------------------------------------------------------------
-
+  // ✅ Sync toUpdate items (priority)
   Future<void> _syncUpdates() async {
-    // ✅ Sync prospects toUpdate first
     await _syncProspectsUpdates();
     if (_shouldStopSync) return;
-
-    // ✅ Sync fiches toUpdate
     await _syncFichesUpdates();
     if (_shouldStopSync) return;
-
-    // ✅ Sync interets toUpdate
     await _syncInteretsUpdates();
     if (_shouldStopSync) return;
-
-    // ✅ Sync relances toUpdate
-    await _syncRelancesUpdates(); // handles both pending and toUpdate
-    if (_shouldStopSync) return;
   }
 
-  // ---------------------------------------------------------------------
-  // Sync by type - with update support
-  // ---------------------------------------------------------------------
+  // ===== FICHE SYNC (must come before prospects) =====
 
-  Future<void> _syncSources() async {
-    while (true) {
-      if (!_connection.isConnected || _shouldStopSync) return;
-
-      final batch = await _storage.isar.sources
-          .where()
-          .filter()
-          .syncStateEqualTo(SyncState.pending)
-          .limit(batchSize)
-          .findAll();
-      if (batch.isEmpty) return;
-
-      print('📦 Sources : lot de ${batch.length}');
-      await _runBounded(batch, (item) async {
-        await _syncSingle(
-          label: 'source',
-          idOf: () => item.idSource,
-          send: () => _api.createSource(item.toJsonApi()),
-          markSynced: () async {
-            await _storage.isar.writeTxn(() async {
-              item.syncState = SyncState.synced;
-              await _storage.isar.sources.put(item);
-            });
-          },
-          markFailed: () async {
-            await _storage.isar.writeTxn(() async {
-              item.syncState = SyncState.failed;
-              await _storage.isar.sources.put(item);
-            });
-          },
-        );
-      });
-
-      if (_shouldStopSync) return;
-    }
-  }
-
-  // ✅ Sync fiches pending
   Future<void> _syncFiches() async {
     while (true) {
       if (!_connection.isConnected || _shouldStopSync) return;
@@ -638,6 +591,7 @@ class SyncQueue {
               item.syncState = SyncState.synced;
               await _storage.isar.fiches.put(item);
             });
+            _syncedFicheIds.add(item.idFiche);
           },
           markFailed: () async {
             await _storage.isar.writeTxn(() async {
@@ -652,7 +606,6 @@ class SyncQueue {
     }
   }
 
-  // ✅ Sync fiches toUpdate (priority)
   Future<void> _syncFichesUpdates() async {
     while (true) {
       if (!_connection.isConnected || _shouldStopSync) return;
@@ -680,6 +633,7 @@ class SyncQueue {
               item.syncState = SyncState.synced;
               await _storage.isar.fiches.put(item);
             });
+            _syncedFicheIds.add(item.idFiche);
           },
           markFailed: () async {
             await _storage.isar.writeTxn(() async {
@@ -693,6 +647,96 @@ class SyncQueue {
       if (_shouldStopSync) return;
     }
   }
+
+  // ===== PROSPECT SYNC (must come after fiches) =====
+
+  Future<void> _syncProspects() async {
+    while (true) {
+      if (!_connection.isConnected || _shouldStopSync) return;
+
+      final batch = await _storage.isar.prospects
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.pending)
+          .limit(batchSize)
+          .findAll();
+      if (batch.isEmpty) return;
+
+      print('📦 Prospects : lot de ${batch.length}');
+      await _runBounded(batch, (item) async {
+        // ✅ CRITICAL: Check if fiche is synced before syncing prospect
+        await item.fiche.load();
+        if (item.fiche.value != null && !_syncedFicheIds.contains(item.fiche.value!.idFiche)) {
+          print('⏳ Prospect ${item.idProspect} : sa fiche n\'est pas encore synchronisée, renvoi en attente');
+          // Mark as still pending if fiche not synced
+          return;
+        }
+
+        await item.interets.load();
+        await _syncSingle(
+          label: 'prospect',
+          idOf: () => item.idProspect,
+          send: () => _api.createProspect(item.toJsonApi()),
+          markSynced: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.synced;
+              await _storage.isar.prospects.put(item);
+            });
+            _syncedProspectIds.add(item.idProspect);
+          },
+          markFailed: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.failed;
+              await _storage.isar.prospects.put(item);
+            });
+          },
+        );
+      });
+
+      if (_shouldStopSync) return;
+    }
+  }
+
+  Future<void> _syncProspectsUpdates() async {
+    while (true) {
+      if (!_connection.isConnected || _shouldStopSync) return;
+
+      final batch = await _storage.isar.prospects
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.toUpdate)
+          .limit(batchSize)
+          .findAll();
+      if (batch.isEmpty) return;
+
+      print('📦 Prospects à mettre à jour : lot de ${batch.length}');
+      await _runBounded(batch, (item) async {
+        await item.interets.load();
+        await _syncSingle(
+          label: 'prospect (update)',
+          idOf: () => item.idProspect,
+          send: () => _api.updateProspect(item.idProspect, item.toJsonApi()),
+          markSynced: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.synced;
+              await _storage.isar.prospects.put(item);
+            });
+            _syncedProspectIds.add(item.idProspect);
+          },
+          markFailed: () async {
+            await _storage.isar.writeTxn(() async {
+              item.syncState = SyncState.failed;
+              await _storage.isar.prospects.put(item);
+            });
+          },
+        );
+      });
+
+      if (_shouldStopSync) return;
+    }
+  }
+
+  // ===== ESTABLISHMENT & SOURCE SYNC =====
 
   Future<void> _syncEtablissements() async {
     while (true) {
@@ -731,12 +775,11 @@ class SyncQueue {
     }
   }
 
-  // ✅ Sync prospects pending
-  Future<void> _syncProspects() async {
+  Future<void> _syncSources() async {
     while (true) {
       if (!_connection.isConnected || _shouldStopSync) return;
 
-      final batch = await _storage.isar.prospects
+      final batch = await _storage.isar.sources
           .where()
           .filter()
           .syncStateEqualTo(SyncState.pending)
@@ -744,23 +787,22 @@ class SyncQueue {
           .findAll();
       if (batch.isEmpty) return;
 
-      print('📦 Prospects : lot de ${batch.length}');
+      print('📦 Sources : lot de ${batch.length}');
       await _runBounded(batch, (item) async {
-        await item.interets.load();
         await _syncSingle(
-          label: 'prospect',
-          idOf: () => item.idProspect,
-          send: () => _api.createProspect(item.toJsonApi()),
+          label: 'source',
+          idOf: () => item.idSource,
+          send: () => _api.createSource(item.toJsonApi()),
           markSynced: () async {
             await _storage.isar.writeTxn(() async {
               item.syncState = SyncState.synced;
-              await _storage.isar.prospects.put(item);
+              await _storage.isar.sources.put(item);
             });
           },
           markFailed: () async {
             await _storage.isar.writeTxn(() async {
               item.syncState = SyncState.failed;
-              await _storage.isar.prospects.put(item);
+              await _storage.isar.sources.put(item);
             });
           },
         );
@@ -770,44 +812,7 @@ class SyncQueue {
     }
   }
 
-  // ✅ Sync prospects toUpdate (priority)
-  Future<void> _syncProspectsUpdates() async {
-    while (true) {
-      if (!_connection.isConnected || _shouldStopSync) return;
-
-      final batch = await _storage.isar.prospects
-          .where()
-          .filter()
-          .syncStateEqualTo(SyncState.toUpdate)
-          .limit(batchSize)
-          .findAll();
-      if (batch.isEmpty) return;
-
-      print('📦 Prospects à mettre à jour : lot de ${batch.length}');
-      await _runBounded(batch, (item) async {
-        await item.interets.load();
-        await _syncSingle(
-          label: 'prospect (update)',
-          idOf: () => item.idProspect,
-          send: () => _api.updateProspect(item.idProspect, item.toJsonApi()),
-          markSynced: () async {
-            await _storage.isar.writeTxn(() async {
-              item.syncState = SyncState.synced;
-              await _storage.isar.prospects.put(item);
-            });
-          },
-          markFailed: () async {
-            await _storage.isar.writeTxn(() async {
-              item.syncState = SyncState.failed;
-              await _storage.isar.prospects.put(item);
-            });
-          },
-        );
-      });
-
-      if (_shouldStopSync) return;
-    }
-  }
+  // ===== SPECIALITE & INTERET SYNC =====
 
   Future<void> _syncSpecialites() async {
     while (true) {
@@ -846,7 +851,6 @@ class SyncQueue {
     }
   }
 
-  // ✅ Sync interets pending
   Future<void> _syncInterets() async {
     while (true) {
       if (!_connection.isConnected || _shouldStopSync) return;
@@ -886,7 +890,6 @@ class SyncQueue {
     }
   }
 
-  // ✅ Sync interets toUpdate (priority)
   Future<void> _syncInteretsUpdates() async {
     while (true) {
       if (!_connection.isConnected || _shouldStopSync) return;
@@ -926,10 +929,9 @@ class SyncQueue {
     }
   }
 
-  // ==================== RELANCE SYNC (no deletion) ====================
-
-  /// Sync relances: creations and updates (pending & toUpdate)
-  Future<void> _syncRelancesUpdates() async {
+  // ✅ RELANCE SYNC (must be LAST - after prospects are synced)
+  // Critical: Only sync pending & toUpdate (no deletion), prevent duplicates
+  Future<void> _syncRelances() async {
     while (true) {
       if (!_connection.isConnected || _shouldStopSync) return;
 
@@ -942,13 +944,36 @@ class SyncQueue {
       if (batch.isEmpty) return;
 
       print('📦 Relances à créer/mettre à jour : lot de ${batch.length}');
-      await _runBounded(batch, _syncSingleRelance);
+      
+      // ✅ Filter: Only sync relances whose prospect is already synced
+      final validBatch = <Relance>[];
+      for (final relance in batch) {
+        await relance.prospect.load();
+        if (relance.prospect.value != null && 
+            _syncedProspectIds.contains(relance.prospects.value!.idProspect)) {
+          validBatch.add(relance);
+        } else {
+          print('⏳ Relance ${relance.idRelance} : son prospect n\'est pas encore synchronisé');
+        }
+      }
+
+      if (validBatch.isEmpty) return;
+
+      await _runBounded(validBatch, _syncSingleRelance);
       if (_shouldStopSync) return;
     }
   }
 
-  /// Sync a single relance (create or update)
+  /// ✅ CRITICAL: Sync a single relance (create or update)
+  /// Prevents duplicate sends by checking sync state
   Future<void> _syncSingleRelance(Relance item) async {
+    // ✅ Double-check the relance is not already synced (prevent duplicates)
+    if (item.syncState == SyncState.synced) {
+      print('⏭️ Relance ${item.idRelance} déjà synchronisée, passée');
+      _syncedRelanceIds.add(item.idRelance);
+      return;
+    }
+
     await _syncSingle(
       label: 'relance',
       idOf: () => item.idRelance,
@@ -965,6 +990,7 @@ class SyncQueue {
           item.syncState = SyncState.synced;
           await _storage.isar.relances.put(item);
         });
+        _syncedRelanceIds.add(item.idRelance);
       },
       markFailed: () async {
         await _storage.isar.writeTxn(() async {
@@ -975,9 +1001,7 @@ class SyncQueue {
     );
   }
 
-  // ---------------------------------------------------------------------
-  // Primitives partagées
-  // ---------------------------------------------------------------------
+  // ===== SHARED PRIMITIVES =====
 
   Future<void> _runBounded<T>(
     List<T> items,
@@ -1082,10 +1106,7 @@ class SyncQueue {
     _progressController.add(_syncedItemsThisRun / _totalItemsThisRun);
   }
 
-  // ---------------------------------------------------------------------
-  // Getters
-  // ---------------------------------------------------------------------
-
+  // GETTERS
   bool get isProcessing => _isProcessing;
   bool get isConnected => _connection.isConnected;
   bool get isPaused => _isPaused;
@@ -1101,7 +1122,7 @@ class SyncQueue {
   }
 }
 
-// ✅ SyncEvent classes
+// ✅ SYNC EVENT CLASSES
 enum SyncEventType {
   started,
   progress,
