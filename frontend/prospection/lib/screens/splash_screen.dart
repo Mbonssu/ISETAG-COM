@@ -1,6 +1,6 @@
 // lib/screens/splash_screen.dart
 
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -113,7 +113,7 @@ class _SplashScreenState extends State<SplashScreen>
                             end: Alignment.bottomRight,
                             colors: [Color(0xFFF9A825), Color(0xFFF57F17)],
                           ),
-                          borderRadius: BorderRadius.circular(35),
+                          borderRadius: BorderRadius.circular(60),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.3),

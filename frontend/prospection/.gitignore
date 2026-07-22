@@ -30,8 +30,8 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
-/build1/
-/build2/
+/build-worked/
+/build-release/
 /coverage/
 
 # Symbolication related

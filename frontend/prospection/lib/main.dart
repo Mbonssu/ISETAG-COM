@@ -9,7 +9,6 @@ import 'screens/splash_screen.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
-import 'services/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +24,14 @@ Future<void> main() async {
   tz.setLocalLocation(location);
 
   // ✅ Run app immediately - splash screen shows quickly
-  runApp(const IsetagApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        // other providers...
+      ],
+      child: const IsetagApp(),
+  ));
 }
 // If you only need to sync once
 

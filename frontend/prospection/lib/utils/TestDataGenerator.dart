@@ -402,7 +402,6 @@ class TestDataGenerator {
           createdAt: now,
           syncState: SyncState.pending,
         );
-        classe.ets.value = ets;
         await localStorage.saveClasse(classe);
         testClasses.add(classe);
       }

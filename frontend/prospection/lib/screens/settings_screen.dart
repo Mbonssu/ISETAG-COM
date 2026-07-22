@@ -10,6 +10,7 @@ import '../services/loading_service.dart';
 import '../services/api_service.dart';
 import '../utils/themes/app_colors.dart';
 import '../routes/app_router.dart';
+import 'legal_infos_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -218,10 +219,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         bottom: false,
         child: Row(
           children: [
-            GestureDetector(
-              onTap: () => Navigator.pushNamed(context, AppRoutes.main),
-              child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
-            ),
+            // GestureDetector(
+            //   onTap: () => Navigator.pushNamed(context, AppRoutes.main),
+            //   child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+            // ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
@@ -414,7 +415,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           //     ),
           //   ],
           // ),
-        
         ],
       ),
     );
@@ -526,55 +526,67 @@ class _SettingsScreenState extends State<SettingsScreen> {
           trailing: const Icon(Icons.chevron_right, color: Colors.grey),
           onTap: () => Navigator.pushNamed(context, AppRoutes.syncRoute),
         ),
-        Divider(height: 1, color: Colors.grey.shade200),
-        _buildMenuTile(
-          icon: Icons.notifications_rounded,
-          title: 'notifications'.tr,
-          subtitle: 'manage_notifications'.tr,
-          trailing: Switch(
-            value: true,
-            onChanged: (_) {},
-            activeColor: AppColors.primaryGreen,
-          ),
-          onTap: () {},
-        ),
+        // Divider(height: 1, color: Colors.grey.shade200),
+        // _buildMenuTile(
+        //   icon: Icons.notifications_rounded,
+        //   title: 'notifications'.tr,
+        //   subtitle: 'manage_notifications'.tr,
+        //   trailing: Switch(
+        //     value: true,
+        //     onChanged: (_) {},
+        //     activeColor: AppColors.primaryGreen,
+        //   ),
+        //   onTap: () {},
+        // ),
       ],
     );
   }
 
   // ─── À PROPOS ────────────────────────────────────────────────────────────
 
-  Widget _buildAboutCard() {
-    return _buildSectionCard(
-      title: 'about'.tr,
-      icon: Icons.info_outline,
-      children: [
-        _buildMenuTile(
-          icon: Icons.verified_user_outlined,
-          title: 'version'.tr,
-          subtitle: 'Version 1.0.0',
-          trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-          onTap: () {},
-        ),
-        Divider(height: 1, color: Colors.grey.shade200),
-        _buildMenuTile(
-          icon: Icons.description_outlined,
-          title: 'terms_of_use'.tr,
-          subtitle: 'read_terms'.tr,
-          trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-          onTap: () {},
-        ),
-        Divider(height: 1, color: Colors.grey.shade200),
-        _buildMenuTile(
-          icon: Icons.privacy_tip_outlined,
-          title: 'privacy_policy'.tr,
-          subtitle: 'read_privacy_policy'.tr,
-          trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-          onTap: () {},
-        ),
-      ],
-    );
-  }
+// In _SettingsScreenState, replace the existing _buildAboutCard and add a helper.
+
+Widget _buildAboutCard() {
+  return _buildSectionCard(
+    title: 'about'.tr,
+    icon: Icons.info_outline,
+    children: [
+      _buildMenuTile(
+        icon: Icons.verified_user_outlined,
+        title: 'version'.tr,
+        subtitle: 'view_version'.tr,   // make sure to add this translation
+        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+        onTap: () => _navigateToLegal(LegalSection.version),
+      ),
+      Divider(height: 1, color: Colors.grey.shade200),
+      _buildMenuTile(
+        icon: Icons.description_outlined,
+        title: 'terms_of_use'.tr,
+        subtitle: 'read_terms'.tr,
+        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+        onTap: () => _navigateToLegal(LegalSection.terms),
+      ),
+      Divider(height: 1, color: Colors.grey.shade200),
+      _buildMenuTile(
+        icon: Icons.privacy_tip_outlined,
+        title: 'privacy_policy'.tr,
+        subtitle: 'read_privacy_policy'.tr,
+        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+        onTap: () => _navigateToLegal(LegalSection.privacy),
+      ),
+    ],
+  );
+}
+
+// Helper method
+void _navigateToLegal(LegalSection section) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => LegalDetailScreen(section: section),
+    ),
+  );
+}
 
   // ─── BOUTON DÉCONNEXION ────────────────────────────────────────────────
 

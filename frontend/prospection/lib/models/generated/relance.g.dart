@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of '../classe.dart';
+part of '../relance.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator
@@ -9,88 +9,98 @@ part of '../classe.dart';
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-extension GetClasseCollection on Isar {
-  IsarCollection<Classe> get classes => this.collection();
+extension GetRelanceCollection on Isar {
+  IsarCollection<Relance> get relances => this.collection();
 }
 
-const ClasseSchema = CollectionSchema(
-  name: r'Classe',
-  id: -6748177226977079863,
+const RelanceSchema = CollectionSchema(
+  name: r'Relance',
+  id: -5093631459962684914,
   properties: {
     r'createdAt': PropertySchema(
       id: 0,
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
-    r'idClasse': PropertySchema(
+    r'dateRelance': PropertySchema(
       id: 1,
-      name: r'idClasse',
-      type: IsarType.string,
+      name: r'dateRelance',
+      type: IsarType.dateTime,
     ),
-    r'idEts': PropertySchema(
+    r'description': PropertySchema(
       id: 2,
-      name: r'idEts',
+      name: r'description',
       type: IsarType.string,
     ),
-    r'libelleClasse': PropertySchema(
+    r'idProspect': PropertySchema(
       id: 3,
-      name: r'libelleClasse',
+      name: r'idProspect',
+      type: IsarType.string,
+    ),
+    r'idRelance': PropertySchema(
+      id: 4,
+      name: r'idRelance',
+      type: IsarType.string,
+    ),
+    r'sujet': PropertySchema(
+      id: 5,
+      name: r'sujet',
       type: IsarType.string,
     ),
     r'syncState': PropertySchema(
-      id: 4,
+      id: 6,
       name: r'syncState',
       type: IsarType.byte,
-      enumMap: _ClassesyncStateEnumValueMap,
+      enumMap: _RelancesyncStateEnumValueMap,
     ),
     r'updatedAt': PropertySchema(
-      id: 5,
+      id: 7,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
   },
-  estimateSize: _classeEstimateSize,
-  serialize: _classeSerialize,
-  deserialize: _classeDeserialize,
-  deserializeProp: _classeDeserializeProp,
+  estimateSize: _relanceEstimateSize,
+  serialize: _relanceSerialize,
+  deserialize: _relanceDeserialize,
+  deserializeProp: _relanceDeserializeProp,
   idName: r'isarId',
   indexes: {
-    r'idClasse': IndexSchema(
-      id: 4607164231052193247,
-      name: r'idClasse',
+    r'idRelance': IndexSchema(
+      id: -9025773614017932817,
+      name: r'idRelance',
       unique: true,
       replace: false,
       properties: [
         IndexPropertySchema(
-          name: r'idClasse',
+          name: r'idRelance',
           type: IndexType.hash,
           caseSensitive: true,
         )
       ],
     ),
-    r'idEts': IndexSchema(
-      id: 3458280750964673142,
-      name: r'idEts',
+    r'idProspect': IndexSchema(
+      id: -6185438842360057898,
+      name: r'idProspect',
       unique: false,
       replace: false,
       properties: [
         IndexPropertySchema(
-          name: r'idEts',
+          name: r'idProspect',
           type: IndexType.hash,
           caseSensitive: true,
         )
       ],
     ),
-    r'libelleClasse': IndexSchema(
-      id: 3529125688671503725,
-      name: r'libelleClasse',
+    r'dateRelance': IndexSchema(
+      id: 8982761389709581559,
+      name: r'dateRelance',
       unique: false,
       replace: false,
       properties: [
         IndexPropertySchema(
-          name: r'libelleClasse',
-          type: IndexType.hash,
-          caseSensitive: true,
+          name: r'dateRelance',
+          type: IndexType.value,
+          caseSensitive: false,
         )
       ],
     ),
@@ -106,84 +116,68 @@ const ClasseSchema = CollectionSchema(
           caseSensitive: false,
         )
       ],
-    ),
-    r'updatedAt': IndexSchema(
-      id: -6238191080293565125,
-      name: r'updatedAt',
-      unique: false,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'updatedAt',
-          type: IndexType.value,
-          caseSensitive: false,
-        )
-      ],
     )
   },
-  links: {
-    r'prospects': LinkSchema(
-      id: 3336785135167154829,
-      name: r'prospects',
-      target: r'Prospect',
-      single: false,
-      linkName: r'classe',
-    )
-  },
+  links: {},
   embeddedSchemas: {},
-  getId: _classeGetId,
-  getLinks: _classeGetLinks,
-  attach: _classeAttach,
+  getId: _relanceGetId,
+  getLinks: _relanceGetLinks,
+  attach: _relanceAttach,
   version: '3.3.2',
 );
 
-int _classeEstimateSize(
-  Classe object,
+int _relanceEstimateSize(
+  Relance object,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  bytesCount += 3 + object.idClasse.length * 3;
-  bytesCount += 3 + object.idEts.length * 3;
-  bytesCount += 3 + object.libelleClasse.length * 3;
+  bytesCount += 3 + object.description.length * 3;
+  bytesCount += 3 + object.idProspect.length * 3;
+  bytesCount += 3 + object.idRelance.length * 3;
+  bytesCount += 3 + object.sujet.length * 3;
   return bytesCount;
 }
 
-void _classeSerialize(
-  Classe object,
+void _relanceSerialize(
+  Relance object,
   IsarWriter writer,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeDateTime(offsets[0], object.createdAt);
-  writer.writeString(offsets[1], object.idClasse);
-  writer.writeString(offsets[2], object.idEts);
-  writer.writeString(offsets[3], object.libelleClasse);
-  writer.writeByte(offsets[4], object.syncState.index);
-  writer.writeDateTime(offsets[5], object.updatedAt);
+  writer.writeDateTime(offsets[1], object.dateRelance);
+  writer.writeString(offsets[2], object.description);
+  writer.writeString(offsets[3], object.idProspect);
+  writer.writeString(offsets[4], object.idRelance);
+  writer.writeString(offsets[5], object.sujet);
+  writer.writeByte(offsets[6], object.syncState.index);
+  writer.writeDateTime(offsets[7], object.updatedAt);
 }
 
-Classe _classeDeserialize(
+Relance _relanceDeserialize(
   Id id,
   IsarReader reader,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = Classe(
+  final object = Relance(
     createdAt: reader.readDateTimeOrNull(offsets[0]),
-    idClasse: reader.readString(offsets[1]),
-    idEts: reader.readStringOrNull(offsets[2]) ?? '',
-    libelleClasse: reader.readString(offsets[3]),
+    dateRelance: reader.readDateTime(offsets[1]),
+    description: reader.readString(offsets[2]),
+    idProspect: reader.readString(offsets[3]),
+    idRelance: reader.readString(offsets[4]),
+    sujet: reader.readString(offsets[5]),
     syncState:
-        _ClassesyncStateValueEnumMap[reader.readByteOrNull(offsets[4])] ??
+        _RelancesyncStateValueEnumMap[reader.readByteOrNull(offsets[6])] ??
             SyncState.pending,
+    updatedAt: reader.readDateTimeOrNull(offsets[7]),
   );
   object.isarId = id;
-  object.updatedAt = reader.readDateTimeOrNull(offsets[5]);
   return object;
 }
 
-P _classeDeserializeProp<P>(
+P _relanceDeserializeProp<P>(
   IsarReader reader,
   int propertyId,
   int offset,
@@ -193,29 +187,33 @@ P _classeDeserializeProp<P>(
     case 0:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 1:
-      return (reader.readString(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 2:
-      return (reader.readStringOrNull(offset) ?? '') as P;
+      return (reader.readString(offset)) as P;
     case 3:
       return (reader.readString(offset)) as P;
     case 4:
-      return (_ClassesyncStateValueEnumMap[reader.readByteOrNull(offset)] ??
-          SyncState.pending) as P;
+      return (reader.readString(offset)) as P;
     case 5:
+      return (reader.readString(offset)) as P;
+    case 6:
+      return (_RelancesyncStateValueEnumMap[reader.readByteOrNull(offset)] ??
+          SyncState.pending) as P;
+    case 7:
       return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
 
-const _ClassesyncStateEnumValueMap = {
+const _RelancesyncStateEnumValueMap = {
   'pending': 0,
   'syncing': 1,
   'synced': 2,
   'failed': 3,
   'toUpdate': 4,
 };
-const _ClassesyncStateValueEnumMap = {
+const _RelancesyncStateValueEnumMap = {
   0: SyncState.pending,
   1: SyncState.syncing,
   2: SyncState.synced,
@@ -223,100 +221,99 @@ const _ClassesyncStateValueEnumMap = {
   4: SyncState.toUpdate,
 };
 
-Id _classeGetId(Classe object) {
+Id _relanceGetId(Relance object) {
   return object.isarId;
 }
 
-List<IsarLinkBase<dynamic>> _classeGetLinks(Classe object) {
-  return [object.prospects];
+List<IsarLinkBase<dynamic>> _relanceGetLinks(Relance object) {
+  return [];
 }
 
-void _classeAttach(IsarCollection<dynamic> col, Id id, Classe object) {
+void _relanceAttach(IsarCollection<dynamic> col, Id id, Relance object) {
   object.isarId = id;
-  object.prospects
-      .attach(col, col.isar.collection<Prospect>(), r'prospects', id);
 }
 
-extension ClasseByIndex on IsarCollection<Classe> {
-  Future<Classe?> getByIdClasse(String idClasse) {
-    return getByIndex(r'idClasse', [idClasse]);
+extension RelanceByIndex on IsarCollection<Relance> {
+  Future<Relance?> getByIdRelance(String idRelance) {
+    return getByIndex(r'idRelance', [idRelance]);
   }
 
-  Classe? getByIdClasseSync(String idClasse) {
-    return getByIndexSync(r'idClasse', [idClasse]);
+  Relance? getByIdRelanceSync(String idRelance) {
+    return getByIndexSync(r'idRelance', [idRelance]);
   }
 
-  Future<bool> deleteByIdClasse(String idClasse) {
-    return deleteByIndex(r'idClasse', [idClasse]);
+  Future<bool> deleteByIdRelance(String idRelance) {
+    return deleteByIndex(r'idRelance', [idRelance]);
   }
 
-  bool deleteByIdClasseSync(String idClasse) {
-    return deleteByIndexSync(r'idClasse', [idClasse]);
+  bool deleteByIdRelanceSync(String idRelance) {
+    return deleteByIndexSync(r'idRelance', [idRelance]);
   }
 
-  Future<List<Classe?>> getAllByIdClasse(List<String> idClasseValues) {
-    final values = idClasseValues.map((e) => [e]).toList();
-    return getAllByIndex(r'idClasse', values);
+  Future<List<Relance?>> getAllByIdRelance(List<String> idRelanceValues) {
+    final values = idRelanceValues.map((e) => [e]).toList();
+    return getAllByIndex(r'idRelance', values);
   }
 
-  List<Classe?> getAllByIdClasseSync(List<String> idClasseValues) {
-    final values = idClasseValues.map((e) => [e]).toList();
-    return getAllByIndexSync(r'idClasse', values);
+  List<Relance?> getAllByIdRelanceSync(List<String> idRelanceValues) {
+    final values = idRelanceValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'idRelance', values);
   }
 
-  Future<int> deleteAllByIdClasse(List<String> idClasseValues) {
-    final values = idClasseValues.map((e) => [e]).toList();
-    return deleteAllByIndex(r'idClasse', values);
+  Future<int> deleteAllByIdRelance(List<String> idRelanceValues) {
+    final values = idRelanceValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'idRelance', values);
   }
 
-  int deleteAllByIdClasseSync(List<String> idClasseValues) {
-    final values = idClasseValues.map((e) => [e]).toList();
-    return deleteAllByIndexSync(r'idClasse', values);
+  int deleteAllByIdRelanceSync(List<String> idRelanceValues) {
+    final values = idRelanceValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'idRelance', values);
   }
 
-  Future<Id> putByIdClasse(Classe object) {
-    return putByIndex(r'idClasse', object);
+  Future<Id> putByIdRelance(Relance object) {
+    return putByIndex(r'idRelance', object);
   }
 
-  Id putByIdClasseSync(Classe object, {bool saveLinks = true}) {
-    return putByIndexSync(r'idClasse', object, saveLinks: saveLinks);
+  Id putByIdRelanceSync(Relance object, {bool saveLinks = true}) {
+    return putByIndexSync(r'idRelance', object, saveLinks: saveLinks);
   }
 
-  Future<List<Id>> putAllByIdClasse(List<Classe> objects) {
-    return putAllByIndex(r'idClasse', objects);
+  Future<List<Id>> putAllByIdRelance(List<Relance> objects) {
+    return putAllByIndex(r'idRelance', objects);
   }
 
-  List<Id> putAllByIdClasseSync(List<Classe> objects, {bool saveLinks = true}) {
-    return putAllByIndexSync(r'idClasse', objects, saveLinks: saveLinks);
+  List<Id> putAllByIdRelanceSync(List<Relance> objects,
+      {bool saveLinks = true}) {
+    return putAllByIndexSync(r'idRelance', objects, saveLinks: saveLinks);
   }
 }
 
-extension ClasseQueryWhereSort on QueryBuilder<Classe, Classe, QWhere> {
-  QueryBuilder<Classe, Classe, QAfterWhere> anyIsarId() {
+extension RelanceQueryWhereSort on QueryBuilder<Relance, Relance, QWhere> {
+  QueryBuilder<Relance, Relance, QAfterWhere> anyIsarId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhere> anyCreatedAt() {
+  QueryBuilder<Relance, Relance, QAfterWhere> anyDateRelance() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'dateRelance'),
+      );
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterWhere> anyCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         const IndexWhereClause.any(indexName: r'createdAt'),
       );
     });
   }
-
-  QueryBuilder<Classe, Classe, QAfterWhere> anyUpdatedAt() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        const IndexWhereClause.any(indexName: r'updatedAt'),
-      );
-    });
-  }
 }
 
-extension ClasseQueryWhere on QueryBuilder<Classe, Classe, QWhereClause> {
-  QueryBuilder<Classe, Classe, QAfterWhereClause> isarIdEqualTo(Id isarId) {
+extension RelanceQueryWhere on QueryBuilder<Relance, Relance, QWhereClause> {
+  QueryBuilder<Relance, Relance, QAfterWhereClause> isarIdEqualTo(Id isarId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
         lower: isarId,
@@ -325,7 +322,8 @@ extension ClasseQueryWhere on QueryBuilder<Classe, Classe, QWhereClause> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> isarIdNotEqualTo(Id isarId) {
+  QueryBuilder<Relance, Relance, QAfterWhereClause> isarIdNotEqualTo(
+      Id isarId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -347,7 +345,7 @@ extension ClasseQueryWhere on QueryBuilder<Classe, Classe, QWhereClause> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> isarIdGreaterThan(Id isarId,
+  QueryBuilder<Relance, Relance, QAfterWhereClause> isarIdGreaterThan(Id isarId,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
@@ -356,7 +354,7 @@ extension ClasseQueryWhere on QueryBuilder<Classe, Classe, QWhereClause> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> isarIdLessThan(Id isarId,
+  QueryBuilder<Relance, Relance, QAfterWhereClause> isarIdLessThan(Id isarId,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
@@ -365,7 +363,7 @@ extension ClasseQueryWhere on QueryBuilder<Classe, Classe, QWhereClause> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> isarIdBetween(
+  QueryBuilder<Relance, Relance, QAfterWhereClause> isarIdBetween(
     Id lowerIsarId,
     Id upperIsarId, {
     bool includeLower = true,
@@ -381,141 +379,187 @@ extension ClasseQueryWhere on QueryBuilder<Classe, Classe, QWhereClause> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> idClasseEqualTo(
-      String idClasse) {
+  QueryBuilder<Relance, Relance, QAfterWhereClause> idRelanceEqualTo(
+      String idRelance) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'idClasse',
-        value: [idClasse],
+        indexName: r'idRelance',
+        value: [idRelance],
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> idClasseNotEqualTo(
-      String idClasse) {
+  QueryBuilder<Relance, Relance, QAfterWhereClause> idRelanceNotEqualTo(
+      String idRelance) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'idClasse',
+              indexName: r'idRelance',
               lower: [],
-              upper: [idClasse],
+              upper: [idRelance],
               includeUpper: false,
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'idClasse',
-              lower: [idClasse],
+              indexName: r'idRelance',
+              lower: [idRelance],
               includeLower: false,
               upper: [],
             ));
       } else {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'idClasse',
-              lower: [idClasse],
+              indexName: r'idRelance',
+              lower: [idRelance],
               includeLower: false,
               upper: [],
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'idClasse',
+              indexName: r'idRelance',
               lower: [],
-              upper: [idClasse],
+              upper: [idRelance],
               includeUpper: false,
             ));
       }
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> idEtsEqualTo(String idEts) {
+  QueryBuilder<Relance, Relance, QAfterWhereClause> idProspectEqualTo(
+      String idProspect) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'idEts',
-        value: [idEts],
+        indexName: r'idProspect',
+        value: [idProspect],
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> idEtsNotEqualTo(
-      String idEts) {
+  QueryBuilder<Relance, Relance, QAfterWhereClause> idProspectNotEqualTo(
+      String idProspect) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'idEts',
+              indexName: r'idProspect',
               lower: [],
-              upper: [idEts],
+              upper: [idProspect],
               includeUpper: false,
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'idEts',
-              lower: [idEts],
+              indexName: r'idProspect',
+              lower: [idProspect],
               includeLower: false,
               upper: [],
             ));
       } else {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'idEts',
-              lower: [idEts],
+              indexName: r'idProspect',
+              lower: [idProspect],
               includeLower: false,
               upper: [],
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'idEts',
+              indexName: r'idProspect',
               lower: [],
-              upper: [idEts],
+              upper: [idProspect],
               includeUpper: false,
             ));
       }
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> libelleClasseEqualTo(
-      String libelleClasse) {
+  QueryBuilder<Relance, Relance, QAfterWhereClause> dateRelanceEqualTo(
+      DateTime dateRelance) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'libelleClasse',
-        value: [libelleClasse],
+        indexName: r'dateRelance',
+        value: [dateRelance],
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> libelleClasseNotEqualTo(
-      String libelleClasse) {
+  QueryBuilder<Relance, Relance, QAfterWhereClause> dateRelanceNotEqualTo(
+      DateTime dateRelance) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'libelleClasse',
+              indexName: r'dateRelance',
               lower: [],
-              upper: [libelleClasse],
+              upper: [dateRelance],
               includeUpper: false,
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'libelleClasse',
-              lower: [libelleClasse],
+              indexName: r'dateRelance',
+              lower: [dateRelance],
               includeLower: false,
               upper: [],
             ));
       } else {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'libelleClasse',
-              lower: [libelleClasse],
+              indexName: r'dateRelance',
+              lower: [dateRelance],
               includeLower: false,
               upper: [],
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'libelleClasse',
+              indexName: r'dateRelance',
               lower: [],
-              upper: [libelleClasse],
+              upper: [dateRelance],
               includeUpper: false,
             ));
       }
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> createdAtIsNull() {
+  QueryBuilder<Relance, Relance, QAfterWhereClause> dateRelanceGreaterThan(
+    DateTime dateRelance, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'dateRelance',
+        lower: [dateRelance],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterWhereClause> dateRelanceLessThan(
+    DateTime dateRelance, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'dateRelance',
+        lower: [],
+        upper: [dateRelance],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterWhereClause> dateRelanceBetween(
+    DateTime lowerDateRelance,
+    DateTime upperDateRelance, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'dateRelance',
+        lower: [lowerDateRelance],
+        includeLower: includeLower,
+        upper: [upperDateRelance],
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterWhereClause> createdAtIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'createdAt',
@@ -524,7 +568,7 @@ extension ClasseQueryWhere on QueryBuilder<Classe, Classe, QWhereClause> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> createdAtIsNotNull() {
+  QueryBuilder<Relance, Relance, QAfterWhereClause> createdAtIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.between(
         indexName: r'createdAt',
@@ -535,7 +579,7 @@ extension ClasseQueryWhere on QueryBuilder<Classe, Classe, QWhereClause> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> createdAtEqualTo(
+  QueryBuilder<Relance, Relance, QAfterWhereClause> createdAtEqualTo(
       DateTime? createdAt) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
@@ -545,7 +589,7 @@ extension ClasseQueryWhere on QueryBuilder<Classe, Classe, QWhereClause> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> createdAtNotEqualTo(
+  QueryBuilder<Relance, Relance, QAfterWhereClause> createdAtNotEqualTo(
       DateTime? createdAt) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
@@ -580,7 +624,7 @@ extension ClasseQueryWhere on QueryBuilder<Classe, Classe, QWhereClause> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> createdAtGreaterThan(
+  QueryBuilder<Relance, Relance, QAfterWhereClause> createdAtGreaterThan(
     DateTime? createdAt, {
     bool include = false,
   }) {
@@ -594,7 +638,7 @@ extension ClasseQueryWhere on QueryBuilder<Classe, Classe, QWhereClause> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> createdAtLessThan(
+  QueryBuilder<Relance, Relance, QAfterWhereClause> createdAtLessThan(
     DateTime? createdAt, {
     bool include = false,
   }) {
@@ -608,7 +652,7 @@ extension ClasseQueryWhere on QueryBuilder<Classe, Classe, QWhereClause> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterWhereClause> createdAtBetween(
+  QueryBuilder<Relance, Relance, QAfterWhereClause> createdAtBetween(
     DateTime? lowerCreatedAt,
     DateTime? upperCreatedAt, {
     bool includeLower = true,
@@ -624,120 +668,11 @@ extension ClasseQueryWhere on QueryBuilder<Classe, Classe, QWhereClause> {
       ));
     });
   }
-
-  QueryBuilder<Classe, Classe, QAfterWhereClause> updatedAtIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'updatedAt',
-        value: [null],
-      ));
-    });
-  }
-
-  QueryBuilder<Classe, Classe, QAfterWhereClause> updatedAtIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'updatedAt',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
-    });
-  }
-
-  QueryBuilder<Classe, Classe, QAfterWhereClause> updatedAtEqualTo(
-      DateTime? updatedAt) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'updatedAt',
-        value: [updatedAt],
-      ));
-    });
-  }
-
-  QueryBuilder<Classe, Classe, QAfterWhereClause> updatedAtNotEqualTo(
-      DateTime? updatedAt) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'updatedAt',
-              lower: [],
-              upper: [updatedAt],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'updatedAt',
-              lower: [updatedAt],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'updatedAt',
-              lower: [updatedAt],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'updatedAt',
-              lower: [],
-              upper: [updatedAt],
-              includeUpper: false,
-            ));
-      }
-    });
-  }
-
-  QueryBuilder<Classe, Classe, QAfterWhereClause> updatedAtGreaterThan(
-    DateTime? updatedAt, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'updatedAt',
-        lower: [updatedAt],
-        includeLower: include,
-        upper: [],
-      ));
-    });
-  }
-
-  QueryBuilder<Classe, Classe, QAfterWhereClause> updatedAtLessThan(
-    DateTime? updatedAt, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'updatedAt',
-        lower: [],
-        upper: [updatedAt],
-        includeUpper: include,
-      ));
-    });
-  }
-
-  QueryBuilder<Classe, Classe, QAfterWhereClause> updatedAtBetween(
-    DateTime? lowerUpdatedAt,
-    DateTime? upperUpdatedAt, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'updatedAt',
-        lower: [lowerUpdatedAt],
-        includeLower: includeLower,
-        upper: [upperUpdatedAt],
-        includeUpper: includeUpper,
-      ));
-    });
-  }
 }
 
-extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> createdAtIsNull() {
+extension RelanceQueryFilter
+    on QueryBuilder<Relance, Relance, QFilterCondition> {
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> createdAtIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'createdAt',
@@ -745,7 +680,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> createdAtIsNotNull() {
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> createdAtIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'createdAt',
@@ -753,7 +688,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> createdAtEqualTo(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> createdAtEqualTo(
       DateTime? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -763,7 +698,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> createdAtGreaterThan(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> createdAtGreaterThan(
     DateTime? value, {
     bool include = false,
   }) {
@@ -776,7 +711,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> createdAtLessThan(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> createdAtLessThan(
     DateTime? value, {
     bool include = false,
   }) {
@@ -789,7 +724,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> createdAtBetween(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> createdAtBetween(
     DateTime? lower,
     DateTime? upper, {
     bool includeLower = true,
@@ -806,20 +741,73 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idClasseEqualTo(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> dateRelanceEqualTo(
+      DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'dateRelance',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> dateRelanceGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'dateRelance',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> dateRelanceLessThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'dateRelance',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> dateRelanceBetween(
+    DateTime lower,
+    DateTime upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'dateRelance',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> descriptionEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'idClasse',
+        property: r'description',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idClasseGreaterThan(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> descriptionGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -827,14 +815,14 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'idClasse',
+        property: r'description',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idClasseLessThan(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> descriptionLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -842,14 +830,14 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'idClasse',
+        property: r'description',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idClasseBetween(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> descriptionBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -858,7 +846,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'idClasse',
+        property: r'description',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -868,88 +856,89 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idClasseStartsWith(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> descriptionStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'idClasse',
+        property: r'description',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idClasseEndsWith(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> descriptionEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'idClasse',
+        property: r'description',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idClasseContains(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> descriptionContains(
       String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'idClasse',
+        property: r'description',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idClasseMatches(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> descriptionMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'idClasse',
+        property: r'description',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idClasseIsEmpty() {
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> descriptionIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'idClasse',
+        property: r'description',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idClasseIsNotEmpty() {
+  QueryBuilder<Relance, Relance, QAfterFilterCondition>
+      descriptionIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'idClasse',
+        property: r'description',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idEtsEqualTo(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idProspectEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'idEts',
+        property: r'idProspect',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idEtsGreaterThan(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idProspectGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -957,14 +946,14 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'idEts',
+        property: r'idProspect',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idEtsLessThan(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idProspectLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -972,14 +961,14 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'idEts',
+        property: r'idProspect',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idEtsBetween(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idProspectBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -988,7 +977,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'idEts',
+        property: r'idProspect',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -998,75 +987,206 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idEtsStartsWith(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idProspectStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'idEts',
+        property: r'idProspect',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idEtsEndsWith(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idProspectEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'idEts',
+        property: r'idProspect',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idEtsContains(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idProspectContains(
       String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'idEts',
+        property: r'idProspect',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idEtsMatches(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idProspectMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'idEts',
+        property: r'idProspect',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idEtsIsEmpty() {
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idProspectIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'idEts',
+        property: r'idProspect',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> idEtsIsNotEmpty() {
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idProspectIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'idEts',
+        property: r'idProspect',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> isarIdEqualTo(Id value) {
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idRelanceEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'idRelance',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idRelanceGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'idRelance',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idRelanceLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'idRelance',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idRelanceBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'idRelance',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idRelanceStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'idRelance',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idRelanceEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'idRelance',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idRelanceContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'idRelance',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idRelanceMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'idRelance',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idRelanceIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'idRelance',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> idRelanceIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'idRelance',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> isarIdEqualTo(
+      Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'isarId',
@@ -1075,7 +1195,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> isarIdGreaterThan(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> isarIdGreaterThan(
     Id value, {
     bool include = false,
   }) {
@@ -1088,7 +1208,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> isarIdLessThan(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> isarIdLessThan(
     Id value, {
     bool include = false,
   }) {
@@ -1101,7 +1221,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> isarIdBetween(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> isarIdBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -1118,20 +1238,20 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> libelleClasseEqualTo(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> sujetEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'libelleClasse',
+        property: r'sujet',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> libelleClasseGreaterThan(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> sujetGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1139,14 +1259,14 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'libelleClasse',
+        property: r'sujet',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> libelleClasseLessThan(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> sujetLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1154,14 +1274,14 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'libelleClasse',
+        property: r'sujet',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> libelleClasseBetween(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> sujetBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1170,7 +1290,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'libelleClasse',
+        property: r'sujet',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1180,76 +1300,75 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> libelleClasseStartsWith(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> sujetStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'libelleClasse',
+        property: r'sujet',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> libelleClasseEndsWith(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> sujetEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'libelleClasse',
+        property: r'sujet',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> libelleClasseContains(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> sujetContains(
       String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'libelleClasse',
+        property: r'sujet',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> libelleClasseMatches(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> sujetMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'libelleClasse',
+        property: r'sujet',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> libelleClasseIsEmpty() {
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> sujetIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'libelleClasse',
+        property: r'sujet',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition>
-      libelleClasseIsNotEmpty() {
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> sujetIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'libelleClasse',
+        property: r'sujet',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> syncStateEqualTo(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> syncStateEqualTo(
       SyncState value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1259,7 +1378,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> syncStateGreaterThan(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> syncStateGreaterThan(
     SyncState value, {
     bool include = false,
   }) {
@@ -1272,7 +1391,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> syncStateLessThan(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> syncStateLessThan(
     SyncState value, {
     bool include = false,
   }) {
@@ -1285,7 +1404,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> syncStateBetween(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> syncStateBetween(
     SyncState lower,
     SyncState upper, {
     bool includeLower = true,
@@ -1302,7 +1421,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> updatedAtIsNull() {
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> updatedAtIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'updatedAt',
@@ -1310,7 +1429,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> updatedAtIsNotNull() {
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> updatedAtIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'updatedAt',
@@ -1318,7 +1437,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> updatedAtEqualTo(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> updatedAtEqualTo(
       DateTime? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1328,7 +1447,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> updatedAtGreaterThan(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> updatedAtGreaterThan(
     DateTime? value, {
     bool include = false,
   }) {
@@ -1341,7 +1460,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> updatedAtLessThan(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> updatedAtLessThan(
     DateTime? value, {
     bool include = false,
   }) {
@@ -1354,7 +1473,7 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> updatedAtBetween(
+  QueryBuilder<Relance, Relance, QAfterFilterCondition> updatedAtBetween(
     DateTime? lower,
     DateTime? upper, {
     bool includeLower = true,
@@ -1372,307 +1491,327 @@ extension ClasseQueryFilter on QueryBuilder<Classe, Classe, QFilterCondition> {
   }
 }
 
-extension ClasseQueryObject on QueryBuilder<Classe, Classe, QFilterCondition> {}
+extension RelanceQueryObject
+    on QueryBuilder<Relance, Relance, QFilterCondition> {}
 
-extension ClasseQueryLinks on QueryBuilder<Classe, Classe, QFilterCondition> {
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> prospects(
-      FilterQuery<Prospect> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'prospects');
-    });
-  }
+extension RelanceQueryLinks
+    on QueryBuilder<Relance, Relance, QFilterCondition> {}
 
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> prospectsLengthEqualTo(
-      int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'prospects', length, true, length, true);
-    });
-  }
-
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> prospectsIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'prospects', 0, true, 0, true);
-    });
-  }
-
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> prospectsIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'prospects', 0, false, 999999, true);
-    });
-  }
-
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> prospectsLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'prospects', 0, true, length, include);
-    });
-  }
-
-  QueryBuilder<Classe, Classe, QAfterFilterCondition>
-      prospectsLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'prospects', length, include, 999999, true);
-    });
-  }
-
-  QueryBuilder<Classe, Classe, QAfterFilterCondition> prospectsLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(
-          r'prospects', lower, includeLower, upper, includeUpper);
-    });
-  }
-}
-
-extension ClasseQuerySortBy on QueryBuilder<Classe, Classe, QSortBy> {
-  QueryBuilder<Classe, Classe, QAfterSortBy> sortByCreatedAt() {
+extension RelanceQuerySortBy on QueryBuilder<Relance, Relance, QSortBy> {
+  QueryBuilder<Relance, Relance, QAfterSortBy> sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> sortByCreatedAtDesc() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> sortByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> sortByIdClasse() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> sortByDateRelance() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'idClasse', Sort.asc);
+      return query.addSortBy(r'dateRelance', Sort.asc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> sortByIdClasseDesc() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> sortByDateRelanceDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'idClasse', Sort.desc);
+      return query.addSortBy(r'dateRelance', Sort.desc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> sortByIdEts() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> sortByDescription() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'idEts', Sort.asc);
+      return query.addSortBy(r'description', Sort.asc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> sortByIdEtsDesc() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> sortByDescriptionDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'idEts', Sort.desc);
+      return query.addSortBy(r'description', Sort.desc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> sortByLibelleClasse() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> sortByIdProspect() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'libelleClasse', Sort.asc);
+      return query.addSortBy(r'idProspect', Sort.asc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> sortByLibelleClasseDesc() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> sortByIdProspectDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'libelleClasse', Sort.desc);
+      return query.addSortBy(r'idProspect', Sort.desc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> sortBySyncState() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> sortByIdRelance() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'idRelance', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterSortBy> sortByIdRelanceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'idRelance', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterSortBy> sortBySujet() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sujet', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterSortBy> sortBySujetDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sujet', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterSortBy> sortBySyncState() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'syncState', Sort.asc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> sortBySyncStateDesc() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> sortBySyncStateDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'syncState', Sort.desc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> sortByUpdatedAt() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> sortByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.asc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> sortByUpdatedAtDesc() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> sortByUpdatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.desc);
     });
   }
 }
 
-extension ClasseQuerySortThenBy on QueryBuilder<Classe, Classe, QSortThenBy> {
-  QueryBuilder<Classe, Classe, QAfterSortBy> thenByCreatedAt() {
+extension RelanceQuerySortThenBy
+    on QueryBuilder<Relance, Relance, QSortThenBy> {
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> thenByCreatedAtDesc() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> thenByIdClasse() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenByDateRelance() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'idClasse', Sort.asc);
+      return query.addSortBy(r'dateRelance', Sort.asc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> thenByIdClasseDesc() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenByDateRelanceDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'idClasse', Sort.desc);
+      return query.addSortBy(r'dateRelance', Sort.desc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> thenByIdEts() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenByDescription() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'idEts', Sort.asc);
+      return query.addSortBy(r'description', Sort.asc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> thenByIdEtsDesc() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenByDescriptionDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'idEts', Sort.desc);
+      return query.addSortBy(r'description', Sort.desc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> thenByIsarId() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenByIdProspect() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'idProspect', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenByIdProspectDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'idProspect', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenByIdRelance() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'idRelance', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenByIdRelanceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'idRelance', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenByIsarId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isarId', Sort.asc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> thenByIsarIdDesc() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenByIsarIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isarId', Sort.desc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> thenByLibelleClasse() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenBySujet() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'libelleClasse', Sort.asc);
+      return query.addSortBy(r'sujet', Sort.asc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> thenByLibelleClasseDesc() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenBySujetDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'libelleClasse', Sort.desc);
+      return query.addSortBy(r'sujet', Sort.desc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> thenBySyncState() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenBySyncState() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'syncState', Sort.asc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> thenBySyncStateDesc() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenBySyncStateDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'syncState', Sort.desc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> thenByUpdatedAt() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.asc);
     });
   }
 
-  QueryBuilder<Classe, Classe, QAfterSortBy> thenByUpdatedAtDesc() {
+  QueryBuilder<Relance, Relance, QAfterSortBy> thenByUpdatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.desc);
     });
   }
 }
 
-extension ClasseQueryWhereDistinct on QueryBuilder<Classe, Classe, QDistinct> {
-  QueryBuilder<Classe, Classe, QDistinct> distinctByCreatedAt() {
+extension RelanceQueryWhereDistinct
+    on QueryBuilder<Relance, Relance, QDistinct> {
+  QueryBuilder<Relance, Relance, QDistinct> distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'createdAt');
     });
   }
 
-  QueryBuilder<Classe, Classe, QDistinct> distinctByIdClasse(
-      {bool caseSensitive = true}) {
+  QueryBuilder<Relance, Relance, QDistinct> distinctByDateRelance() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'idClasse', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'dateRelance');
     });
   }
 
-  QueryBuilder<Classe, Classe, QDistinct> distinctByIdEts(
+  QueryBuilder<Relance, Relance, QDistinct> distinctByDescription(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'idEts', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'description', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<Classe, Classe, QDistinct> distinctByLibelleClasse(
+  QueryBuilder<Relance, Relance, QDistinct> distinctByIdProspect(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'libelleClasse',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'idProspect', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<Classe, Classe, QDistinct> distinctBySyncState() {
+  QueryBuilder<Relance, Relance, QDistinct> distinctByIdRelance(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'idRelance', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QDistinct> distinctBySujet(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'sujet', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Relance, Relance, QDistinct> distinctBySyncState() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'syncState');
     });
   }
 
-  QueryBuilder<Classe, Classe, QDistinct> distinctByUpdatedAt() {
+  QueryBuilder<Relance, Relance, QDistinct> distinctByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'updatedAt');
     });
   }
 }
 
-extension ClasseQueryProperty on QueryBuilder<Classe, Classe, QQueryProperty> {
-  QueryBuilder<Classe, int, QQueryOperations> isarIdProperty() {
+extension RelanceQueryProperty
+    on QueryBuilder<Relance, Relance, QQueryProperty> {
+  QueryBuilder<Relance, int, QQueryOperations> isarIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isarId');
     });
   }
 
-  QueryBuilder<Classe, DateTime?, QQueryOperations> createdAtProperty() {
+  QueryBuilder<Relance, DateTime?, QQueryOperations> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createdAt');
     });
   }
 
-  QueryBuilder<Classe, String, QQueryOperations> idClasseProperty() {
+  QueryBuilder<Relance, DateTime, QQueryOperations> dateRelanceProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'idClasse');
+      return query.addPropertyName(r'dateRelance');
     });
   }
 
-  QueryBuilder<Classe, String, QQueryOperations> idEtsProperty() {
+  QueryBuilder<Relance, String, QQueryOperations> descriptionProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'idEts');
+      return query.addPropertyName(r'description');
     });
   }
 
-  QueryBuilder<Classe, String, QQueryOperations> libelleClasseProperty() {
+  QueryBuilder<Relance, String, QQueryOperations> idProspectProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'libelleClasse');
+      return query.addPropertyName(r'idProspect');
     });
   }
 
-  QueryBuilder<Classe, SyncState, QQueryOperations> syncStateProperty() {
+  QueryBuilder<Relance, String, QQueryOperations> idRelanceProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'idRelance');
+    });
+  }
+
+  QueryBuilder<Relance, String, QQueryOperations> sujetProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'sujet');
+    });
+  }
+
+  QueryBuilder<Relance, SyncState, QQueryOperations> syncStateProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'syncState');
     });
   }
 
-  QueryBuilder<Classe, DateTime?, QQueryOperations> updatedAtProperty() {
+  QueryBuilder<Relance, DateTime?, QQueryOperations> updatedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'updatedAt');
     });

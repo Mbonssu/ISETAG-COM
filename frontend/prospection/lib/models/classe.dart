@@ -1,10 +1,12 @@
 import 'package:isar_community/isar.dart';
-import 'package:isetagcom/models/etablissement.dart';
 import 'package:isetagcom/utils/status.dart';
 
 import 'pros.dart';
 part 'generated/classe.g.dart';
 
+/// Classe est indépendante de l'Établissement (aucune liaison requise,
+/// conformément à la doc API : il n'existe pas d'endpoint /classe côté API,
+/// la classe reste un référentiel local libre).
 @collection
 class Classe {
   Id isarId = Isar.autoIncrement;
@@ -12,7 +14,9 @@ class Classe {
   @Index(unique: true)
   String idClasse;
 
-  @Index() // ← AJOUTEZ CECI pour pouvoir filtrer par idClasse
+  /// Optionnel : conservé uniquement pour compatibilité locale, n'impose
+  /// plus aucune contrainte avec Etablissement.
+  @Index()
   String idEts;
 
   @Index()
@@ -23,7 +27,7 @@ class Classe {
   DateTime? updatedAt;
 
   // 1 ets -> N Classes
-  final ets = IsarLink<Etablissement>();
+  // final ets = IsarLink<Etablissement>();
 
   @Backlink(to: 'classe')
   final prospects = IsarLinks<Prospect>();
@@ -33,39 +37,18 @@ class Classe {
 
   Classe(
       {required this.idClasse,
-      required this.idEts,
+      this.idEts = '',
       required this.libelleClasse,
       this.createdAt,
       required this.syncState});
 
   factory Classe.fromJson(Map<String, dynamic> json) => Classe(
       idClasse: json['idClasse'],
-      idEts: json['idEts'],
+      idEts: json['idEts'] ?? '',
       libelleClasse: json['libelleClasse'] ?? '',
       createdAt:
           json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
       syncState: json["sync"]);
-
-  /// For UI / local display
-  // Map<String, dynamic> toJson() {
-  //   return {
-  //     'idClasse': idClasse,
-  //     'idEts': idEts,
-  //     'libelleClasse': libelleClasse,
-  //     'createdAt': createdAt,
-  //   };
-  // }
-
-  // /// For API
-  // Map<String, dynamic> toJsonApi() {
-  //   return {
-  //     'idClasse': idClasse,
-  //     'idEts': idEts,
-  //     'libelleClasse': libelleClasse,
-  //     'createdAt': createdAt?.toIso8601String(),
-  //     "syncState": syncState.name
-  //   };
-  // }
 
   // lib/models/classe.dart
 
@@ -76,7 +59,7 @@ class Classe {
         'libelleClasse': libelleClasse,
         'createdAt': createdAt?.toIso8601String(),
         'updatedAt': updatedAt?.toIso8601String(),
-        'ets': ets.value?.toLocalJson(),
+        // 'ets': ets.value?.toLocalJson(),
         'prospects': prospects.map((p) => p.toLocalJson()).toList(),
         'syncState': syncState.name,
       };

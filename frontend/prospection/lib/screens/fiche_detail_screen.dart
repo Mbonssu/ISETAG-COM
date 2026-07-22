@@ -501,9 +501,9 @@ class _FicheDetailScreenState extends State<FicheDetailScreen> {
           const SizedBox(height: 10),
           _buildInfoRow('collection_date'.tr,
               DateFormat('dd/MM/yyyy à HH:mm').format(fiche.dateCollecte)),
-          if (fiche.scoreInteret != null)
-            _buildInfoRow('interest_score'.tr, '${fiche.scoreInteret}/10',
-                color: _getScoreColor(fiche.scoreInteret!)),
+          // if (fiche.scoreInteret != null)
+          //   _buildInfoRow('interest_score'.tr, '${fiche.scoreInteret}/10',
+          //       color: _getScoreColor(fiche.scoreInteret!)),
           if (source != null) _buildInfoRow('source'.tr, source.libelleSource),
           if (fiche.commentaire != null && fiche.commentaire!.isNotEmpty)
             _buildInfoRow('comment'.tr, fiche.commentaire!),

@@ -204,6 +204,13 @@ class TranslationService {
         'select_source': 'Sélectionner une source',
         'confirm': 'Confirmer',
         'close': 'Fermer',
+        'sync_in_progress': 'Synchronisation en cours...',
+        'keep_internet_on': 'Veuillez garder votre connexion internet active.',
+        'sync_failed_title': 'Échec de synchronisation',
+        'sync_failed_message':
+            'Impossible de synchroniser les données. Vous pouvez continuer sans synchronisation ou réessayer.',
+        'continue_without_sync': 'Continuer sans synchroniser',
+        // 'retry': 'Réessayer',
         'view': 'Voir',
         'update': 'Mettre à jour',
         'not_specified': 'Non spécifié',
@@ -314,6 +321,9 @@ class TranslationService {
         'updating_items': 'Mise à jour des éléments...',
         'items_updated': 'Éléments mis à jour',
         'update_failed': 'Échec de la mise à jour',
+        "legal": "Mentions légales",
+        "app_version": "Version de l'application",
+        "view_version": "Voir la version",
         'order_hint': '1, 2, 3...',
         'login_failed': 'Connexion echoue',
         'level_hint': '1 à 5',
@@ -335,7 +345,8 @@ class TranslationService {
         'invalid_values': 'Valeurs invalides',
         'prospect_saved': 'Prospect enregistré avec {count} filière(s)',
         'prospect_updated': 'Prospect mis à jour avec {count} filière(s)',
-        'missing_source_or_fiche': 'Source ou fiche manquant(e)',
+        'missing_source_or_fiche':
+            'Fiche manquant(e). Allez sur la page Sorties',
         'add_specialty_warning':
             'Veuillez ajouter au moins une filière d\'intérêt',
         'new_prospect': 'Nouveau prospect',
@@ -395,9 +406,13 @@ class TranslationService {
         'prospects_added': 'Prospects ajoutés',
         'visits_done': 'Visites effectuées',
         'new_established': 'Nouveaux établis',
+        "interest_level": "Interest:",
         'recent_prospections': 'Prospections récentes',
         'no_prospects_found': 'Aucun prospect trouvé !',
         'good_morning': 'Bonjour,',
+        "discard_changes_title": "Abandonner les modifications ?",
+        "discard_changes_message":
+            "Êtes-vous sûr de vouloir abandonner vos modifications ? Toutes les données non sauvegardées seront perdues.",
         'search_hint': 'Rechercher un prospect...',
         'home': 'Accueil',
         'follow_ups': 'Relances',
@@ -623,6 +638,9 @@ class TranslationService {
         'no_email': 'No email',
         'no_address': 'No address',
         'no_comment': 'No comment',
+        "discard_changes_title": "Discard Changes?",
+        "discard_changes_message":
+            "Are you sure you want to discard your changes? Any unsaved data will be lost.",
         'no_date_scheduled': 'No date scheduled',
         'sync_status': 'Sync status',
         'sync_status_idle': 'Idle',
@@ -833,7 +851,7 @@ class TranslationService {
         'invalid_values': 'Invalid values',
         'prospect_saved': 'Prospect saved with {count} field(s)',
         'prospect_updated': 'Prospect updated with {count} field(s)',
-        'missing_source_or_fiche': 'Missing source or fiche',
+        'missing_source_or_fiche': 'Missing fiche. Go to Outings page',
         'add_specialty_warning': 'Please add at least one field of interest',
         'new_prospect': 'New prospect',
         'who_is_prospect': 'Who is this prospect?',
@@ -877,8 +895,12 @@ class TranslationService {
         'filter_records': 'Filter records',
         'records': 'Records',
         'no_records': 'No records',
+        "legal": "Legal",
+        "app_version": "App Version",
+        "view_version": "View version",
         'create_first_record': 'Start by creating a new record',
         'all': 'All',
+        "interest_level": "Intérêt :",
         'connection_lost_during_sync': 'Connection lost during sync',
         'connection_restored_click_resume':
             'Connection restored - Click Resume',
@@ -1033,9 +1055,14 @@ class TranslationService {
         'aquaculture': 'Aquaculture',
         'maritime_and_port_administration': 'Maritime and Port Administration',
         'marine_fisheries_technology': 'Marine Fisheries Technology',
+
+        'keep_internet_on': 'Please keep your internet connection active.',
+        'sync_failed_title': 'Sync failed',
+        'sync_failed_message':
+            'Unable to sync data. You can continue without sync or retry.',
+        'continue_without_sync': 'Continue without sync',
       },
     };
-  
   }
 
   static String translate(String key) {

@@ -22,6 +22,8 @@ class AppConfig {
   static const String addLogin = 'authentification/login/';
   static const String addLogout ='authentification/logout/';
   static const String addParticaipation ='ma-sortie-active/';
+  // Endpoint dédié aux relances (prospect_api/ISETAG_COM.relances/)
+  static const String addRelance = '.relances/';
 
 
   static const int apiTimeout = 30;
@@ -38,6 +40,7 @@ class AppConfig {
   static const String login = '$apiBaseUrl$addLogin';
   static const String logout = '$apiBaseUrl$addLogout';
   static const String participation = '${apiBaseUrl}campagne$typeApi$addParticaipation';
+  static const String relance = '${apiBaseUrl}prospect$typeApi$sch$addRelance';
 
 
   // App Configuration

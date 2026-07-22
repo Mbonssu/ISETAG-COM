@@ -1,6 +1,5 @@
 import 'package:isar_community/isar.dart';
 import '../utils/status.dart';
-import 'classe.dart';
 
 part 'generated/etablissement.g.dart';
 
@@ -26,10 +25,6 @@ class Etablissement {
   DateTime? createdAt;
   @Index()
   DateTime? updatedAt;
-
-  /// Relationship
-  @Backlink(to: 'ets')
-  final classes = IsarLinks<Classe>();
 
   @enumerated
   SyncState syncState;
@@ -69,7 +64,6 @@ class Etablissement {
         'region': region,
         'createdAt': createdAt?.toIso8601String(),
         'updatedAt': updatedAt?.toIso8601String(),
-        'classes': classes.map((c) => c.toLocalJson()).toList(),
         'syncState': syncState.name,
       };
 

@@ -24,7 +24,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const FicheListScreen(),
-    const OutingsScreen(), // ✅ Added Outings tab
+    const OutingsScreen(),
     const RelancesScreen(),
     const SettingsScreen(),
   ];
@@ -35,7 +35,7 @@ class _MainScreenState extends State<MainScreen> {
     final isSmallScreen = screenWidth < 600;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color.fromRGBO(255, 255, 255, 1), // ✅ No white background
       body: _screens[_selectedIndex],
       bottomNavigationBar: _buildBottomNav(screenWidth, isSmallScreen),
     );
@@ -43,42 +43,17 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildBottomNav(double screenWidth, bool isSmallScreen) {
     final items = [
-      {
-        'icon': Icons.home_outlined,
-        'activeIcon': Icons.home,
-        'label': 'home'.tr,
-        'badge': null,
-      },
-      {
-        'icon': Icons.people_outline,
-        'activeIcon': Icons.people,
-        'label': 'prospects'.tr,
-        'badge': null,
-      },
-      {
-        'icon': Icons.route_outlined, // ✅ Outings icon
-        'activeIcon': Icons.route, // ✅ Active icon
-        'label': 'outings'.tr, // ✅ Translated label
-        'badge': null, // Could show number of pending outings
-      },
-      {
-        'icon': Icons.access_time_outlined,
-        'activeIcon': Icons.access_time,
-        'label': 'follow_ups'.tr,
-        'badge': null,
-      },
-      {
-        'icon': Icons.settings_outlined,
-        'activeIcon': Icons.settings,
-        'label': 'settings'.tr,
-        'badge': null,
-      },
+      {'icon': Icons.home_outlined,        'activeIcon': Icons.home,        'label': 'home'.tr,       'badge': null},
+      {'icon': Icons.people_outline,       'activeIcon': Icons.people,      'label': 'prospects'.tr,  'badge': null},
+      {'icon': Icons.route_outlined,       'activeIcon': Icons.route,       'label': 'outings'.tr,    'badge': null},
+      {'icon': Icons.access_time_outlined, 'activeIcon': Icons.access_time, 'label': 'follow_ups'.tr, 'badge': null},
+      {'icon': Icons.settings_outlined,    'activeIcon': Icons.settings,    'label': 'settings'.tr,   'badge': null},
     ];
 
-    final double navMargin = isSmallScreen ? 12.0 : 16.0;
-    final double navPadding = isSmallScreen ? 8.0 : 12.0;
-    final double navHeight = isSmallScreen ? 60 : 65;
-    final double iconSize = isSmallScreen ? 20 : 22;
+    final double navMargin  = isSmallScreen ? 12.0 : 16.0;
+    final double navPadding = isSmallScreen ? 8.0  : 12.0;
+    final double navHeight  = isSmallScreen ? 60   : 65;
+    final double iconSize   = isSmallScreen ? 20   : 22;
     const double borderRadius = 30;
 
     return Padding(
@@ -86,43 +61,25 @@ class _MainScreenState extends State<MainScreen> {
       child: Container(
         height: navHeight,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.white, // ✅ Keep white background for nav bar
           borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
+            BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 12, offset: const Offset(0, 4)),
+            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4,  offset: const Offset(0, 2)),
           ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: items.asMap().entries.map((entry) {
-            int index = entry.key;
-            var item = entry.value;
-            bool isActive = _selectedIndex == index;
+            final index    = entry.key;
+            final item     = entry.value;
+            final isActive = _selectedIndex == index;
 
             return Expanded(
               child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedIndex = index;
-                  });
-                },
+                onTap: () => setState(() => _selectedIndex = index),
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(25),
-                    color: isActive
-                        ? AppColors.primaryGreen.withOpacity(0.1)
-                        : Colors.transparent,
-                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -134,16 +91,12 @@ class _MainScreenState extends State<MainScreen> {
                             isActive
                                 ? (item['activeIcon'] as IconData)
                                 : (item['icon'] as IconData),
-                            color: isActive
-                                ? AppColors.primaryGreen
-                                : AppColors.textTertiary,
+                            color: isActive ? AppColors.primaryGreen : AppColors.textTertiary,
                             size: iconSize,
                           ),
-                          // ✅ Badge for outings count (optional)
                           if (item['badge'] != null && !isActive)
                             Positioned(
-                              top: -6,
-                              right: -10,
+                              top: -6, right: -10,
                               child: Container(
                                 padding: const EdgeInsets.all(3),
                                 decoration: const BoxDecoration(
@@ -166,12 +119,9 @@ class _MainScreenState extends State<MainScreen> {
                       Text(
                         item['label'] as String,
                         style: TextStyle(
-                          fontSize: isSmallScreen ? 10 : 11,
-                          color: isActive
-                              ? AppColors.primaryGreen
-                              : AppColors.textTertiary,
-                          fontWeight:
-                              isActive ? FontWeight.w600 : FontWeight.w500,
+                          fontSize:   isSmallScreen ? 10 : 11,
+                          color:      isActive ? AppColors.primaryGreen : AppColors.textTertiary,
+                          fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                         ),
                       ),
                     ],

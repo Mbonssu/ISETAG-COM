@@ -182,7 +182,7 @@ class Prospect {
   Map<String, dynamic> toLocalJson() => {
         'idProspect': idProspect,
         'idClass': idClass,
-        'idfiche': idfiche,
+        'idFiche': idfiche,
         'nomComplet': nomComplet,
         'telephone': telephone,
         'nomParent': nomParent,
@@ -208,8 +208,8 @@ class Prospect {
   /// Pour l'API
   Map<String, dynamic> toJsonApi() => {
         'idProspect': idProspect,
-        'idClass': idClass,
-        'idfiche': idfiche,
+        // 'idClass': idClass,
+        'idFiche': idfiche,
         'nomComplet': nomComplet,
         'telephone': telephone,
         'domaineEtude': classe.value?.libelleClasse.tr,
@@ -223,16 +223,29 @@ class Prospect {
         'adresse': adresse,
         'sexe': sexe,
         'typeProspect': typeProspect,
-        'source_infos': source_infos,
+        // 'source_infos': source_infos,
         'createdAt': createdAt.toIso8601String(),
-        'updatedAt': updatedAt?.toIso8601String(),
+        // 'updatedAt': updatedAt?.toIso8601String(),
         'date_relance': date_relance?.toIso8601String(),
-        'prospectStatus': prospectStatus.name,
-        'syncState': syncState.name,
-        // Envoyer seulement les IDs pour les relations
-        'classeId': classe.value?.idClasse,
-        'ficheId': fiche.value?.idFiche,
-        // 'interetsIds': interets.map((i) => i.idInteret).toList(),
+
+        // "idProspect": "string",
+        // "nomComplet": "string",
+        // "email": "string",
+        // "telephone": "string",
+        // "adresse": "string",
+        // "ville": "string",
+        // "codePostal": "string",
+        // "pays": "string",
+        // "sexe": "string",
+        // "dateNaissance": "2026-07-21",
+        // "niveauEtude": "string",
+        // "domaineEtude": "string",
+        // "typeProspect": "string",
+        // "nomParent": "string",
+        // "numeroParent": "string",
+        // "idFiche": "string"
+        // 'prospectStatus': prospectStatus.name,
+        // 'syncState': syncState.name,
       };
   // Prospect copyWith({
   //   String? idProspect,

@@ -35,12 +35,21 @@ class Specialite {
     required this.syncState,
   });
 
+  // factory Specialite.fromJson(Map<String, dynamic> json) => Specialite(
+  //       idSpecialite: json['idSpecialite'] ?? '',
+  //       libelleSpecialite: json['libeleSpecialite'] ?? '',
+  //       description: json['description'] ?? '',
+  //       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+  //       syncState: json["sync"],
+  //     );
+
   factory Specialite.fromJson(Map<String, dynamic> json) => Specialite(
         idSpecialite: json['idSpecialite'] ?? '',
-        libelleSpecialite: json['libelleSpecialite'] ?? '',
-        description: json['description'],
-        createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
-        syncState: json["sync"],
+        libelleSpecialite: json['libeleSpecialite'] ?? '',
+        description: json['description'] ?? '',
+        createdAt: DateTime.tryParse(json['createdAt'] ?? ''),
+        syncState: SyncState.synced,
+        // updatedAt: DateTime.tryParse(json['updatedAt'] ?? ''),
       );
 
   // Map<String, dynamic> toLocalJson() {

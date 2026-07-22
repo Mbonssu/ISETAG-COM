@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: use_build_context_synchronously, avoid_print, deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'dart:ui';
@@ -7,6 +7,10 @@ import '../utils/themes/glass_theme.dart';
 import '../models/prospectData.dart';
 import '../services/translation_service.dart';
 import '../screens/add_prospect_screen.dart';
+import '../models/relance.dart';
+import '../models/localStorage/local_storage.dart';
+import '../utils/status.dart';
+import '../utils/idGenerator.dart';
 
 class ProspectDetailScreen extends StatefulWidget {
   final ProspectDetails prospect;
@@ -20,17 +24,17 @@ class _DetailState extends State<ProspectDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tc;
   ProspectDetails get prospect => widget.prospect;
-  
-  // ✅ Variable pour suivre le numéro sélectionné
+
   String? _selectedPhoneNumber;
+  List<Relance> _relances = [];
 
   @override
   void initState() {
     super.initState();
     _tc = TabController(length: 2, vsync: this);
     _test();
-    // ✅ Initialiser avec le numéro du prospect par défaut
     _selectedPhoneNumber = prospect.prosp.telephone;
+    _loadRelances();
   }
 
   @override
@@ -38,6 +42,169 @@ class _DetailState extends State<ProspectDetailScreen>
     _tc.dispose();
     super.dispose();
   }
+
+  // ─── Load relances ──────────────────────────────────────────────
+
+  Future<void> _loadRelances() async {
+    final list = await LocalStorage.instance
+        .getRelancesForProspect(prospect.prosp.idProspect);
+    setState(() {
+      _relances = list;
+    });
+  }
+
+  // ─── Relance modal ─────────────────────────────────────────────
+
+  Future<void> _showRelanceModal({Relance? relanceToEdit}) async {
+    final isEditing = relanceToEdit != null;
+    final TextEditingController subjectCtrl =
+        TextEditingController(text: relanceToEdit?.sujet ?? '');
+    final TextEditingController descCtrl =
+        TextEditingController(text: relanceToEdit?.description ?? '');
+    DateTime? selectedDate = relanceToEdit?.dateRelance ??
+        DateTime.now().add(const Duration(days: 1));
+
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title:
+            Text(isEditing ? 'Modifier la relance' : 'Programmer une relance'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Date & time picker (REQUIRED)
+              ListTile(
+                leading:
+                    const Icon(Icons.calendar_today, color: Color(0xFF2E7D32)),
+                title: const Text('Date et heure *'),
+                subtitle: Text(_formatRelanceDate(selectedDate!)),
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: ctx,
+                    initialDate: selectedDate,
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime(2100),
+                    builder: (_, child) => Theme(
+                      data: Theme.of(ctx).copyWith(
+                        colorScheme:
+                            const ColorScheme.light(primary: Color(0xFF2E7D32)),
+                      ),
+                      child: child!,
+                    ),
+                  );
+                  if (date != null) {
+                    final time = await showTimePicker(
+                      context: ctx,
+                      initialTime: TimeOfDay.fromDateTime(selectedDate!),
+                      builder: (_, child) => Theme(
+                        data: Theme.of(ctx).copyWith(
+                          colorScheme: const ColorScheme.light(
+                              primary: Color(0xFF2E7D32)),
+                        ),
+                        child: child!,
+                      ),
+                    );
+                    if (time != null) {
+                      selectedDate = DateTime(
+                        date.year,
+                        date.month,
+                        date.day,
+                        time.hour,
+                        time.minute,
+                      );
+                      // Rebuild the dialog with the updated date
+                      Navigator.of(ctx).pop();
+                      _showRelanceModal(
+                        relanceToEdit:
+                            relanceToEdit?.copyWith(dateRelance: selectedDate),
+                      );
+                      return;
+                    }
+                  }
+                },
+              ),
+              const Divider(),
+              // Subject (OPTIONAL)
+              TextField(
+                controller: subjectCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Sujet (optionnel)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Description (OPTIONAL)
+              TextField(
+                controller: descCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Description (optionnelle)',
+                  border: OutlineInputBorder(),
+                  alignLabelWithHint: true,
+                ),
+                maxLines: 4,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              // ✅ Only the date is required
+              if (selectedDate == null) {
+                ScaffoldMessenger.of(ctx).showSnackBar(
+                  const SnackBar(
+                      content:
+                          Text('Veuillez sélectionner une date et une heure.')),
+                );
+                return;
+              }
+
+              final subject = subjectCtrl.text.trim();
+              final desc = descCtrl.text.trim();
+
+              if (isEditing) {
+                final updated = relanceToEdit!.copyWith(
+                  dateRelance: selectedDate!,
+                  sujet: subject.isEmpty ? 'Relance' : subject,
+                  description: desc.isEmpty ? 'Relance programmée' : desc,
+                  syncState: SyncState.toUpdate,
+                );
+                await LocalStorage.instance.saveRelance(updated);
+              } else {
+                final newRelance = Relance(
+                  idRelance: Generator.generateShortId('rel_'),
+                  idProspect: prospect.prosp.idProspect,
+                  dateRelance: selectedDate!,
+                  sujet: subject.isEmpty ? 'Relance' : subject,
+                  description: desc.isEmpty ? 'Relance programmée' : desc,
+                  syncState: SyncState.pending,
+                );
+                await LocalStorage.instance.saveRelance(newRelance);
+              }
+              Navigator.pop(ctx, true);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2E7D32),
+              foregroundColor: Colors.white,
+            ),
+            child: Text(isEditing ? 'Modifier' : 'Ajouter'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      await _loadRelances();
+    }
+  }
+  // ─── BUILD ──────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -64,20 +231,14 @@ class _DetailState extends State<ProspectDetailScreen>
   }
 
   Widget _buildHeader() {
-    // ✅ Vérifier si la date de relance est arrivée ou dépassée
     final bool isRelanceDue = prospect.prosp.date_relance != null &&
         prospect.prosp.date_relance!.isBefore(DateTime.now());
 
-    // ✅ Récupérer les numéros disponibles
     final List<Map<String, String>> phoneOptions = [];
-    
-    // Ajouter le numéro du prospect
     phoneOptions.add({
       'label': 'Prospect: ${prospect.prosp.telephone}',
       'number': prospect.prosp.telephone,
     });
-    
-    // Ajouter le numéro du parent s'il existe et est différent
     if (prospect.prosp.telephoneParent.isNotEmpty &&
         prospect.prosp.telephoneParent != prospect.prosp.telephone) {
       phoneOptions.add({
@@ -86,10 +247,10 @@ class _DetailState extends State<ProspectDetailScreen>
       });
     }
 
-    // ✅ Si le numéro sélectionné n'est plus dans la liste, réinitialiser
     if (_selectedPhoneNumber != null &&
         !phoneOptions.any((opt) => opt['number'] == _selectedPhoneNumber)) {
-      _selectedPhoneNumber = phoneOptions.isNotEmpty ? phoneOptions[0]['number'] : null;
+      _selectedPhoneNumber =
+          phoneOptions.isNotEmpty ? phoneOptions[0]['number'] : null;
     }
 
     return ClipRRect(
@@ -214,7 +375,6 @@ class _DetailState extends State<ProspectDetailScreen>
                             Icons.email_outlined,
                             prospect.prosp.email ?? 'no_email'.tr,
                           ),
-                          // ✅ Ajout du dropdown et du bouton d'appel si la relance est due
                           if (isRelanceDue) ...[
                             const SizedBox(height: 8),
                             _buildCallSection(phoneOptions),
@@ -232,11 +392,9 @@ class _DetailState extends State<ProspectDetailScreen>
     );
   }
 
-  // ✅ Section d'appel avec dropdown
   Widget _buildCallSection(List<Map<String, String>> phoneOptions) {
     return Row(
       children: [
-        // ✅ Dropdown pour choisir le numéro
         Expanded(
           flex: 2,
           child: Container(
@@ -280,11 +438,11 @@ class _DetailState extends State<ProspectDetailScreen>
           ),
         ),
         const SizedBox(width: 8),
-        // ✅ Bouton d'appel
         Expanded(
           flex: 1,
           child: GestureDetector(
-            onTap: () => _makePhoneCall(_selectedPhoneNumber ?? prospect.prosp.telephone),
+            onTap: () => _makePhoneCall(
+                _selectedPhoneNumber ?? prospect.prosp.telephone),
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
@@ -305,7 +463,8 @@ class _DetailState extends State<ProspectDetailScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.phone_rounded, color: Colors.white, size: 16),
+                  const Icon(Icons.phone_rounded,
+                      color: Colors.white, size: 16),
                   const SizedBox(width: 4),
                   Text(
                     'Appeler'.tr,
@@ -324,24 +483,17 @@ class _DetailState extends State<ProspectDetailScreen>
     );
   }
 
-  // ✅ Méthode pour lancer un appel téléphonique
   Future<void> _makePhoneCall(String phoneNumber) async {
     if (phoneNumber.isEmpty) {
       _showSnackBar('Aucun numéro de téléphone disponible', Colors.orange);
       return;
     }
-
-    // Nettoyer le numéro de téléphone
     final cleanPhone = phoneNumber.replaceAll(RegExp(r'[\s\-\(\)]'), '');
-    
-    // Formater le numéro
     String formattedPhone = cleanPhone;
     if (cleanPhone.startsWith(RegExp(r'^[625]')) && cleanPhone.length == 9) {
       formattedPhone = '+237$cleanPhone';
     }
-    
     final Uri telUri = Uri(scheme: 'tel', path: formattedPhone);
-    
     try {
       if (await canLaunchUrl(telUri)) {
         await launchUrl(telUri);
@@ -368,7 +520,6 @@ class _DetailState extends State<ProspectDetailScreen>
     );
   }
 
-  // ✅ Navigate to edit screen
   void _navigateToEditScreen() {
     Navigator.push(
       context,
@@ -518,73 +669,191 @@ class _DetailState extends State<ProspectDetailScreen>
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(14),
-      child: GlassBox(
-        borderRadius: 15,
-        bgColor: G.glassCard,
-        borderColor: G.glassBorder,
-        child: Column(
-          children: rows.asMap().entries.map((e) {
-            final isLast = e.key == rows.length - 1;
-            final r = e.value;
-            return Column(children: [
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(9),
-                        border: Border.all(
-                            color: Colors.black.withValues(alpha: 0.07)),
-                      ),
-                      child: Icon(r.$1, color: G.textMedium, size: 17),
-                    ),
-                    const SizedBox(width: 11),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(r.$2,
-                              style: const TextStyle(
-                                  fontSize: 10, color: G.textLight)),
-                          const SizedBox(height: 3),
-                          Text(
-                            r.$3.toString(),
-                            style: TextStyle(
-                              fontSize: r.$4 ? 14 : 13,
-                              fontWeight:
-                                  r.$4 ? FontWeight.w800 : FontWeight.w500,
-                              color: r.$4 ? G.green : G.textDark,
-                              height: 1.4,
-                            ),
+      child: Column(
+        children: [
+          GlassBox(
+            borderRadius: 15,
+            bgColor: G.glassCard,
+            borderColor: G.glassBorder,
+            child: Column(
+              children: rows.asMap().entries.map((e) {
+                final isLast = e.key == rows.length - 1;
+                final r = e.value;
+                return Column(children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 13, vertical: 11),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(9),
+                            border: Border.all(
+                                color: Colors.black.withValues(alpha: 0.07)),
                           ),
-                        ],
-                      ),
+                          child: Icon(r.$1, color: G.textMedium, size: 17),
+                        ),
+                        const SizedBox(width: 11),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(r.$2,
+                                  style: const TextStyle(
+                                      fontSize: 10, color: G.textLight)),
+                              const SizedBox(height: 3),
+                              Text(
+                                r.$3.toString(),
+                                style: TextStyle(
+                                  fontSize: r.$4 ? 14 : 13,
+                                  fontWeight:
+                                      r.$4 ? FontWeight.w800 : FontWeight.w500,
+                                  color: r.$4 ? G.green : G.textDark,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
+                  if (!isLast)
+                    Container(
+                      height: 1,
+                      color: G.glassDivider,
+                      margin: const EdgeInsets.symmetric(horizontal: 13),
+                    ),
+                ]);
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildRelancesSection(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRelancesSection() {
+    return GlassBox(
+      borderRadius: 15,
+      bgColor: G.glassCard,
+      borderColor: G.glassBorder,
+      child: Padding(
+        padding: const EdgeInsets.all(13),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Relances programmées',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: G.textDark,
+                  ),
                 ),
-              ),
-              if (!isLast)
-                Container(
-                  height: 1,
-                  color: G.glassDivider,
-                  margin: const EdgeInsets.symmetric(horizontal: 13),
+                ElevatedButton.icon(
+                  onPressed: () => _showRelanceModal(),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Ajouter'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2E7D32),
+                    foregroundColor: Colors.white,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    textStyle: const TextStyle(fontSize: 12),
+                  ),
                 ),
-            ]);
-          }).toList(),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (_relances.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  'Aucune relance programmée.',
+                  style: TextStyle(color: G.textLight, fontSize: 13),
+                ),
+              )
+            else
+              ..._relances.map((relance) => _relanceTile(relance)),
+          ],
         ),
       ),
     );
   }
 
+  Widget _relanceTile(Relance relance) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  relance.sujet,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: G.textDark,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _formatRelanceDate(relance.dateRelance),
+                  style: const TextStyle(fontSize: 12, color: G.textLight),
+                ),
+                if (relance.description.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    relance.description,
+                    style: const TextStyle(fontSize: 12, color: G.textLight),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.edit_outlined, color: G.green, size: 20),
+            onPressed: () => _showRelanceModal(relanceToEdit: relance),
+            tooltip: 'Modifier',
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Formatting helpers ──────────────────────────────────────
+
   String _formatDate(DateTime date) {
     final f = 'at'.tr;
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} $f ${date.hour.toString()}:${date.minute}';
+  }
+
+  String _formatRelanceDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year} à ${date.hour}h${date.minute.toString().padLeft(2, '0')}';
   }
 
   String _getSyncStatusTranslation(String status) {
@@ -597,7 +866,6 @@ class _DetailState extends State<ProspectDetailScreen>
         return 'sync_failed'.tr;
       case 'toupdate':
       case 'toUpdate':
-        print("Debug: Sync status is 'toUpdate'");
         return 'sync_to_update'.tr;
       default:
         print('⚠️ Unknown sync status: "$status"');
@@ -605,9 +873,10 @@ class _DetailState extends State<ProspectDetailScreen>
     }
   }
 
+  // ─── Filiere tab ──────────────────────────────────────────────
+
   Widget _buildFiliereTab() {
     final specs = prospect.specialities;
-
     if (specs.isEmpty) {
       return Center(child: Text('no_specialties'.tr));
     }
@@ -617,15 +886,21 @@ class _DetailState extends State<ProspectDetailScreen>
       itemBuilder: (_, i) {
         final spec = specs[i];
         return _filiereCard(
-          spec.libelleSpecialite,
-          prospect.prosp.niveauEtude,
-          spec.commentaire ?? '',
+          name: spec.libelleSpecialite,
+          studyLevel: prospect.prosp.niveauEtude,
+          interestLevel: spec.niveau,
+          comment: spec.commentaire ?? '',
         );
       },
     );
   }
 
-  Widget _filiereCard(String name, String level, String note) {
+  Widget _filiereCard({
+    required String name,
+    required String studyLevel,
+    required int interestLevel,
+    required String comment,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: GlassBox(
@@ -634,43 +909,91 @@ class _DetailState extends State<ProspectDetailScreen>
         borderColor: G.glassBorder,
         child: Padding(
           padding: const EdgeInsets.all(13),
-          child: Row(children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: G.green.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: G.green.withValues(alpha: 0.2)),
-              ),
-              child:
-                  const Icon(Icons.school_outlined, color: G.green, size: 21),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  Text(name.tr,
-                      style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: G.textDark)),
-                  const SizedBox(height: 2),
-                  Text(level,
-                      style: const TextStyle(
-                          fontSize: 12,
-                          color: G.green,
-                          fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 1),
-                  Text(note,
-                      style: const TextStyle(fontSize: 11, color: G.textLight)),
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: G.green.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: G.green.withValues(alpha: 0.2)),
+                    ),
+                    child: const Icon(Icons.school_outlined,
+                        color: G.green, size: 21),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name.tr,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: G.textDark,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          studyLevel,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: G.green,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Text(
+                              'interest_level'.tr,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: G.textLight,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            _buildStars(interestLevel),
+                          ],
+                        ),
+                        if (comment.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            comment,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: G.textLight,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ]),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildStars(int level) {
+    final clamped = level.clamp(1, 5);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(5, (index) {
+        return Icon(
+          index < clamped ? Icons.star : Icons.star_border,
+          size: 14,
+          color: index < clamped ? Colors.amber : Colors.grey.shade400,
+        );
+      }),
     );
   }
 

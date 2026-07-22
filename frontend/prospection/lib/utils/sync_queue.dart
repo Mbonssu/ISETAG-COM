@@ -1,5 +1,3 @@
-// lib/utils/sync_queue.dart
-
 // ignore_for_file: avoid_print
 import 'dart:async';
 import 'dart:math';
@@ -11,6 +9,7 @@ import '../models/fiche.dart';
 import '../models/interet_filiere.dart';
 import '../models/localStorage/local_storage.dart';
 import '../models/pros.dart';
+import '../models/relance.dart';
 import '../models/source.dart';
 import '../models/specialite.dart';
 import '../services/translation_service.dart';
@@ -87,7 +86,7 @@ class SyncQueue {
   }
 
   // ---------------------------------------------------------------------
-  // Comptages - Updated to include toUpdate
+  // Comptages - Updated to include relances
   // ---------------------------------------------------------------------
 
   Future<int> getPendingCount() async {
@@ -101,7 +100,7 @@ class SyncQueue {
     try {
       final isar = _storage.isar;
       final results = await Future.wait<int>([
-        // ✅ Count both pending and toUpdate for each type
+        // Prospects
         isar.prospects
             .where()
             .filter()
@@ -109,6 +108,7 @@ class SyncQueue {
             .or()
             .syncStateEqualTo(SyncState.toUpdate)
             .count(),
+        // Fiches
         isar.fiches
             .where()
             .filter()
@@ -116,6 +116,7 @@ class SyncQueue {
             .or()
             .syncStateEqualTo(SyncState.toUpdate)
             .count(),
+        // Interets
         isar.interetFilieres
             .where()
             .filter()
@@ -123,6 +124,7 @@ class SyncQueue {
             .or()
             .syncStateEqualTo(SyncState.toUpdate)
             .count(),
+        // Specialites
         isar.specialites
             .where()
             .filter()
@@ -130,6 +132,7 @@ class SyncQueue {
             .or()
             .syncStateEqualTo(SyncState.toUpdate)
             .count(),
+        // Etablissements
         isar.etablissements
             .where()
             .filter()
@@ -137,12 +140,19 @@ class SyncQueue {
             .or()
             .syncStateEqualTo(SyncState.toUpdate)
             .count(),
+        // Sources
         isar.sources
             .where()
             .filter()
             .syncStateEqualTo(SyncState.pending)
             .or()
             .syncStateEqualTo(SyncState.toUpdate)
+            .count(),
+        // ✅ Relances (only pending & toUpdate – no deletion)
+        isar.relances
+            .where()
+            .filter()
+            .syncStateBetween(SyncState.pending, SyncState.toUpdate)
             .count(),
       ]);
 
@@ -153,6 +163,7 @@ class SyncQueue {
         'specialites': results[3],
         'etablissements': results[4],
         'sources': results[5],
+        'relances': results[6],
       };
     } catch (e) {
       print('❌ Erreur getPendingItemsByType: $e');
@@ -195,6 +206,11 @@ class SyncQueue {
             .filter()
             .syncStateEqualTo(SyncState.toUpdate)
             .count(),
+        isar.relances
+            .where()
+            .filter()
+            .syncStateEqualTo(SyncState.toUpdate)
+            .count(),
       ]);
 
       return {
@@ -204,6 +220,7 @@ class SyncQueue {
         'specialites': results[3],
         'etablissements': results[4],
         'sources': results[5],
+        'relances': results[6],
       };
     } catch (e) {
       print('❌ Erreur getUpdateItemsByType: $e');
@@ -241,6 +258,11 @@ class SyncQueue {
           .syncStateEqualTo(SyncState.failed)
           .count(),
       isar.sources.where().filter().syncStateEqualTo(SyncState.failed).count(),
+      isar.relances
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.failed)
+          .count(),
     ]);
     return {
       'prospects': results[0],
@@ -249,6 +271,7 @@ class SyncQueue {
       'specialites': results[3],
       'etablissements': results[4],
       'sources': results[5],
+      'relances': results[6],
     };
   }
 
@@ -277,6 +300,11 @@ class SyncQueue {
           .syncStateEqualTo(SyncState.synced)
           .count(),
       isar.sources.where().filter().syncStateEqualTo(SyncState.synced).count(),
+      isar.relances
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.synced)
+          .count(),
     ]);
     return results.fold<int>(0, (sum, c) => sum + c);
   }
@@ -380,6 +408,15 @@ class SyncQueue {
           .findAll()) {
         item.syncState = SyncState.pending;
         await isar.interetFilieres.put(item);
+        count++;
+      }
+      for (final item in await isar.relances
+          .where()
+          .filter()
+          .syncStateEqualTo(SyncState.failed)
+          .findAll()) {
+        item.syncState = SyncState.pending;
+        await isar.relances.put(item);
         count++;
       }
     });
@@ -489,7 +526,7 @@ class SyncQueue {
     await _syncUpdates();
     if (_shouldStopSync) return;
 
-    // ✅ 2. Then sync pending items
+    // ✅ 2. Then sync pending items in dependency order
     await _syncFiches();
     if (_shouldStopSync) return;
 
@@ -503,6 +540,11 @@ class SyncQueue {
     if (_shouldStopSync) return;
 
     await _syncInterets();
+    if (_shouldStopSync) return;
+
+    // ✅ 3. Sync relances – must happen AFTER prospects (no deletion)
+    await _syncRelancesUpdates();
+    if (_shouldStopSync) return;
   }
 
   // ---------------------------------------------------------------------
@@ -520,6 +562,10 @@ class SyncQueue {
 
     // ✅ Sync interets toUpdate
     await _syncInteretsUpdates();
+    if (_shouldStopSync) return;
+
+    // ✅ Sync relances toUpdate
+    await _syncRelancesUpdates(); // handles both pending and toUpdate
     if (_shouldStopSync) return;
   }
 
@@ -878,6 +924,55 @@ class SyncQueue {
 
       if (_shouldStopSync) return;
     }
+  }
+
+  // ==================== RELANCE SYNC (no deletion) ====================
+
+  /// Sync relances: creations and updates (pending & toUpdate)
+  Future<void> _syncRelancesUpdates() async {
+    while (true) {
+      if (!_connection.isConnected || _shouldStopSync) return;
+
+      final batch = await _storage.isar.relances
+          .where()
+          .filter()
+          .syncStateBetween(SyncState.pending, SyncState.toUpdate)
+          .limit(batchSize)
+          .findAll();
+      if (batch.isEmpty) return;
+
+      print('📦 Relances à créer/mettre à jour : lot de ${batch.length}');
+      await _runBounded(batch, _syncSingleRelance);
+      if (_shouldStopSync) return;
+    }
+  }
+
+  /// Sync a single relance (create or update)
+  Future<void> _syncSingleRelance(Relance item) async {
+    await _syncSingle(
+      label: 'relance',
+      idOf: () => item.idRelance,
+      send: () async {
+        if (item.syncState == SyncState.pending) {
+          return await _api.createRelance(item.toJsonApi());
+        } else {
+          // toUpdate
+          return await _api.updateRelance(item.idRelance, item.toJsonApi());
+        }
+      },
+      markSynced: () async {
+        await _storage.isar.writeTxn(() async {
+          item.syncState = SyncState.synced;
+          await _storage.isar.relances.put(item);
+        });
+      },
+      markFailed: () async {
+        await _storage.isar.writeTxn(() async {
+          item.syncState = SyncState.failed;
+          await _storage.isar.relances.put(item);
+        });
+      },
+    );
   }
 
   // ---------------------------------------------------------------------

@@ -11,6 +11,7 @@ import '../campaign.dart';
 import '../pros.dart';
 import '../fiche.dart';
 import '../interet_filiere.dart';
+import '../relance.dart';
 import '../sortie.dart';
 import '../source.dart';
 import '../etablissement.dart';
@@ -59,6 +60,7 @@ class LocalStorage {
         SpecialiteSchema,
         UserSchema,
         AgentCommercialSchema,
+        RelanceSchema
       ],
       directory: dir.path,
       inspector: true,
@@ -155,403 +157,403 @@ class LocalStorage {
   }
 
   /// Generate 1500 dummy prospects with all relationships
-  Future<void> generateDummyProspects() async {
-    try {
-      print('🔄 Generating 1500 dummy prospects...');
-      final now = DateTime.now();
+  // Future<void> generateDummyProspects() async {
+  //   try {
+  //     print('🔄 Generating 1500 dummy prospects...');
+  //     final now = DateTime.now();
 
-      // 1. Sources (10) - These represent the source_infos options
-      final sources = <Source>[];
-      final sourceInfos = [
-        'Réseaux sociaux',
-        'Recommandation',
-        'Site web',
-        'Événement',
-        'Prospection terrain',
-        'Partenariat',
-        'Campagne email',
-        'Publicité',
-        'Salon professionnel',
-        'Bouche à oreille',
-      ];
+  //     // 1. Sources (10) - These represent the source_infos options
+  //     final sources = <Source>[];
+  //     final sourceInfos = [
+  //       'Réseaux sociaux',
+  //       'Recommandation',
+  //       'Site web',
+  //       'Événement',
+  //       'Prospection terrain',
+  //       'Partenariat',
+  //       'Campagne email',
+  //       'Publicité',
+  //       'Salon professionnel',
+  //       'Bouche à oreille',
+  //     ];
 
-      for (int i = 0; i < sourceInfos.length; i++) {
-        final source = Source(
-          idSource: 'src_${i + 1}_${now.millisecondsSinceEpoch}',
-          libelleSource: sourceInfos[i],
-          createdAt: now,
-          syncState: SyncState.pending,
-        );
-        sources.add(source);
-        await saveSource(source);
-      }
-      print('✅ ${sources.length} sources created');
+  //     for (int i = 0; i < sourceInfos.length; i++) {
+  //       final source = Source(
+  //         idSource: 'src_${i + 1}_${now.millisecondsSinceEpoch}',
+  //         libelleSource: sourceInfos[i],
+  //         createdAt: now,
+  //         syncState: SyncState.pending,
+  //       );
+  //       sources.add(source);
+  //       await saveSource(source);
+  //     }
+  //     print('✅ ${sources.length} sources created');
 
-      // 2. Etablissements (15)
-      final etablissements = <Etablissement>[];
-      final etablissementNames = [
-        'Lycée de Biyem-Assi',
-        'Lycée Technique d\'Efouan',
-        'Institut Confucius',
-        'Lycée Général Leclerc',
-        'Collège Vogt',
-        'Lycée de Mvog-Mbi',
-        'Lycée de Nkolndongo',
-        'Lycée de Mendong',
-        'Lycée de Ngoa-Ekelle',
-        'Lycée de Mbalmayo',
-        'Lycée de Soa',
-        'Collège de la Retraite',
-        'Lycée de Nlongkak',
-        'Institut Siantou',
-        'Lycée de Bafoussam',
-      ];
+  //     // 2. Etablissements (15)
+  //     final etablissements = <Etablissement>[];
+  //     final etablissementNames = [
+  //       'Lycée de Biyem-Assi',
+  //       'Lycée Technique d\'Efouan',
+  //       'Institut Confucius',
+  //       'Lycée Général Leclerc',
+  //       'Collège Vogt',
+  //       'Lycée de Mvog-Mbi',
+  //       'Lycée de Nkolndongo',
+  //       'Lycée de Mendong',
+  //       'Lycée de Ngoa-Ekelle',
+  //       'Lycée de Mbalmayo',
+  //       'Lycée de Soa',
+  //       'Collège de la Retraite',
+  //       'Lycée de Nlongkak',
+  //       'Institut Siantou',
+  //       'Lycée de Bafoussam',
+  //     ];
 
-      for (int i = 0; i < etablissementNames.length; i++) {
-        final ets = Etablissement(
-          idEtablissement: 'ets_${i + 1}_${now.millisecondsSinceEpoch}',
-          nomEtablissement: etablissementNames[i],
-          typeEtablissement: ['Secondary', 'University', 'Secondary'][i % 3],
-          adresse: 'Adresse ${i + 1}, Cameroun',
-          telephone:
-              '+237 6${(10000000 + i * 10000).toString().padLeft(7, '0')}',
-          ville: ['Yaoundé', 'Douala', 'Bafoussam', 'Bamenda'][i % 4],
-          region: ['Centre', 'Littoral', 'Ouest', 'Nord-Ouest'][i % 4],
-          createdAt: now,
-          syncState: SyncState.pending,
-        );
-        etablissements.add(ets);
-        await saveEtablissement(ets);
-      }
-      print('✅ ${etablissements.length} etablissements created');
+  //     for (int i = 0; i < etablissementNames.length; i++) {
+  //       final ets = Etablissement(
+  //         idEtablissement: 'ets_${i + 1}_${now.millisecondsSinceEpoch}',
+  //         nomEtablissement: etablissementNames[i],
+  //         typeEtablissement: ['Secondary', 'University', 'Secondary'][i % 3],
+  //         adresse: 'Adresse ${i + 1}, Cameroun',
+  //         telephone:
+  //             '+237 6${(10000000 + i * 10000).toString().padLeft(7, '0')}',
+  //         ville: ['Yaoundé', 'Douala', 'Bafoussam', 'Bamenda'][i % 4],
+  //         region: ['Centre', 'Littoral', 'Ouest', 'Nord-Ouest'][i % 4],
+  //         createdAt: now,
+  //         syncState: SyncState.pending,
+  //       );
+  //       etablissements.add(ets);
+  //       await saveEtablissement(ets);
+  //     }
+  //     print('✅ ${etablissements.length} etablissements created');
 
-      // 3. Classes (25)
-      final classes = <Classe>[];
-      final classNames = [
-        'Terminale C',
-        'Terminale D',
-        'Terminale A4',
-        'Terminale TI',
-        'BTS 1',
-        'BTS 2',
-        'Licence 1',
-        'Licence 2',
-        'Licence 3',
-        'Master 1',
-        'Master 2',
-        'Licence',
-      ];
+  //     // 3. Classes (25)
+  //     final classes = <Classe>[];
+  //     final classNames = [
+  //       'Terminale C',
+  //       'Terminale D',
+  //       'Terminale A4',
+  //       'Terminale TI',
+  //       'BTS 1',
+  //       'BTS 2',
+  //       'Licence 1',
+  //       'Licence 2',
+  //       'Licence 3',
+  //       'Master 1',
+  //       'Master 2',
+  //       'Licence',
+  //     ];
 
-      for (int i = 0; i < classNames.length; i++) {
-        final etsIndex = i % etablissements.length;
-        final clse = Classe(
-          idClasse: 'classe_${i + 1}_${now.millisecondsSinceEpoch}',
-          idEts: etablissements[etsIndex].idEtablissement,
-          libelleClasse: classNames[i],
-          createdAt: now,
-          syncState: SyncState.pending,
-        );
-        classes.add(clse);
-        await saveClasse(clse);
-      }
-      print('✅ ${classes.length} classes created');
+  //     for (int i = 0; i < classNames.length; i++) {
+  //       final etsIndex = i % etablissements.length;
+  //       final clse = Classe(
+  //         idClasse: 'classe_${i + 1}_${now.millisecondsSinceEpoch}',
+  //         idEts: etablissements[etsIndex].idEtablissement,
+  //         libelleClasse: classNames[i],
+  //         createdAt: now,
+  //         syncState: SyncState.pending,
+  //       );
+  //       classes.add(clse);
+  //       await saveClasse(clse);
+  //     }
+  //     print('✅ ${classes.length} classes created');
 
-      // 4. Specialites (25)
-      final specialites = <Specialite>[];
-      final specialiteNames = [
-        'Génie Logiciel',
-        'Génie Civil',
-        'Génie Mécanique',
-        'Marketing',
-        'Finance',
-        'Comptabilité',
-        'Réseaux et Télécoms',
-        'Cybersécurité',
-        'Intelligence Artificielle',
-        'Ressources Humaines',
-        'Logistique',
-        'Communication',
-        'Design UI/UX',
-        'Développement Mobile',
-        'Data Science',
-        'DevOps',
-        'Cloud Computing',
-        'Blockchain',
-        'Énergies Renouvelables',
-        'Biotechnologie',
-        'Robotique',
-        'Aéronautique',
-        'Agronomie',
-        'Architecture',
-        'Médecine',
-      ];
+  //     // 4. Specialites (25)
+  //     final specialites = <Specialite>[];
+  //     final specialiteNames = [
+  //       'Génie Logiciel',
+  //       'Génie Civil',
+  //       'Génie Mécanique',
+  //       'Marketing',
+  //       'Finance',
+  //       'Comptabilité',
+  //       'Réseaux et Télécoms',
+  //       'Cybersécurité',
+  //       'Intelligence Artificielle',
+  //       'Ressources Humaines',
+  //       'Logistique',
+  //       'Communication',
+  //       'Design UI/UX',
+  //       'Développement Mobile',
+  //       'Data Science',
+  //       'DevOps',
+  //       'Cloud Computing',
+  //       'Blockchain',
+  //       'Énergies Renouvelables',
+  //       'Biotechnologie',
+  //       'Robotique',
+  //       'Aéronautique',
+  //       'Agronomie',
+  //       'Architecture',
+  //       'Médecine',
+  //     ];
 
-      for (int i = 0; i < specialiteNames.length; i++) {
-        final spec = Specialite(
-          idSpecialite: 'spec_${i + 1}_${now.millisecondsSinceEpoch}',
-          libelleSpecialite: specialiteNames[i],
-          description: 'Description de ${specialiteNames[i]}',
-          createdAt: now,
-          syncState: SyncState.pending,
-        );
-        specialites.add(spec);
-        await saveSpecialite(spec);
-      }
-      print('✅ ${specialites.length} specialites created');
+  //     for (int i = 0; i < specialiteNames.length; i++) {
+  //       final spec = Specialite(
+  //         idSpecialite: 'spec_${i + 1}_${now.millisecondsSinceEpoch}',
+  //         libelleSpecialite: specialiteNames[i],
+  //         description: 'Description de ${specialiteNames[i]}',
+  //         createdAt: now,
+  //         syncState: SyncState.pending,
+  //       );
+  //       specialites.add(spec);
+  //       await saveSpecialite(spec);
+  //     }
+  //     print('✅ ${specialites.length} specialites created');
 
-      // 5. Fiches (15) - Each fiche is associated with a source
-      final fiches = <Fiche>[];
-      final ficheComments = [
-        'Visite initiale',
-        'Suivi prospect',
-        'Contact établi',
-        'Demande d\'information',
-        'Rendez-vous pris',
-        'Confirmation d\'intérêt',
-        'Relance effectuée',
-        'Nouveau contact',
-        'Prospection active',
-        'Suivi personnalisé',
-        'Prise de contact',
-        'Entretien réalisé',
-        'Offre envoyée',
-        'Négociation',
-        'Signature prochaine',
-      ];
+  //     // 5. Fiches (15) - Each fiche is associated with a source
+  //     final fiches = <Fiche>[];
+  //     final ficheComments = [
+  //       'Visite initiale',
+  //       'Suivi prospect',
+  //       'Contact établi',
+  //       'Demande d\'information',
+  //       'Rendez-vous pris',
+  //       'Confirmation d\'intérêt',
+  //       'Relance effectuée',
+  //       'Nouveau contact',
+  //       'Prospection active',
+  //       'Suivi personnalisé',
+  //       'Prise de contact',
+  //       'Entretien réalisé',
+  //       'Offre envoyée',
+  //       'Négociation',
+  //       'Signature prochaine',
+  //     ];
 
-      for (int i = 0; i < sources.length; i++) {
-        final fiche = Fiche(
-          idFiche: 'fiche_${i + 1}_${now.millisecondsSinceEpoch}',
-          idSrc: sources[i].idSource,
-          dateCollecte: now.subtract(Duration(days: i * 2)),
-          commentaire: ficheComments[i % ficheComments.length],
-          scoreInteret: 3 + (i % 8),
-          createdAt: now,
-          isCurrent: i == 0,
-          syncState: SyncState.pending,
-        );
-        fiches.add(fiche);
-        await saveFiche(fiche);
-      }
-      print('✅ ${fiches.length} fiches created');
+  //     for (int i = 0; i < sources.length; i++) {
+  //       final fiche = Fiche(
+  //         idFiche: 'fiche_${i + 1}_${now.millisecondsSinceEpoch}',
+  //         idSrc: sources[i].idSource,
+  //         dateCollecte: now.subtract(Duration(days: i * 2)),
+  //         commentaire: ficheComments[i % ficheComments.length],
+  //         scoreInteret: 3 + (i % 8),
+  //         createdAt: now,
+  //         isCurrent: i == 0,
+  //         syncState: SyncState.pending,
+  //       );
+  //       fiches.add(fiche);
+  //       await saveFiche(fiche);
+  //     }
+  //     print('✅ ${fiches.length} fiches created');
 
-      // 6. Generate 1500 Prospects with source_infos
-      final firstNames = [
-        'Jean',
-        'Marie',
-        'Paul',
-        'Claire',
-        'David',
-        'Sarah',
-        'Kevin',
-        'Laura',
-        'Thomas',
-        'Julie',
-        'Nicolas',
-        'Emma',
-        'Alexandre',
-        'Léa',
-        'Raphaël',
-        'Manon',
-        'Lucas',
-        'Chloé',
-        'Hugo',
-        'Camille',
-        'Louis',
-        'Alice',
-        'Arnaud',
-        'Céline',
-        'François',
-        'Diane',
-        'Pierre',
-        'Sophie',
-        'Blaise',
-        'Jacqueline',
-        'Romain',
-        'Adeline',
-        'Daniel',
-        'Martine',
-        'Michel',
-        'Suzanne',
-        'André',
-        'Elise',
-        'Philippe',
-        'Isabelle',
-        'Christophe',
-        'Nathalie',
-        'Éric',
-        'Valérie',
-        'Stéphane',
-        'Catherine',
-        'Laurent',
-        'Anne',
-        'Frédéric',
-        'Isabelle',
-      ];
+  //     // 6. Generate 1500 Prospects with source_infos
+  //     final firstNames = [
+  //       'Jean',
+  //       'Marie',
+  //       'Paul',
+  //       'Claire',
+  //       'David',
+  //       'Sarah',
+  //       'Kevin',
+  //       'Laura',
+  //       'Thomas',
+  //       'Julie',
+  //       'Nicolas',
+  //       'Emma',
+  //       'Alexandre',
+  //       'Léa',
+  //       'Raphaël',
+  //       'Manon',
+  //       'Lucas',
+  //       'Chloé',
+  //       'Hugo',
+  //       'Camille',
+  //       'Louis',
+  //       'Alice',
+  //       'Arnaud',
+  //       'Céline',
+  //       'François',
+  //       'Diane',
+  //       'Pierre',
+  //       'Sophie',
+  //       'Blaise',
+  //       'Jacqueline',
+  //       'Romain',
+  //       'Adeline',
+  //       'Daniel',
+  //       'Martine',
+  //       'Michel',
+  //       'Suzanne',
+  //       'André',
+  //       'Elise',
+  //       'Philippe',
+  //       'Isabelle',
+  //       'Christophe',
+  //       'Nathalie',
+  //       'Éric',
+  //       'Valérie',
+  //       'Stéphane',
+  //       'Catherine',
+  //       'Laurent',
+  //       'Anne',
+  //       'Frédéric',
+  //       'Isabelle',
+  //     ];
 
-      final lastNames = [
-        'Dupont',
-        'Martin',
-        'Durand',
-        'Bernard',
-        'Thomas',
-        'Petit',
-        'Robert',
-        'Richard',
-        'Dubois',
-        'Laurent',
-        'Simon',
-        'Michel',
-        'Lefebvre',
-        'Leroy',
-        'Roux',
-        'David',
-        'Bertrand',
-        'Moreau',
-        'Fournier',
-        'Girard',
-        'Bonnet',
-        'François',
-        'Martinez',
-        'Legrand',
-        'Garnier',
-        'Faure',
-        'Rousseau',
-        'Blanc',
-        'Guerin',
-        'Muller',
-        'Henry',
-        'Roussel',
-        'Nicolas',
-        'Perrin',
-        'Morin',
-        'Mathieu',
-        'Clement',
-        'Gauthier',
-        'Dumont',
-        'Lopez',
-        'Fontaine',
-        'Chevalier',
-        'Robin',
-        'Masson',
-        'Sanchez',
-        'Adam',
-        'Garcia',
-      ];
+  //     final lastNames = [
+  //       'Dupont',
+  //       'Martin',
+  //       'Durand',
+  //       'Bernard',
+  //       'Thomas',
+  //       'Petit',
+  //       'Robert',
+  //       'Richard',
+  //       'Dubois',
+  //       'Laurent',
+  //       'Simon',
+  //       'Michel',
+  //       'Lefebvre',
+  //       'Leroy',
+  //       'Roux',
+  //       'David',
+  //       'Bertrand',
+  //       'Moreau',
+  //       'Fournier',
+  //       'Girard',
+  //       'Bonnet',
+  //       'François',
+  //       'Martinez',
+  //       'Legrand',
+  //       'Garnier',
+  //       'Faure',
+  //       'Rousseau',
+  //       'Blanc',
+  //       'Guerin',
+  //       'Muller',
+  //       'Henry',
+  //       'Roussel',
+  //       'Nicolas',
+  //       'Perrin',
+  //       'Morin',
+  //       'Mathieu',
+  //       'Clement',
+  //       'Gauthier',
+  //       'Dumont',
+  //       'Lopez',
+  //       'Fontaine',
+  //       'Chevalier',
+  //       'Robin',
+  //       'Masson',
+  //       'Sanchez',
+  //       'Adam',
+  //       'Garcia',
+  //     ];
 
-      final typeProspects = ['Étudiant', 'Éleve'];
-      final sexes = ['Masculin', 'Féminin'];
-      final niveauEtudes = [
-        'Baccalauréat',
-        'BTS 1',
-        'BTS 2',
-        'Licence',
-        'Master 1',
-        'Master 2',
-        'Doctorat'
-      ];
-      final statuses = [
-        ProspectStatus.relancer,
-        ProspectStatus.nouveau,
-        ProspectStatus.contacte
-      ];
-      final phonePrefix = ['6', '7', '8', '9'];
+  //     final typeProspects = ['Étudiant', 'Éleve'];
+  //     final sexes = ['Masculin', 'Féminin'];
+  //     final niveauEtudes = [
+  //       'Baccalauréat',
+  //       'BTS 1',
+  //       'BTS 2',
+  //       'Licence',
+  //       'Master 1',
+  //       'Master 2',
+  //       'Doctorat'
+  //     ];
+  //     final statuses = [
+  //       ProspectStatus.relancer,
+  //       ProspectStatus.nouveau,
+  //       ProspectStatus.contacte
+  //     ];
+  //     final phonePrefix = ['6', '7', '8', '9'];
 
-      int savedCount = 0;
-      const totalCount = 1500;
-      const batchSize = 50;
+  //     int savedCount = 0;
+  //     const totalCount = 1500;
+  //     const batchSize = 50;
 
-      for (int batch = 0; batch < totalCount; batch += batchSize) {
-        final end =
-            (batch + batchSize < totalCount) ? batch + batchSize : totalCount;
+  //     for (int batch = 0; batch < totalCount; batch += batchSize) {
+  //       final end =
+  //           (batch + batchSize < totalCount) ? batch + batchSize : totalCount;
 
-        for (int i = batch; i < end; i++) {
-          final firstName = firstNames[i % firstNames.length];
-          final lastName = lastNames[i % lastNames.length];
-          final fullName = '$firstName $lastName';
+  //       for (int i = batch; i < end; i++) {
+  //         final firstName = firstNames[i % firstNames.length];
+  //         final lastName = lastNames[i % lastNames.length];
+  //         final fullName = '$firstName $lastName';
 
-          final classe = classes[i % classes.length];
-          final fiche = fiches[i % fiches.length];
-          // Assign source_infos from the source list (ensuring each prospect gets a source)
-          final sourceInfo = sourceInfos[i % sourceInfos.length];
-          final numSpecialites = 1 + (i % 4);
+  //         final classe = classes[i % classes.length];
+  //         final fiche = fiches[i % fiches.length];
+  //         // Assign source_infos from the source list (ensuring each prospect gets a source)
+  //         final sourceInfo = sourceInfos[i % sourceInfos.length];
+  //         final numSpecialites = 1 + (i % 4);
 
-          final prospect = Prospect(
-            idProspect: 'prospect_${i + 1}_${now.millisecondsSinceEpoch}',
-            idfiche: fiche.idFiche,
-            idClass: classe.idClasse,
-            nomComplet: fullName,
-            telephone:
-                '+237 ${phonePrefix[i % phonePrefix.length]}${(10000000 + i * 1000).toString().padLeft(7, '0')}',
-            email:
-                '${firstName.toLowerCase()}.${lastName.toLowerCase()}$i@example.com',
-            niveauEtude: niveauEtudes[i % niveauEtudes.length],
-            adresse: '${100 + i} Rue des Écoles, Cameroun',
-            sexe: sexes[i % 2],
-            typeProspect: typeProspects[i % typeProspects.length],
-            source_infos: sourceInfo, // Assign the source info string
-            commentaireGen: 'Prospect #${i + 1} - $firstName $lastName',
-            concerne: null,
-            date_relance:
-                i % 5 == 0 ? now.add(Duration(days: 5 + (i % 20))) : null,
-            createdAt: now.subtract(Duration(days: i % 30)),
-            // updatedAt: null,
-            syncState: SyncState.pending,
-            prospectStatus: statuses[i % statuses.length],
-          );
+  //         final prospect = Prospect(
+  //           idProspect: 'prospect_${i + 1}_${now.millisecondsSinceEpoch}',
+  //           idfiche: fiche.idFiche,
+  //           idClass: classe.idClasse,
+  //           nomComplet: fullName,
+  //           telephone:
+  //               '+237 ${phonePrefix[i % phonePrefix.length]}${(10000000 + i * 1000).toString().padLeft(7, '0')}',
+  //           email:
+  //               '${firstName.toLowerCase()}.${lastName.toLowerCase()}$i@example.com',
+  //           niveauEtude: niveauEtudes[i % niveauEtudes.length],
+  //           adresse: '${100 + i} Rue des Écoles, Cameroun',
+  //           sexe: sexes[i % 2],
+  //           typeProspect: typeProspects[i % typeProspects.length],
+  //           source_infos: sourceInfo, // Assign the source info string
+  //           commentaireGen: 'Prospect #${i + 1} - $firstName $lastName',
+  //           concerne: null,
+  //           date_relance:
+  //               i % 5 == 0 ? now.add(Duration(days: 5 + (i % 20))) : null,
+  //           createdAt: now.subtract(Duration(days: i % 30)),
+  //           // updatedAt: null,
+  //           syncState: SyncState.pending,
+  //           prospectStatus: statuses[i % statuses.length],
+  //         );
 
-          await saveProspect(prospect);
+  //         await saveProspect(prospect);
 
-          final selectedSpecialites = <Specialite>[];
-          for (int s = 0; s < numSpecialites; s++) {
-            final specIndex = (i + s * 7) % specialites.length;
-            final spec = specialites[specIndex];
+  //         final selectedSpecialites = <Specialite>[];
+  //         for (int s = 0; s < numSpecialites; s++) {
+  //           final specIndex = (i + s * 7) % specialites.length;
+  //           final spec = specialites[specIndex];
 
-            if (!selectedSpecialites.contains(spec)) {
-              selectedSpecialites.add(spec);
+  //           if (!selectedSpecialites.contains(spec)) {
+  //             selectedSpecialites.add(spec);
 
-              final interet = InteretFiliere(
-                idInteret:
-                    'interet_${i + 1}_${s + 1}_${now.millisecondsSinceEpoch}',
-                idProspect: prospect.idProspect,
-                idSpecialite: spec.idSpecialite,
-                ordrePreference: s + 1,
-                niveauInteret: 4 + (i % 7),
-                commentaire: 'Intérêt pour ${spec.libelleSpecialite}',
-                createdAt: now,
-                syncState: SyncState.pending,
-              );
+  //             final interet = InteretFiliere(
+  //               idInteret:
+  //                   'interet_${i + 1}_${s + 1}_${now.millisecondsSinceEpoch}',
+  //               idProspect: prospect.idProspect,
+  //               idSpecialite: spec.idSpecialite,
+  //               ordrePreference: s + 1,
+  //               niveauInteret: 4 + (i % 7),
+  //               commentaire: 'Intérêt pour ${spec.libelleSpecialite}',
+  //               createdAt: now,
+  //               syncState: SyncState.pending,
+  //             );
 
-              interet.prospect.value = prospect;
-              interet.specialite.value = spec;
+  //             interet.prospect.value = prospect;
+  //             interet.specialite.value = spec;
 
-              await saveInteret(interet);
-              prospect.AllSpec.add(spec);
-            }
-          }
+  //             await saveInteret(interet);
+  //             prospect.AllSpec.add(spec);
+  //           }
+  //         }
 
-          savedCount++;
-          if (savedCount % 100 == 0) {
-            print('📊 Progress: $savedCount/$totalCount');
-          }
-        }
+  //         savedCount++;
+  //         if (savedCount % 100 == 0) {
+  //           print('📊 Progress: $savedCount/$totalCount');
+  //         }
+  //       }
 
-        print('📦 Batch ${(batch / batchSize).toInt() + 1} completed');
-      }
+  //       print('📦 Batch ${(batch / batchSize).toInt() + 1} completed');
+  //     }
 
-      print('✅ Successfully saved $savedCount dummy prospects!');
-      print('📊 Summary:');
-      print('   - ${sources.length} Sources');
-      print('   - ${etablissements.length} Etablissements');
-      print('   - ${classes.length} Classes');
-      print('   - ${specialites.length} Specialites');
-      print('   - ${fiches.length} Fiches');
-      print('   - $savedCount Prospects with source_infos assigned');
-    } catch (e) {
-      print('❌ Error generating dummy data: $e');
-      rethrow;
-    }
-  }
+  //     print('✅ Successfully saved $savedCount dummy prospects!');
+  //     print('📊 Summary:');
+  //     print('   - ${sources.length} Sources');
+  //     print('   - ${etablissements.length} Etablissements');
+  //     print('   - ${classes.length} Classes');
+  //     print('   - ${specialites.length} Specialites');
+  //     print('   - ${fiches.length} Fiches');
+  //     print('   - $savedCount Prospects with source_infos assigned');
+  //   } catch (e) {
+  //     print('❌ Error generating dummy data: $e');
+  //     rethrow;
+  //   }
+  // }
 
   // ==================== PROSPECT - OPTIMIZED CHECKERS ====================
 
@@ -590,28 +592,20 @@ class LocalStorage {
 
   Future<String> saveProspect(Prospect prospect) async {
     try {
+      // ----- READ operations (no transaction needed) -----
       if (await _prospectExistsByName(prospect.nomComplet)) {
         return 'name_already_exists';
       }
-
       if (await _prospectExistsByPhone(prospect.telephone)) {
         return 'phone_already_exists';
       }
-
       if (await _prospectExistsByEmail(prospect.email)) {
         return 'email_already_exists';
       }
 
+      // ----- WRITE operations (must be in a transaction) -----
       await _isar.writeTxn(() async {
         await _isar.prospects.put(prospect);
-        if (prospect.classe.value != null) {
-          await prospect.classe.save();
-        }
-
-        // ✅ Save the fiche relationship
-        if (prospect.fiche.value != null) {
-          await prospect.fiche.save();
-        }
       });
 
       return 'prospect_added_success';
@@ -626,8 +620,6 @@ class LocalStorage {
     try {
       await _isar.writeTxn(() async {
         await _isar.prospects.put(prospect);
-        await prospect.classe.save();
-        await prospect.fiche.save();
       });
       return 'prospect_updated_success';
     } catch (e) {
@@ -745,10 +737,10 @@ class LocalStorage {
           for (final interet in prospect.interets) {
             await interet.specialite.load();
           }
-          await prospect.classe.load();
-          if (prospect.classe.value != null) {
-            await prospect.classe.value!.ets.load();
-          }
+          // await prospect.classe.load();
+          // if (prospect.classe.value != null) {
+          //   await prospect.classe.value!.ets.load();
+          // }
         }
       }
 
@@ -939,27 +931,18 @@ class LocalStorage {
 
   // ==================== CLASSE ====================
 
+  /// Sauvegarde une classe. Aucune liaison avec un Établissement n'est
+  /// requise : une classe peut exister seule (idEts peut rester vide).
   Future<String> saveClasse(Classe classe) async {
     try {
-      final existing = await getClasseByLibelleAndEts(
-        classe.libelleClasse,
-        classe.idEts,
-      );
+      final existing = await getClasseByLibelle(classe.libelleClasse);
 
       if (existing != null) {
         return 'class_already_exists';
       }
 
-      if (classe.idEts.isNotEmpty) {
-        final etablissement = await getEtablissementById(classe.idEts);
-        if (etablissement != null) {
-          classe.ets.value = etablissement;
-        }
-      }
-
       await _isar.writeTxn(() async {
         await _isar.classes.put(classe);
-        await classe.ets.save();
       });
 
       return 'class_added_success';
@@ -996,6 +979,19 @@ class LocalStorage {
         (c) =>
             c.libelleClasse.toLowerCase() == libelle.toLowerCase() &&
             c.idEts == idEts,
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Recherche une classe par libellé uniquement, sans contrainte
+  /// d'Établissement.
+  Future<Classe?> getClasseByLibelle(String libelle) async {
+    try {
+      final allClasses = await getAllClasses();
+      return allClasses.firstWhere(
+        (c) => c.libelleClasse.toLowerCase() == libelle.toLowerCase(),
       );
     } catch (e) {
       return null;
@@ -1151,11 +1147,6 @@ class LocalStorage {
   }
 
   Future<Etablissement?> _loadEtablissementForClasse(Classe classe) async {
-    await classe.ets.load();
-    if (classe.ets.value != null) {
-      return classe.ets.value;
-    }
-
     if (classe.idEts.isNotEmpty) {
       return await getEtablissementById(classe.idEts);
     }
@@ -1215,12 +1206,15 @@ class LocalStorage {
 
       if (prospects.isEmpty) return [];
 
-      final List<ProspectDetails> results = [];
-      for (final prospect in prospects) {
-        final details = await buildProspectDetails(prospect);
-        results.add(details);
-      }
-      return results;
+      // final List<ProspectDetails> results = [];
+      // for (final prospect in prospects) {
+      //   final details = await buildProspectDetails(prospect);
+      //   results.add(details);
+      // }
+      // return results;
+      final details = await _buildProspectDetailsList(
+          page: 20, pageSize: 20, prospects: prospects);
+      return details;
     } catch (e) {
       print('❌ Error getting last 10 prospects: $e');
       return [];
@@ -1228,9 +1222,125 @@ class LocalStorage {
   }
 
   /// ✅ Récupérer les prospects avec pagination (comme RelancesScreen)
-  Future<List<ProspectDetails>> getPaginatedProspects({
+  // Future<List<ProspectDetails>> getPaginatedProspects({
+  //   required int page,
+  //   required int pageSize,
+  //   bool sortByDate = true,
+  // }) async {
+  //   // try {
+  //   //   final prospects = sortByDate
+  //   //       ? await _isar.prospects
+  //   //           .where()
+  //   //           .sortByCreatedAtDesc()
+  //   //           .offset(page * pageSize)
+  //   //           .limit(pageSize)
+  //   //           .findAll()
+  //   //       : await _isar.prospects
+  //   //           .where()
+  //   //           .sortByIdProspectDesc()
+  //   //           .offset(page * pageSize)
+  //   //           .limit(pageSize)
+  //   //           .findAll();
+
+  //   //   if (prospects.isEmpty) return [];
+
+  //   //   // ✅ Batch load all relations
+  //   //   final prospectIds = prospects.map((p) => p.idProspect).toList();
+
+  //   //   final allInterets = await _isar.interetFilieres
+  //   //       .where()
+  //   //       .filter()
+  //   //       .anyOf(prospectIds, (q, id) => q.idProspectEqualTo(id))
+  //   //       .findAll();
+
+  //   //   final specialiteIds = allInterets.map((i) => i.idSpecialite).toList();
+  //   //   final allSpecialites = specialiteIds.isNotEmpty
+  //   //       ? await _isar.specialites
+  //   //           .where()
+  //   //           .anyOf(specialiteIds, (q, id) => q.idSpecialiteEqualTo(id))
+  //   //           .findAll()
+  //   //       : <Specialite>[];
+
+  //   //   final specialiteMap = {for (var s in allSpecialites) s.idSpecialite: s};
+
+  //   //   final classeIds = prospects.map((p) => p.idClass).toList();
+  //   //   final allClasses = classeIds.isNotEmpty
+  //   //       ? await _isar.classes
+  //   //           .where()
+  //   //           .anyOf(classeIds, (q, id) => q.idClasseEqualTo(id))
+  //   //           .findAll()
+  //   //       : <Classe>[];
+
+  //   //   final classeMap = {for (var c in allClasses) c.idClasse: c};
+
+  //   //   final etsIds = allClasses.map((c) => c.idEts).toList();
+  //   //   final allEts = etsIds.isNotEmpty
+  //   //       ? await _isar.etablissements
+  //   //           .where()
+  //   //           .anyOf(etsIds, (q, id) => q.idEtablissementEqualTo(id))
+  //   //           .findAll()
+  //   //       : <Etablissement>[];
+
+  //   //   final etsMap = {for (var e in allEts) e.idEtablissement: e};
+
+  //   //   // ✅ Build details
+  //   //   final detailsList = <ProspectDetails>[];
+  //   //   for (final prospect in prospects) {
+  //   //     final classe = classeMap[prospect.idClass];
+  //   //     final ets = classe != null ? etsMap[classe.idEts] : null;
+
+  //   //     // Skip prospects whose class/établissement is missing/dangling
+  //   //     // rather than crashing the whole page.
+  //   //     if (classe == null || ets == null) {
+  //   //       print(
+  //   //         'Skipping prospect ${prospect.idProspect}: '
+  //   //         'missing classe or établissement',
+  //   //       );
+  //   //       continue;
+  //   //     }
+
+  //   //     final interets = allInterets
+  //   //         .where((i) => i.idProspect == prospect.idProspect)
+  //   //         .toList();
+
+  //   //     final specialities = interets
+  //   //         .map((i) {
+  //   //           final spec = specialiteMap[i.idSpecialite];
+  //   //           return spec != null
+  //   //               ? SpecialityDetail(
+  //   //                   libelleSpecialite: spec.libelleSpecialite,
+  //   //                   orderPreference: i.ordrePreference,
+  //   //                   niveau: i.niveauInteret,
+  //   //                   commentaire: i.commentaire ?? '',
+  //   //                 )
+  //   //               : null;
+  //   //         })
+  //   //         .whereType<SpecialityDetail>()
+  //   //         .toList()
+  //   //       ..sort((a, b) => a.orderPreference.compareTo(b.orderPreference));
+
+  //   //     detailsList.add(
+  //   //       ProspectDetails(
+  //   //         prosp: prospect,
+  //   //         etablissement: ets,
+  //   //         classe: classe,
+  //   //         specialities: specialities,
+  //   //         color: 0xFF9E9E9E, // TODO: replace with your actual color logic
+  //   //       ),
+  //   //     );
+  //   //   }
+
+  //   //   return detailsList;
+  //   // } catch (e) {
+  //   //   print('Error building prospect details list: $e');
+  //   //   return [];
+  //   // }
+  // }
+
+  Future<List<ProspectDetails>> _buildProspectDetailsList({
     required int page,
     required int pageSize,
+    required List<Prospect> prospects,
     bool sortByDate = true,
   }) async {
     try {
@@ -1265,29 +1375,55 @@ class LocalStorage {
               .where()
               .anyOf(specialiteIds, (q, id) => q.idSpecialiteEqualTo(id))
               .findAll()
-          : [];
+          : <Specialite>[];
 
       final specialiteMap = {for (var s in allSpecialites) s.idSpecialite: s};
 
       final classeIds = prospects.map((p) => p.idClass).toList();
-      final allClasses = await _isar.classes
-          .where()
-          .anyOf(classeIds, (q, id) => q.idClasseEqualTo(id))
-          .findAll();
+      final allClasses = classeIds.isNotEmpty
+          ? await _isar.classes
+              .where()
+              .anyOf(classeIds, (q, id) => q.idClasseEqualTo(id))
+              .findAll()
+          : <Classe>[];
 
       final classeMap = {for (var c in allClasses) c.idClasse: c};
 
       final etsIds = allClasses.map((c) => c.idEts).toList();
-      final allEts = await _isar.etablissements
-          .where()
-          .anyOf(etsIds, (q, id) => q.idEtablissementEqualTo(id))
-          .findAll();
+      final allEts = etsIds.isNotEmpty
+          ? await _isar.etablissements
+              .where()
+              .anyOf(etsIds, (q, id) => q.idEtablissementEqualTo(id))
+              .findAll()
+          : <Etablissement>[];
 
       final etsMap = {for (var e in allEts) e.idEtablissement: e};
 
       // ✅ Build details
       final detailsList = <ProspectDetails>[];
       for (final prospect in prospects) {
+        final classe = classeMap[prospect.idClass];
+        final ets = classe != null ? etsMap[classe.idEts] : null;
+
+        // La classe n'a plus besoin d'un Établissement : on utilise des
+        // valeurs par défaut plutôt que d'ignorer le prospect.
+        final safeClasse = classe ??
+            Classe(
+              idClasse: '',
+              idEts: '',
+              libelleClasse: 'Non spécifié',
+              createdAt: DateTime.now(),
+              syncState: SyncState.pending,
+            );
+        final safeEts = ets ??
+            Etablissement(
+              idEtablissement: '',
+              nomEtablissement: 'Non spécifié',
+              typeEtablissement: '',
+              createdAt: DateTime.now(),
+              syncState: SyncState.pending,
+            );
+
         final interets = allInterets
             .where((i) => i.idProspect == prospect.idProspect)
             .toList();
@@ -1308,144 +1444,20 @@ class LocalStorage {
             .toList()
           ..sort((a, b) => a.orderPreference.compareTo(b.orderPreference));
 
-        final classe = classeMap[prospect.idClass];
-        final ets = classe != null ? etsMap[classe.idEts] : null;
-
-  //       return ProspectDetails(
-  //         prosp: p,
-  //         etablissement: ets?.nomEtablissement ?? '',
-  //         classe: classe?.libelleClasse ?? '',
-  //         specialities: specsP,
-  //       );
-  //     }).toList();
-  //   } catch (e) {
-  //     print('Error building prospect details list: $e');
-  //     return [];
-  //   }
-  // }
-
-  static Future<List<ProspectDetails>> _buildProspectDetailsList(
-      Isar isar, List<Prospect> prospects) async {
-    try {
-      print('🔍 === START _buildProspectDetailsList ===');
-      print('📊 Number of prospects: ${prospects.length}');
-
-      if (prospects.isEmpty) {
-        print('⚠️ Prospects list is empty, returning empty list');
-        return [];
-      }
-
-      // ✅ OPTIMIZATION: BATCH LOAD all classes in ONE query (not N queries)
-      print(
-          '🔄 Batch loading relationships for ${prospects.length} prospects...');
-
-      // Get all class IDs as Strings
-      final classIds =
-          prospects.map((p) => p.idClass).where((id) => id.isNotEmpty).toList();
-
-      print('📋 Class IDs found: ${classIds.length}');
-
-      // ✅ OPTIMIZATION: ONE query for ALL classes
-      final classes = await isar.classes
-          .where()
-          .filter()
-          .anyOf(prospectIds, (q, id) => q.idProspectEqualTo(id))
-          .findAll();
-
-      print('📊 Classes retrieved from DB: ${classes.length}');
-
-      // Build class map for O(1) lookup
-      final classeMap = {for (var c in classes) c.idClasse: c};
-
-      // ✅ OPTIMIZATION: Get all ets IDs in ONE pass
-      final etsIds =
-          classes.where((c) => c.idEts.isNotEmpty).map((c) => c.idEts).toList();
-
-      print('📋 Etablissement IDs found: ${etsIds.length}');
-
-      // ✅ OPTIMIZATION: ONE query for ALL etablissements
-      final etss = await isar.etablissements
-          .where()
-          .anyOf(etsIds, (q, id) => q.idEtablissementEqualTo(id))
-          .findAll();
-
-      print('📊 Etablissements retrieved from DB: ${etss.length}');
-
-      // Build ets map for O(1) lookup
-      final etsMap = {for (var e in etss) e.idEtablissement: e};
-
-      // ✅ OPTIMIZATION: Get all interests in ONE query
-      final ids = prospects.map((p) => p.idProspect).toList();
-
-      final allLinks = await isar.interetFilieres
-          .filter()
-          .idficheEqualTo(ficheId)
-          .offset(page * pageSize)
-          .limit(pageSize)
-          .findAll();
-
-      print('📊 Interests found: ${allLinks.length}');
-
-      // ✅ OPTIMIZATION: Get all specialites in ONE query
-      if (allLinks.isNotEmpty) {
-        final specialiteIds = allLinks
-            .where((l) => l.idSpecialite.isNotEmpty)
-            .map((l) => l.idSpecialite)
-            .toList();
-
-        final specialites = await isar.specialites
-            .where()
-            .anyOf(specialiteIds, (q, id) => q.idSpecialiteEqualTo(id))
-            .findAll();
-
-        final specialiteMap = {for (var s in specialites) s.idSpecialite: s};
-
-        // Attach specialites to their interests
-        for (final link in allLinks) {
-          link.specialite.value = specialiteMap[link.idSpecialite];
-        }
-      }
-
-      // ✅ Build results with O(1) lookups
-      final result = prospects.map((p) {
-        final specsP = allLinks
-            .where((l) => l.idProspect == p.idProspect)
-            .map((l) => SpecialityDetail(
-                  libelleSpecialite:
-                      l.specialite.value?.libelleSpecialite ?? '',
-                  orderPreference: l.ordrePreference,
-                  niveau: l.niveauInteret,
-                  commentaire: l.commentaire,
-                ))
-            .toList()
-          ..sort((a, b) => a.orderPreference.compareTo(b.orderPreference));
-
-        final classe = classeMap[p.idClass];
-        final ets = classe != null ? etsMap[classe.idEts] : null;
-
-        return ProspectDetails(
-          prosp: p,
-          etablissement: ets?.nomEtablissement ?? '',
-          classe: classe?.libelleClasse ?? '',
-          specialities: specsP,
+        detailsList.add(
+          ProspectDetails(
+            prosp: prospect,
+            etablissement: safeEts,
+            classe: safeClasse,
+            specialities: specialities,
+            // color: 0xFF9E9E9E, // TODO: replace with your actual color logic
+          ),
         );
-      }).toList();
+      }
 
-      // Final summary
-      int emptyEtablissement =
-          result.where((d) => d.etablissement.isEmpty).length;
-      int emptyClasse = result.where((d) => d.classe.isEmpty).length;
-
-      print('📊 === FINAL RESULTS ===');
-      print('   - Total prospects: ${result.length}');
-      print('   - Empty etablissement: $emptyEtablissement/${result.length}');
-      print('   - Empty classe: $emptyClasse/${result.length}');
-
-      print('✅ === END _buildProspectDetailsList ===');
-      return result;
+      return detailsList;
     } catch (e) {
-      print('❌ Error building prospect details list: $e');
-      print('❌ Stack trace: ${StackTrace.current}');
+      print('Error building prospect details list: $e');
       return [];
     }
   }
@@ -1470,10 +1482,10 @@ class LocalStorage {
               for (final interet in prospect.interets) {
                 await interet.specialite.load();
               }
-              await prospect.classe.load();
-              if (prospect.classe.value != null) {
-                await prospect.classe.value!.ets.load();
-              }
+              // await prospect.classe.load();
+              // if (prospect.classe.value != null) {
+              //   await prospect.classe.value!.ets.load();
+              // }
             }
           }
 
@@ -1506,10 +1518,10 @@ class LocalStorage {
               for (final interet in prospect.interets) {
                 await interet.specialite.load();
               }
-              await prospect.classe.load();
-              if (prospect.classe.value != null) {
-                await prospect.classe.value!.ets.load();
-              }
+              // await prospect.classe.load();
+              // if (prospect.classe.value != null) {
+              //   await prospect.classe.value!.ets.load();
+              // }
             }
           }
 
@@ -1543,10 +1555,10 @@ class LocalStorage {
             for (final interet in prospect.interets) {
               await interet.specialite.load();
             }
-            await prospect.classe.load();
-            if (prospect.classe.value != null) {
-              await prospect.classe.value!.ets.load();
-            }
+            // await prospect.classe.load();
+            // if (prospect.classe.value != null) {
+            //   await prospect.classe.value!.ets.load();
+            // }
           }
 
           return prospect;
@@ -1596,12 +1608,14 @@ class LocalStorage {
               .idficheEqualTo(ficheId)
               .findAll();
 
-          final List<ProspectDetails> detailsList = [];
-          for (final prospect in prospects) {
-            final details = await buildProspectDetails(prospect);
-            detailsList.add(details);
-          }
-          return detailsList;
+          // final List<ProspectDetails> detailsList = [];
+          final details = await _buildProspectDetailsList(
+              page: 20, pageSize: 20, prospects: prospects);
+          // for (final prospect in prospects) {
+          //   final details = await _buildProspectDetailsList(page: 20, pageSize: 20, prospects: []);
+          //   detailsList.add(details);
+          // }
+          return details;
         } catch (e) {
           print('Error in watchProspectsDetailsByFiche: $e');
           return <ProspectDetails>[];
@@ -2150,7 +2164,7 @@ class LocalStorage {
           nomEtablissement: 'Lycée Général Leclerc',
           typeEtablissement: 'secondaire',
           createdAt: now,
-          syncState: SyncState.pending,
+          syncState: SyncState.synced,
         );
         await saveEtablissement(newEts);
         generalEtsId = newEts.idEtablissement;
@@ -2175,7 +2189,7 @@ class LocalStorage {
               idEts: generalEtsId,
               libelleClasse: frValue,
               createdAt: now,
-              syncState: SyncState.pending,
+              syncState: SyncState.synced,
             ));
             print('📌 Single entry for: "$frValue" (FR = EN)');
           }
@@ -2188,7 +2202,7 @@ class LocalStorage {
               idEts: generalEtsId,
               libelleClasse: frValue,
               createdAt: now,
-              syncState: SyncState.pending,
+              syncState: SyncState.synced,
             ));
           }
 
@@ -2200,7 +2214,7 @@ class LocalStorage {
               idEts: generalEtsId,
               libelleClasse: enValue,
               createdAt: now,
-              syncState: SyncState.pending,
+              syncState: SyncState.synced,
             ));
           }
         }
@@ -2221,78 +2235,6 @@ class LocalStorage {
   }
 
   // ==================== SEED SPECIALTIES ====================
-
-  // Future<void> seedSpecialtiesIfEmpty() async {
-  //   try {
-  //     final existing = await getAllSpecialites();
-  //     if (existing.isNotEmpty) return;
-
-  //     print('Seeding default specialties...');
-
-  //     final List<String> specialtyKeys = [
-  //       'software_engineering',
-  //       'computer_systems_maintenance',
-  //       'industrial_computing_and_automation',
-  //       'computer_engineering_and_telecommunications',
-  //       'computer_graphics_and_web_design',
-  //       'ecommerce_and_digital_marketing',
-  //       'building_construction',
-  //       'public_works',
-  //       'carpentry_and_cabinetmaking',
-  //       'electrical_engineering',
-  //       'electrotechnics',
-  //       'electronic_systems_maintenance',
-  //       'thermal_and_energy_engineering',
-  //       'refrigeration_and_air_conditioning',
-  //       'fluid_systems_maintenance',
-  //       'mechanical_engineering',
-  //       'mechanical_manufacturing',
-  //       'mechanical_construction',
-  //       'metal_construction',
-  //       'boilermaking_and_welding',
-  //       'automotive_engineering',
-  //       'automobile_engineering',
-  //       'mechatronics',
-  //       'automotive_mechanics_and_electronics',
-  //       'marketing_sales',
-  //       'international_trade',
-  //       'accounting_and_business_management',
-  //       'banking_and_finance',
-  //       'assistant_manager',
-  //       'human_resource_management',
-  //       'quality_management',
-  //       'communication_advertising',
-  //       'transport_and_logistics',
-  //       'marketing_communication',
-  //       'accounting_and_finance',
-  //       'qhse_management',
-  //       'entrepreneurship',
-  //       'naval_electromechanics',
-  //       'port_and_maritime_logistics',
-  //       'nautical_sciences',
-  //       'offshore_and_maritime_safety',
-  //       'aquaculture',
-  //       'maritime_and_port_administration',
-  //       'marine_fisheries_technology',
-  //     ];
-
-  //     final now = DateTime.now();
-  //     for (final key in specialtyKeys) {
-  //       final spec = Specialite(
-  //         idSpecialite: Generator.generateShortId('spec_'),
-  //         libelleSpecialite: key,
-  //         description: "no description",
-  //         createdAt: now,
-  //         syncState: SyncState.pending,
-  //       );
-  //       await saveSpecialite(spec);
-  //     }
-
-  //     print('✅ ${specialtyKeys.length} specialties seeded successfully!');
-  //   } catch (e) {
-  //     print('❌ Error seeding specialties: $e');
-  //   }
-  // }
 
   Future<void> seedSpecialtiesIfEmpty() async {
     try {
@@ -2500,7 +2442,7 @@ class LocalStorage {
               libelleSpecialite: frValue,
               description: "no description",
               createdAt: now,
-              syncState: SyncState.pending,
+              syncState: SyncState.synced,
             ));
             print('📌 Single entry for: "$frValue" (FR = EN)');
           }
@@ -2514,7 +2456,7 @@ class LocalStorage {
               libelleSpecialite: frValue,
               description: "no description",
               createdAt: now,
-              syncState: SyncState.pending,
+              syncState: SyncState.synced,
             ));
           }
 
@@ -2527,7 +2469,7 @@ class LocalStorage {
               libelleSpecialite: enValue,
               description: "no description",
               createdAt: now,
-              syncState: SyncState.pending,
+              syncState: SyncState.synced,
             ));
           }
         }
@@ -2548,8 +2490,32 @@ class LocalStorage {
     }
   }
 
-// lib/models/localStorage/local_storage.dart
+  /// Deletes all local specialties.
+  Future<void> clearAllSpecialites() async {
+    try {
+      await _isar.writeTxn(() async {
+        await _isar.specialites.clear();
+      });
+      print('✅ All specialties cleared.');
+    } catch (e) {
+      print('❌ Error clearing specialties: $e');
+      rethrow;
+    }
+  }
 
+  /// Replaces all local specialties with a new list.
+  Future<void> replaceAllSpecialites(List<Specialite> newSpecialities) async {
+    try {
+      await _isar.writeTxn(() async {
+        await _isar.specialites.clear();
+        await _isar.specialites.putAll(newSpecialities);
+      });
+      print('✅ ${newSpecialities.length} specialties replaced.');
+    } catch (e) {
+      print('❌ Error replacing specialties: $e');
+      rethrow;
+    }
+  }
 // ==================== SORTIE METHODS ====================
 
   /// Save or update a sortie
@@ -2668,4 +2634,89 @@ class LocalStorage {
       rethrow;
     }
   }
+
+
+  // ==================== RELANCE ====================
+
+Future<void> saveRelance(Relance relance) async {
+  try {
+    await _isar.writeTxn(() async {
+      await _isar.relances.put(relance);
+    });
+  } catch (e) {
+    print('❌ Error saving relance: $e');
+    rethrow;
+  }
+}
+
+Future<void> updateRelance(Relance relance) async {
+  // same as saveRelance, but we can also set syncState to toUpdate if it was synced before
+  try {
+    await _isar.writeTxn(() async {
+      await _isar.relances.put(relance);
+    });
+  } catch (e) {
+    print('❌ Error updating relance: $e');
+    rethrow;
+  }
+}
+
+// Future<void> deleteRelance(String idRelance) async {
+//   try {
+//     await _isar.writeTxn(() async {
+//       final relance = await _isar.relances.where().idRelanceEqualTo(idRelance).findFirst();
+//       if (relance != null) {
+//         // If it's already synced, mark as toDelete; otherwise just delete
+//         if (relance.syncState == SyncState.synced) {
+//           relance.syncState = SyncState.toDelete;
+//           await _isar.relances.put(relance);
+//         } else {
+//           await _isar.relances.delete(relance.isarId);
+//         }
+//       }
+//     });
+//   } catch (e) {
+//     print('❌ Error deleting relance: $e');
+//     rethrow;
+//   }
+// }
+
+Future<List<Relance>> getRelancesForProspect(String idProspect) async {
+  try {
+    return await _isar.relances
+        .where()
+        .filter()
+        .idProspectEqualTo(idProspect)
+        .findAll();
+  } catch (e) {
+    print('❌ Error getting relances for prospect: $e');
+    return [];
+  }
+}
+
+Future<List<Relance>> getPendingRelances() async {
+  try {
+    return await _isar.relances
+        .where()
+        .filter()
+        .syncStateBetween(SyncState.pending, SyncState.toUpdate)
+        .findAll();
+  } catch (e) {
+    print('❌ Error getting pending relances: $e');
+    return [];
+  }
+}
+
+// Future<List<Relance>> getRelancesToDelete() async {
+//   try {
+//     return await _isar.relances
+//         .where()
+//         .filter()
+//         .syncStateEqualTo(SyncState.toDelete)
+//         .findAll();
+//   } catch (e) {
+//     print('❌ Error getting relances to delete: $e');
+//     return [];
+//   }
+// }
 }

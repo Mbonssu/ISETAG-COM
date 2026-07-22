@@ -128,15 +128,7 @@ const EtablissementSchema = CollectionSchema(
       ],
     )
   },
-  links: {
-    r'classes': LinkSchema(
-      id: 7860249486294815040,
-      name: r'classes',
-      target: r'Classe',
-      single: false,
-      linkName: r'ets',
-    )
-  },
+  links: {},
   embeddedSchemas: {},
   getId: _etablissementGetId,
   getLinks: _etablissementGetLinks,
@@ -281,13 +273,12 @@ Id _etablissementGetId(Etablissement object) {
 }
 
 List<IsarLinkBase<dynamic>> _etablissementGetLinks(Etablissement object) {
-  return [object.classes];
+  return [];
 }
 
 void _etablissementAttach(
     IsarCollection<dynamic> col, Id id, Etablissement object) {
   object.isarId = id;
-  object.classes.attach(col, col.isar.collection<Classe>(), r'classes', id);
 }
 
 extension EtablissementByIndex on IsarCollection<Etablissement> {
@@ -2072,68 +2063,7 @@ extension EtablissementQueryObject
     on QueryBuilder<Etablissement, Etablissement, QFilterCondition> {}
 
 extension EtablissementQueryLinks
-    on QueryBuilder<Etablissement, Etablissement, QFilterCondition> {
-  QueryBuilder<Etablissement, Etablissement, QAfterFilterCondition> classes(
-      FilterQuery<Classe> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'classes');
-    });
-  }
-
-  QueryBuilder<Etablissement, Etablissement, QAfterFilterCondition>
-      classesLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'classes', length, true, length, true);
-    });
-  }
-
-  QueryBuilder<Etablissement, Etablissement, QAfterFilterCondition>
-      classesIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'classes', 0, true, 0, true);
-    });
-  }
-
-  QueryBuilder<Etablissement, Etablissement, QAfterFilterCondition>
-      classesIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'classes', 0, false, 999999, true);
-    });
-  }
-
-  QueryBuilder<Etablissement, Etablissement, QAfterFilterCondition>
-      classesLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'classes', 0, true, length, include);
-    });
-  }
-
-  QueryBuilder<Etablissement, Etablissement, QAfterFilterCondition>
-      classesLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'classes', length, include, 999999, true);
-    });
-  }
-
-  QueryBuilder<Etablissement, Etablissement, QAfterFilterCondition>
-      classesLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(
-          r'classes', lower, includeLower, upper, includeUpper);
-    });
-  }
-}
+    on QueryBuilder<Etablissement, Etablissement, QFilterCondition> {}
 
 extension EtablissementQuerySortBy
     on QueryBuilder<Etablissement, Etablissement, QSortBy> {
